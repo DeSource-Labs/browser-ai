@@ -1,0 +1,47 @@
+{
+  "name": "@desource/browser-ai-vue",
+  "version": "0.2.0",
+  "author": "Stefan Popov <stefan@desource-labs.org>",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./assets/lib.css": "./dist/phone-mask-vue.css"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "pnpm build-lib && pnpm build-types && pnpm postbuild",
+    "build-lib": "vite build",
+    "build-types": "vue-tsc --emitDeclarationOnly --declaration -p tsconfig.json",
+    "postbuild": "node scripts/fix-dts.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.3",
+    "vue-tsc": "^3.1.8",
+    "vue": "^3.5.26"
+  },
+  "dependencies": {
+    "@types/dom-chromium-ai": "^0.0.13"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.33"
+  }
+}

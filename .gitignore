@@ -1,0 +1,12 @@
+.DS_Store
+.vscode
+.idea
+dist
+build
+coverage
+node_modules
+.nuxt
+.output
+*.tsbuildinfo
+playwright-report
+test-results

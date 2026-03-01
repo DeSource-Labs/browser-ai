@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "declarationDir": "dist/types",
+    "outDir": "dist",
+    "types": ["@types/dom-chromium-ai", "vite/client"]
+  },
+  "include": ["src/**/*"]
+}

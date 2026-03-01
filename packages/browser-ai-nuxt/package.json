@@ -1,0 +1,41 @@
+{
+  "name": "@desource/browser-ai-nuxt",
+  "version": "0.2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types.d.mts",
+      "import": "./dist/module.mjs",
+      "require": "./dist/module.mjs"
+    }
+  },
+  "main": "./dist/module.mjs",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "author": "Stefan Popov <stefan@desource-labs.org>",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev:prepare": "nuxt prepare",
+    "clean": "rimraf dist",
+    "build": "pnpm dev:prepare && nuxt-module-build build"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.33"
+  },
+  "dependencies": {
+    "@desource/browser-ai-vue": "workspace:*"
+  },
+  "devDependencies": {
+    "@nuxt/kit": "^4.2.2",
+    "@nuxt/module-builder": "^1.0.2",
+    "nuxt": "^4.2.2",
+    "vue": "^3.5.26"
+  }
+}
