@@ -112,9 +112,12 @@ const {
   downloadProgress,
   inputUsage,
   inputQuota,
-  quotaOverflowCount,
   interrupt: interruptOperation,
-} = usePromptApi();
+} = usePromptApi({
+  onQuotaOverflow: () => {
+    emit('quota-overflow');
+  }
+});
 
 const draft = ref('');
 const attachments = ref<PromptAttachment[]>([]);
@@ -423,12 +426,6 @@ watch([inputUsage, inputQuota], ([usage, quota]) => {
     inputQuota: quota
   });
 }, { immediate: true });
-
-watch(quotaOverflowCount, (value, previous) => {
-  if (value > (previous ?? 0)) {
-    emit('quota-overflow');
-  }
-});
 
 onMounted(async () => {
   emit('update:messages', messages.value);
