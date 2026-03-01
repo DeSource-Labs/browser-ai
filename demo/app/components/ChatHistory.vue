@@ -61,24 +61,27 @@ export type ChatMessage = {
 interface Props {
   messages: ChatMessage[];
   isTyping?: boolean;
+  autoScroll?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isTyping: false
+  isTyping: false,
+  autoScroll: true
 });
 
 const historyEl = ref<HTMLDivElement | null>(null);
 
 const scrollToBottom = () => {
+  if (!props.autoScroll) return;
   if (!historyEl.value) return;
   nextTick(() => {
     historyEl.value!.scrollTop = historyEl.value!.scrollHeight;
   });
 };
 
-watch([() => props.messages.length, () => props.isTyping], () => {
+watch([() => props.messages, () => props.isTyping, () => props.autoScroll], () => {
   scrollToBottom();
-});
+}, { deep: true });
 
 onMounted(() => {
   scrollToBottom();

@@ -41,9 +41,9 @@
         <div class="tool">
           <PromptApi
             v-if="selected === 'prompt-api'"
-            :prompt="prompt"
-            :is-ready="isReady"
-            :processing="processing"
+            @availability-change="handleAvailabilityChange"
+            @ready-change="handleReadyChange"
+            @processing-change="handleProcessingChange"
           />
         </div>
       </div>
@@ -54,29 +54,21 @@
 <script setup lang="ts">
 const selected = ref<Tool>('prompt-api');
 const selectedTool = computed(() => ToolItems.find(item => item.id === selected.value)!);
-// const availability = ref<'unavailable' | 'downloadable' | 'downloading' | 'available'>('available');
 
-const { availability, init, create, dispose, prompt, isReady, processing } = usePromptApi();
+const availability = ref<Availability>('unavailable');
 
-onMounted(async () => {
-  await init();
-  await new Promise(resolve => setTimeout(resolve, 5_000));
-  await create();
-});
+const handleAvailabilityChange = (value: Availability) => {
+  availability.value = value;
+  console.log('Prompt API availability changed to:', value);
+};
 
-onBeforeUnmount(async () => {
-  dispose();
-});
+const handleReadyChange = (value: boolean) => {
+  console.log('Prompt API is ready:', value);
+};
 
-watch(isReady, (newVal) => {
-  console.log('Prompt API is ready:', newVal);
-});
-watch(processing, (newVal) => {
-  console.log('Prompt API is processing:', newVal);
-});
-watch(availability, (newVal) => {
-  console.log('Prompt API availability changed to:', newVal);
-});
+const handleProcessingChange = (value: 'availability' | 'create' | 'measure' | 'prompt' | '') => {
+  console.log('Prompt API is processing:', value);
+};
 </script>
 
 <style scoped lang="scss">

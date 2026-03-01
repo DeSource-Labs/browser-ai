@@ -1,6 +1,6 @@
 <template>
   <div class="prompt-input">
-    <div v-if="attachments.length" class="prompt-input__attachments">
+    <div v-if="allowAttachments && attachments.length" class="prompt-input__attachments">
       <div v-for="attachment in attachments" :key="attachment.id" class="prompt-input__attachment">
         <img v-if="attachment.type.startsWith('image/')" :src="attachment.url" :alt="attachment.name" />
         <div v-else class="prompt-input__file">
@@ -19,17 +19,18 @@
         </svg>
       </button>
 
-      <button type="button" class="prompt-input__icon" :disabled="disabled" @click="triggerFile">
+      <button v-if="allowAttachments" type="button" class="prompt-input__icon" :disabled="disabled" @click="triggerFile">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M7.5 6.5A4.5 4.5 0 0 1 12 2h5a1 1 0 0 1 1 1v5.5a4.5 4.5 0 0 1-9 0V6.5Zm4.5 12a6.5 6.5 0 0 0 6.5-6.5V5h-5a2.5 2.5 0 0 0-2.5 2.5V10a6.5 6.5 0 0 0 1 8.5Zm-7 1.5a1 1 0 0 1-1-1v-4a6.5 6.5 0 0 1 6.5-6.5h1a1 1 0 1 1 0 2h-1A4.5 4.5 0 0 0 6 15v4a1 1 0 0 1-1 1Z" fill="currentColor" />
         </svg>
       </button>
 
       <input
+        v-if="allowAttachments"
         ref="fileInput"
         class="prompt-input__file-input"
         type="file"
-        accept="image/*"
+        :accept="accept"
         multiple
         :disabled="disabled"
         @change="handleFiles"
@@ -42,7 +43,7 @@
         :disabled="disabled"
         rows="1"
         @input="onInput"
-        @keydown.enter.exact.prevent="emitSend"
+        @keydown="onKeydown"
       ></textarea>
 
       <button type="button" class="prompt-input__send" :disabled="disabled || busy || !canSend" @click="emitSend">
@@ -69,12 +70,20 @@ interface Props {
   placeholder?: string;
   disabled?: boolean;
   busy?: boolean;
+  sendOnEnter?: boolean;
+  allowAttachments?: boolean;
+  accept?: string;
+  maxAttachments?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Ask the assistant... ',
   disabled: false,
-  busy: false
+  busy: false,
+  sendOnEnter: true,
+  allowAttachments: true,
+  accept: 'image/*',
+  maxAttachments: undefined
 });
 
 const emit = defineEmits<{
@@ -93,6 +102,15 @@ const canSend = computed(() => {
 const onInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement;
   emit('update:modelValue', target.value);
+};
+
+const onKeydown = (event: KeyboardEvent) => {
+  if (!props.sendOnEnter) return;
+  if (event.key !== 'Enter' || event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) {
+    return;
+  }
+  event.preventDefault();
+  emitSend();
 };
 
 const emitSend = () => {
@@ -115,7 +133,14 @@ const handleFiles = (event: Event) => {
   const files = Array.from(target.files || []);
   if (files.length === 0) return;
 
-  const next = files.map((file) => ({
+  const availableSlots = props.maxAttachments ? Math.max(props.maxAttachments - props.attachments.length, 0) : files.length;
+  if (availableSlots === 0) {
+    target.value = '';
+    return;
+  }
+
+  const selectedFiles = files.slice(0, availableSlots);
+  const next = selectedFiles.map((file) => ({
     id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     file,
     url: URL.createObjectURL(file),
@@ -134,6 +159,15 @@ const removeAttachment = (id: string) => {
   }
   emit('update:attachments', props.attachments.filter(item => item.id !== id));
 };
+
+watch(() => props.attachments, (next, previous = []) => {
+  const nextIds = new Set(next.map((item) => item.id));
+  previous.forEach((attachment) => {
+    if (!nextIds.has(attachment.id)) {
+      URL.revokeObjectURL(attachment.url);
+    }
+  });
+}, { deep: true });
 
 onBeforeUnmount(() => {
   props.attachments.forEach((attachment) => {

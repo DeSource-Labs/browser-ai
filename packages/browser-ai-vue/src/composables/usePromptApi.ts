@@ -10,6 +10,7 @@ export function usePromptApi() {
   const defaultParams = ref<LanguageModelParams | null>(null);
   const params = ref<LanguageModelCreateCoreOptions | null>(null);
   const downloadProgress = ref<number>(0); // Progress for model downloads in percentage (0-100)
+  const quotaOverflowCount = ref<number>(0);
 
   // session dependent properties
   const temperature = ref<number | null>(null);
@@ -35,6 +36,7 @@ export function usePromptApi() {
 
   const handleQuotaoverflow = () => {
     console.warn('Input quota exceeded');
+    quotaOverflowCount.value += 1;
     updateSessionProps(session.value);
   };
 
@@ -153,6 +155,7 @@ export function usePromptApi() {
     abortController.value?.abort();
     processing.value = '';
     downloadProgress.value = 0;
+    quotaOverflowCount.value = 0;
     console.info('Disposed all resources');
   };
 
@@ -286,6 +289,7 @@ export function usePromptApi() {
     processing: computed(() => processing.value),
     availability: computed(() => availability.value),
     downloadProgress: computed(() => downloadProgress.value),
+    quotaOverflowCount: computed(() => quotaOverflowCount.value),
     temperature: computed(() => temperature.value),
     topK: computed(() => topK.value),
     inputQuota: computed(() => inputQuota.value),
