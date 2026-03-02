@@ -22,7 +22,6 @@ import type { ChatAttachment, ChatMessage } from './ChatHistory.vue';
 import type { PromptAttachment } from './PromptInput.vue';
 
 type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
-type ProcessingState = 'availability' | 'create' | 'measure' | 'prompt' | '';
 
 type PromptOptionsContext = {
   text: string;
@@ -82,7 +81,7 @@ const emit = defineEmits<{
   'create-start': [];
   'create-complete': [];
   'ready-change': [ready: boolean];
-  'processing-change': [state: ProcessingState];
+  'processing-change': [state: LLMProcessingState];
   'download-progress': [progress: number];
   'quota-overflow': [];
   'usage-change': [usage: { inputUsage: number | null; inputQuota: number | null }];
@@ -126,11 +125,11 @@ const messages = ref<ChatMessage[]>(props.initialMessages.map((message) => ({ ..
 const isTyping = computed(() => processing.value === 'prompt');
 const isInputDisabled = computed(() => props.disabled || !isReady.value);
 
-const normalizeProcessingState = (state: string): ProcessingState => {
+const normalizeProcessingState = (state: string): LLMProcessingState => {
   if (state === 'new-session') {
     return 'create';
   }
-  return state as ProcessingState;
+  return state as LLMProcessingState;
 };
 
 const generateMessageId = () => {

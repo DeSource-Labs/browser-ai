@@ -10,7 +10,8 @@
       class="chat-message"
       :class="{
         'chat-message--user': message.role === 'user',
-        'chat-message--assistant': message.role === 'assistant'
+        'chat-message--assistant': message.role === 'assistant',
+        'chat-message--typing': isActiveTypingMessage(message)
       }"
     >
       <div class="chat-message__header">
@@ -26,10 +27,22 @@
           </div>
         </div>
       </div>
-      <div class="chat-message__text" v-html="formatMessage(message.content)"></div>
+      <div class="chat-message__text" :class="{ 'chat-message__text--typing': isActiveTypingMessage(message) }">
+        <template v-if="isActiveTypingMessage(message) && !message.content.trim()">
+          <span class="chat-message__dots" aria-live="polite" aria-label="Assistant is typing">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </span>
+        </template>
+        <template v-else>
+          <div class="chat-message__content" v-html="formatMessage(message.content)"></div>
+          <span v-if="isActiveTypingMessage(message)" class="typing-cursor" aria-hidden="true"></span>
+        </template>
+      </div>
     </div>
 
-    <div v-if="isTyping" class="chat-message chat-message--assistant chat-message--typing">
+    <div v-if="showStandaloneTyping" class="chat-message chat-message--assistant chat-message--typing">
       <div class="chat-message__header">
         <span class="chat-message__role">Assistant</span>
       </div>
@@ -70,6 +83,27 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const historyEl = ref<HTMLDivElement | null>(null);
+
+const activeTypingMessageId = computed<string | null>(() => {
+  if (!props.isTyping || props.messages.length === 0) {
+    return null;
+  }
+
+  const lastMessage = props.messages[props.messages.length - 1];
+  if (!lastMessage || lastMessage.role !== 'assistant') {
+    return null;
+  }
+
+  return lastMessage.id;
+});
+
+const showStandaloneTyping = computed(() => {
+  return props.isTyping && activeTypingMessageId.value === null;
+});
+
+const isActiveTypingMessage = (message: ChatMessage) => {
+  return props.isTyping && activeTypingMessageId.value === message.id;
+};
 
 const scrollToBottom = () => {
   if (!props.autoScroll) return;
@@ -254,6 +288,21 @@ const formatTime = (timestamp?: number) => {
   line-height: 1.5;
 }
 
+.chat-message__text--typing {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  min-height: 1.2rem;
+}
+
+.chat-message__text--typing .chat-message__dots {
+  padding: 0;
+}
+
+.chat-message__content {
+  min-width: 0;
+}
+
 .chat-message__text :deep(code) {
   font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
 }
@@ -312,6 +361,17 @@ const formatTime = (timestamp?: number) => {
   animation-delay: 0.4s;
 }
 
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.75;
+  animation: cursor-blink 1s steps(1, end) infinite;
+  flex-shrink: 0;
+}
+
 @keyframes typing {
   0%,
   80%,
@@ -322,6 +382,17 @@ const formatTime = (timestamp?: number) => {
   40% {
     transform: translateY(-4px);
     opacity: 1;
+  }
+}
+
+@keyframes cursor-blink {
+  0%,
+  49% {
+    opacity: 0.75;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
   }
 }
 </style>
