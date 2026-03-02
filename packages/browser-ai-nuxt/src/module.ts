@@ -45,6 +45,12 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
       const shared = resolve(runtimeDir, 'shared');
       addImports([
         { name: 'usePromptApi', from: shared },
+        { name: 'LLMAvailability', from: shared, type: true },
+        { name: 'LLMCreateCoreOptions', from: shared, type: true },
+        { name: 'LLMProcessingState', from: shared, type: true },
+        { name: 'LLMPrompt', from: shared, type: true },
+        { name: 'LLMPromptOptions', from: shared, type: true },
+        { name: 'UsePromptApiOptions', from: shared, type: true }
       ]);
     }
     // // Add component

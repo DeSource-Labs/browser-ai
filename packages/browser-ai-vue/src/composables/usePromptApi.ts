@@ -1,9 +1,12 @@
-/// <reference types="@types/dom-chromium-ai" />
 import { ref, shallowRef, computed, watch } from 'vue';
 
-type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
+export type LLMAvailability = Availability;
+export type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
+export type LLMProcessingState = 'availability' | 'create' | 'new-session' | 'measure' | 'prompt' | '';
+export type LLMCreateCoreOptions = LanguageModelCreateCoreOptions;
+export type LLMPrompt = LanguageModelPrompt;
 
-interface UsePromptApiOptions {
+export interface UsePromptApiOptions {
   onQuotaOverflow?: (event: Event) => void;
 }
 
@@ -11,7 +14,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   const { onQuotaOverflow } = options;
 
   const session = ref<LanguageModel | null>(null);
-  const processing = ref<'availability' | 'create' | 'new-session' | 'measure' | 'prompt' | ''>('');
+  const processing = ref<LLMProcessingState>('');
   const availability = ref<Availability | null>(null);
   const defaultParams = ref<LanguageModelParams | null>(null);
   const params = ref<LanguageModelCreateCoreOptions | null>(null);
