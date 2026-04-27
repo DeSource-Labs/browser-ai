@@ -1,6 +1,6 @@
 import { ref, onMounted } from 'vue';
 
-const CACHE_KEY = '@desource/phone-mask-demo.gh-stars';
+const CACHE_KEY = '@desource/browser-ai-demo.gh-stars';
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
 
 /**
@@ -8,7 +8,7 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000;
  * @param repo - Repository in format "owner/repo"
  * @returns Promise<number> - The star count
  */
-export const getStarsCount = async (repo: string = 'DeSource-Labs/phone-mask'): Promise<number> => {
+export const getStarsCount = async (repo: string = 'DeSource-Labs/browser-ai'): Promise<number> => {
   try {
     const response = await fetch(`https://api.github.com/repos/${repo}`);
 

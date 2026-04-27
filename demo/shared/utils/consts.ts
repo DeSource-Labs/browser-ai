@@ -43,32 +43,31 @@ export const LibItems: LibItem[] = [
 ];
 
 export const NpmLinks: Record<Library, string> = {
-  vue: 'https://www.npmjs.com/package/@desource/phone-mask-vue',
-  nuxt: 'https://www.npmjs.com/package/@desource/phone-mask-nuxt',
-  react: 'https://www.npmjs.com/package/@desource/phone-mask-react',
-  typescript: 'https://www.npmjs.com/package/@desource/phone-mask'
+  vue: 'https://www.npmjs.com/package/@desource/browser-ai-vue',
+  nuxt: 'https://www.npmjs.com/package/@desource/browser-ai-nuxt',
+  react: 'https://www.npmjs.com/package/@desource/browser-ai-react',
+  typescript: 'https://www.npmjs.com/package/@desource/browser-ai'
 };
 
 export const NpmCommands: Record<Library, string> = {
-  vue: 'npm install @desource/phone-mask-vue',
-  nuxt: 'npm install @desource/phone-mask-nuxt',
-  react: 'npm install @desource/phone-mask-react',
-  typescript: 'npm install @desource/phone-mask'
+  vue: 'npm install @desource/browser-ai-vue',
+  nuxt: 'npm install @desource/browser-ai-nuxt',
+  react: 'npm install @desource/browser-ai-react',
+  typescript: 'npm install @desource/browser-ai'
 };
 
 export const DocLinks: Record<Library, string> = {
-  vue: 'https://github.com/DeSource-Labs/phone-mask/tree/main/packages/phone-mask-vue',
-  nuxt: 'https://github.com/DeSource-Labs/phone-mask/tree/main/packages/phone-mask-nuxt',
-  react: 'https://github.com/DeSource-Labs/phone-mask/tree/main/packages/phone-mask-react',
-  typescript: 'https://github.com/DeSource-Labs/phone-mask/tree/main/packages/phone-mask'
+  vue: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-vue',
+  nuxt: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-nuxt',
+  react: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-react',
+  typescript: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai'
 };
 
 export const Links = {
-  coreRepo: 'https://github.com/DeSource-Labs/phone-mask',
-  packages: 'https://github.com/DeSource-Labs/phone-mask/tree/main/packages',
+  coreRepo: 'https://github.com/DeSource-Labs/browser-ai',
+  packages: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages',
   org: 'https://desource-labs.org',
-  googleLib: 'https://github.com/google/libphonenumber',
-  contributing: 'https://github.com/DeSource-Labs/phone-mask/blob/main/CONTRIBUTING.md'
+  contributing: 'https://github.com/DeSource-Labs/browser-ai/blob/main/CONTRIBUTING.md'
 };
 
 export const ToolItems: ToolItem[] = [

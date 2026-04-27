@@ -18,7 +18,7 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./assets/lib.css": "./dist/phone-mask-vue.css"
+    "./assets/lib.css": "./dist/browser-ai-vue.css"
   },
   "files": [
     "dist",

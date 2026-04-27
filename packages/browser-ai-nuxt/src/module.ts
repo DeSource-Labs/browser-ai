@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url';
 
 export interface ModuleOptions {
   css?: boolean; // Whether to include default CSS, default true
-  component?: boolean; // Whether to register the PhoneInput component, default true
-  directive?: boolean; // Whether to register the v-phone-mask directive, default true
+  component?: boolean; // Whether to register the component, default true
+  directive?: boolean; // Whether to register the directive, default true
   helpers?: boolean; // Whether to register shared helpers and types, default true
 }
 
@@ -57,14 +57,14 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
     // if (options.component) {
     //   const componentDir = resolve(runtimeDir, 'component');
     //   addComponent({
-    //     name: 'PhoneInput',
+    //     name: 'tbd',
     //     filePath: componentDir,
     //     mode: 'client'
     //   });
     // }
     // // Add CSS
     // if (options.css) {
-    //   nuxt.options.css.unshift('@desource/phone-mask-vue/assets/lib.css');
+    //   nuxt.options.css.unshift('@desource/browser-ai-vue/assets/lib.css');
     // }
   }
 });
