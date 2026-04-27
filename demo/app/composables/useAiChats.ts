@@ -123,6 +123,125 @@ const getActiveChatStorageKey = (tool: AiChatTool) => {
   return `browser-ai.active-chat.${tool}`;
 };
 
+const isValidTimestamp = (value: unknown): value is number => {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
+};
+
+const isValidRole = (value: unknown): value is 'user' | 'assistant' => {
+  return value === 'user' || value === 'assistant';
+};
+
+const normalizeMessages = (
+  source: unknown,
+  baseTimestamp: number
+): { messages: AiChatMessage[]; changed: boolean } => {
+  const rawMessages = Array.isArray(source) ? source : [];
+  let changed = !Array.isArray(source);
+  let previousTimestamp = baseTimestamp;
+
+  const messages = rawMessages.map((rawMessage, index) => {
+    const entry = (rawMessage ?? {}) as Partial<AiChatMessage>;
+
+    const fallbackTimestamp = previousTimestamp + Math.max(index === 0 ? 0 : 1000, 1);
+    const timestamp = isValidTimestamp(entry.timestamp)
+      ? entry.timestamp
+      : fallbackTimestamp;
+    if (!isValidTimestamp(entry.timestamp)) {
+      changed = true;
+    }
+
+    previousTimestamp = Math.max(previousTimestamp, timestamp);
+
+    const id = typeof entry.id === 'string' && entry.id.length > 0
+      ? entry.id
+      : generateId();
+    if (id !== entry.id) {
+      changed = true;
+    }
+
+    const role = isValidRole(entry.role) ? entry.role : 'user';
+    if (role !== entry.role) {
+      changed = true;
+    }
+
+    const content = typeof entry.content === 'string'
+      ? entry.content
+      : String(entry.content ?? '');
+    if (content !== entry.content) {
+      changed = true;
+    }
+
+    return {
+      id,
+      role,
+      content,
+      timestamp,
+    };
+  });
+
+  return { messages, changed };
+};
+
+const normalizeChatRecord = (
+  source: Partial<AiChatRecord>,
+  tool: AiChatTool
+): { chat: AiChatRecord; changed: boolean } => {
+  const now = Date.now();
+  let changed = false;
+
+  const id = typeof source.id === 'string' && source.id.length > 0
+    ? source.id
+    : generateId();
+  if (id !== source.id) {
+    changed = true;
+  }
+
+  const createdAt = isValidTimestamp(source.createdAt) ? source.createdAt : now;
+  if (!isValidTimestamp(source.createdAt)) {
+    changed = true;
+  }
+
+  const toolValue = typeof source.tool === 'string' && source.tool.length > 0
+    ? source.tool
+    : tool;
+  if (toolValue !== source.tool) {
+    changed = true;
+  }
+
+  const normalizedMessages = normalizeMessages(source.messages, createdAt);
+  changed = changed || normalizedMessages.changed;
+
+  const lastMessageTimestamp = normalizedMessages.messages[normalizedMessages.messages.length - 1]?.timestamp ?? createdAt;
+
+  let updatedAt = isValidTimestamp(source.updatedAt) ? source.updatedAt : Math.max(createdAt, lastMessageTimestamp);
+  if (!isValidTimestamp(source.updatedAt)) {
+    changed = true;
+  }
+  if (updatedAt < lastMessageTimestamp) {
+    updatedAt = lastMessageTimestamp;
+    changed = true;
+  }
+
+  const title = typeof source.title === 'string' && source.title.trim().length > 0
+    ? source.title.trim()
+    : 'New chat';
+  if (title !== source.title) {
+    changed = true;
+  }
+
+  return {
+    chat: {
+      id,
+      tool: toolValue,
+      title,
+      createdAt,
+      updatedAt,
+      messages: normalizedMessages.messages,
+    },
+    changed,
+  };
+};
+
 export function useAiChats(tool: AiChatTool) {
   const chats = ref<AiChatRecord[]>([]);
   const activeChatId = ref<string | null>(null);
@@ -155,15 +274,22 @@ export function useAiChats(tool: AiChatTool) {
 
   const loadChats = async () => {
     const records = await getChatsByTool(tool);
-    chats.value = records;
+    const normalized = records.map((record) => normalizeChatRecord(record, tool));
+    chats.value = normalized.map((item) => cloneChat(item.chat));
+
+    await Promise.all(
+      normalized
+        .filter((item) => item.changed)
+        .map((item) => putChat(item.chat))
+    );
 
     const key = getActiveChatStorageKey(tool);
     const preferred = typeof localStorage === 'undefined' ? null : localStorage.getItem(key);
 
-    if (preferred && records.some((chat) => chat.id === preferred)) {
+    if (preferred && chats.value.some((chat) => chat.id === preferred)) {
       activeChatId.value = preferred;
     } else {
-      activeChatId.value = records[0]?.id ?? null;
+      activeChatId.value = chats.value[0]?.id ?? null;
     }
 
     loaded.value = true;
@@ -171,13 +297,14 @@ export function useAiChats(tool: AiChatTool) {
 
   const createChat = async (title = 'New chat', initialMessages: AiChatMessage[] = []) => {
     const now = Date.now();
+    const normalizedMessages = normalizeMessages(initialMessages, now).messages;
     const record: AiChatRecord = {
       id: generateId(),
       tool,
       title,
       createdAt: now,
       updatedAt: now,
-      messages: initialMessages.map(cloneMessage)
+      messages: normalizedMessages,
     };
 
     chats.value = [record, ...chats.value];
@@ -200,17 +327,18 @@ export function useAiChats(tool: AiChatTool) {
   };
 
   const upsertChat = async (chat: AiChatRecord) => {
+    const normalized = normalizeChatRecord(chat, tool).chat;
     const current = chats.value.find((item) => item.id === chat.id);
     if (current) {
       chats.value = chats.value.map((item) => {
-        if (item.id !== chat.id) return item;
-        return cloneChat(chat);
+        if (item.id !== normalized.id) return item;
+        return cloneChat(normalized);
       });
     } else {
-      chats.value = [cloneChat(chat), ...chats.value];
+      chats.value = [cloneChat(normalized), ...chats.value];
     }
 
-    await putChat(chat);
+    await putChat(normalized);
   };
 
   const renameChat = async (chatId: string, title: string) => {
@@ -233,9 +361,10 @@ export function useAiChats(tool: AiChatTool) {
     const target = chats.value.find((chat) => chat.id === chatId);
     if (!target) return;
 
+    const normalizedMessages = normalizeMessages(messages, target.createdAt).messages;
     const next: AiChatRecord = {
       ...target,
-      messages: messages.map(cloneMessage),
+      messages: normalizedMessages,
       updatedAt: Date.now()
     };
 
