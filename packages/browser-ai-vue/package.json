@@ -34,12 +34,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.3",
-    "vue-tsc": "^3.1.8",
-    "vue": "^3.5.26"
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vue-tsc": "^3.2.7",
+    "vue": "^3.5.33"
   },
   "dependencies": {
-    "@types/dom-chromium-ai": "^0.0.13"
+    "@types/dom-chromium-ai": "^0.0.16"
   },
   "peerDependencies": {
     "vue": "^3.4.33"
