@@ -1,11 +1,10 @@
-import { defineNuxtModule, createResolver, isNuxtMajorVersion, addPlugin, addImports, addComponent } from '@nuxt/kit';
+import { defineNuxtModule, createResolver, addImports, addComponent } from '@nuxt/kit';
 import type { NuxtModule } from '@nuxt/schema';
 import { fileURLToPath } from 'url';
 
 export interface ModuleOptions {
   css?: boolean; // Whether to include default CSS, default true
   component?: boolean; // Whether to register the component, default true
-  directive?: boolean; // Whether to register the directive, default true
   helpers?: boolean; // Whether to register shared helpers and types, default true
 }
 
@@ -19,7 +18,6 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
   defaults: {
     css: true,
     component: true,
-    directive: true,
     helpers: true
   },
   async setup(options, nuxt) {
@@ -33,39 +31,49 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
       references.push({ types: '@desource/browser-ai-nuxt' });
     });
 
-    // Add runtime plugin before the router plugin
-    // https://github.com/nuxt/framework/issues/9130
-    nuxt.hook('modules:done', () => {
-      if (!isNuxtMajorVersion(2, nuxt) && options.directive) {
-        addPlugin(resolve(runtimeDir, 'plugin.browser-ai'));
-      }
-    });
     // Add imports
     if (options.helpers) {
       const shared = resolve(runtimeDir, 'shared');
       addImports([
+        { name: 'useAiChats', from: shared },
         { name: 'usePromptApi', from: shared },
+        { name: 'AiChatMessage', from: shared, type: true },
+        { name: 'AiChatRecord', from: shared, type: true },
+        { name: 'AiChatTool', from: shared, type: true },
+        { name: 'ChatAttachment', from: shared, type: true },
+        { name: 'ChatMessage', from: shared, type: true },
+        { name: 'ChatSidebarItem', from: shared, type: true },
         { name: 'LLMAvailability', from: shared, type: true },
+        { name: 'LLMCreateOptions', from: shared, type: true },
         { name: 'LLMCreateCoreOptions', from: shared, type: true },
         { name: 'LLMProcessingState', from: shared, type: true },
         { name: 'LLMPrompt', from: shared, type: true },
         { name: 'LLMPromptOptions', from: shared, type: true },
+        { name: 'PromptAttachment', from: shared, type: true },
         { name: 'UsePromptApiOptions', from: shared, type: true }
       ]);
     }
-    // // Add component
-    // if (options.component) {
-    //   const componentDir = resolve(runtimeDir, 'component');
-    //   addComponent({
-    //     name: 'tbd',
-    //     filePath: componentDir,
-    //     mode: 'client'
-    //   });
-    // }
-    // // Add CSS
-    // if (options.css) {
-    //   nuxt.options.css.unshift('@desource/browser-ai-vue/assets/lib.css');
-    // }
+
+    if (options.component) {
+      [
+        ['PromptApi', 'PromptApi'],
+        ['BrowserAiPromptApi', 'PromptApi'],
+        ['BrowserAiChatHistory', 'ChatHistory'],
+        ['BrowserAiChatSidebar', 'ChatSidebar'],
+        ['BrowserAiPromptInput', 'PromptInput'],
+      ].forEach(([name, exportName]) => {
+        addComponent({
+          name,
+          export: exportName,
+          filePath: '@desource/browser-ai-vue',
+          mode: 'client'
+        });
+      });
+    }
+
+    if (options.css) {
+      nuxt.options.css.unshift('@desource/browser-ai-vue/assets/lib.css');
+    }
   }
 });
 

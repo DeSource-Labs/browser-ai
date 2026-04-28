@@ -43,6 +43,7 @@
         :placeholder="placeholder"
         :send-on-enter="sendOnEnter"
         :allow-attachments="allowAttachments"
+        :allow-voice="allowVoice"
         :accept="accept"
         :max-attachments="maxAttachments"
         :disabled="isInputDisabled"
@@ -97,10 +98,16 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import ChatHistory from './ChatHistory.vue';
+import PromptInput from './PromptInput.vue';
+import ChatSidebar from './ChatSidebar.vue';
 import type { ChatMessage } from './ChatHistory.vue';
 import type { PromptAttachment } from './PromptInput.vue';
 import type { ChatSidebarItem } from './ChatSidebar.vue';
 import type { AiChatMessage, AiChatRecord } from '../composables/useAiChats';
+import { useAiChats } from '../composables/useAiChats';
+import { usePromptApi } from '../composables/usePromptApi';
 
 type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
 type PromptProcessingState = 'availability' | 'create' | 'measure' | 'prompt' | '';
@@ -126,6 +133,7 @@ interface Props {
   placeholder?: string;
   sendOnEnter?: boolean;
   allowAttachments?: boolean;
+  allowVoice?: boolean;
   accept?: string;
   maxAttachments?: number;
   clearOnSend?: boolean;
@@ -146,7 +154,8 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   placeholder: 'Ask the assistant... ',
   sendOnEnter: true,
-  allowAttachments: true,
+  allowAttachments: false,
+  allowVoice: false,
   accept: 'image/*',
   maxAttachments: undefined,
   clearOnSend: true,
@@ -165,9 +174,17 @@ const emit = defineEmits<{
   'ready-change': [ready: boolean];
   'processing-change': [state: PromptProcessingState];
   'download-progress': [progress: number];
+  'context-overflow': [];
   'quota-overflow': [];
-  'usage-change': [usage: { inputUsage: number | null; inputQuota: number | null }];
+  'usage-change': [usage: {
+    contextUsage: number | null;
+    contextWindow: number | null;
+    contextWindowAvailable: number | null;
+    inputUsage: number | null;
+    inputQuota: number | null;
+  }];
   send: [payload: { text: string; attachments: PromptAttachment[] }];
+  voice: [];
   'prompt-start': [payload: { streaming: boolean; input: LanguageModelPrompt }];
   'stream-chunk': [payload: { chunk: string; accumulated: string }];
   'prompt-complete': [payload: { response: string; streaming: boolean }];
@@ -209,17 +226,18 @@ const {
   dispose,
   prompt,
   promptStreaming,
-  append,
-  measureInputUsage,
+  measureContextUsage,
   isReady,
   processing,
   downloadProgress,
-  inputUsage,
-  inputQuota,
+  contextUsage,
+  contextWindow,
+  contextWindowAvailable,
   interrupt: interruptOperation,
 } = usePromptApi({
-  onQuotaOverflow: () => {
+  onContextOverflow: () => {
     showOverflowDialog.value = true;
+    emit('context-overflow');
     emit('quota-overflow');
   }
 });
@@ -227,7 +245,11 @@ const {
 const isTyping = computed(() => processing.value === 'prompt' && !isHydrating.value);
 const isSidebarDisabled = computed(() => props.disabled || isTyping.value || isSwitchingChat.value || isHydrating.value);
 const isInputDisabled = computed(() => {
-  return props.disabled || !isReady.value || isSwitchingChat.value || isHydrating.value;
+  return props.disabled
+    || isSwitchingChat.value
+    || isHydrating.value
+    || processing.value === 'create'
+    || availability.value === 'unavailable';
 });
 
 const activeChatId = computed(() => chatStore.activeChatId.value);
@@ -238,12 +260,11 @@ const pendingDeleteChat = computed(() => {
 });
 
 const tokensUsedLabel = computed(() => {
-  return inputUsage.value ?? 0;
+  return contextUsage.value ?? 0;
 });
 
 const tokensLeftLabel = computed(() => {
-  if (inputQuota.value == null || inputUsage.value == null) return '—';
-  return Math.max(inputQuota.value - inputUsage.value, 0);
+  return contextWindowAvailable.value ?? '—';
 });
 
 const chatItems = computed<ChatSidebarItem[]>(() => {
@@ -297,16 +318,72 @@ const resolveErrorMessage = (error: unknown) => {
   return 'Something went wrong while sending your message.';
 };
 
-const buildPromptInput = (userContent: string): LanguageModelPrompt => {
-  if (!props.systemPrompt.trim()) {
+const getLanguageModel = () => {
+  return (globalThis as typeof globalThis & { LanguageModel?: typeof LanguageModel }).LanguageModel;
+};
+
+const hasExpectedInputType = (
+  expectedInputs: LanguageModelCreateCoreOptions['expectedInputs'],
+  type: LanguageModelMessageType
+) => {
+  return expectedInputs?.some((item) => item.type === type) ?? false;
+};
+
+const resolveModelOptions = (): LanguageModelCreateCoreOptions => {
+  const options: LanguageModelCreateCoreOptions = {
+    ...(props.modelOptions ?? {})
+  };
+
+  if (props.allowAttachments && !hasExpectedInputType(options.expectedInputs, 'image')) {
+    options.expectedInputs = [
+      ...(options.expectedInputs ?? [{ type: 'text' }]),
+      { type: 'image' }
+    ];
+  }
+
+  return options;
+};
+
+const buildPromptInput = async (
+  userContent: string,
+  selectedAttachments: PromptAttachment[]
+): Promise<LanguageModelPrompt> => {
+  if (!selectedAttachments.length) {
     return userContent;
   }
 
-  return `System instructions:\n${props.systemPrompt.trim()}\n\nUser:\n${userContent}`;
+  const content: LanguageModelMessageContent[] = [
+    {
+      type: 'text',
+      value: userContent || 'Describe the attached image.'
+    },
+    ...selectedAttachments
+      .filter((attachment) => attachment.type.startsWith('image/'))
+      .map((attachment) => ({
+        type: 'image' as const,
+        value: attachment.file
+      }))
+  ];
+
+  return [
+    {
+      role: 'user',
+      content
+    }
+  ];
 };
 
 const cloneAttachments = (items: PromptAttachment[]) => {
   return items.map((item) => ({ ...item }));
+};
+
+const createMessageAttachments = (items: PromptAttachment[]): ChatMessage['attachments'] => {
+  return items.map((item) => ({
+    id: generateMessageId(),
+    url: URL.createObjectURL(item.file),
+    name: item.name,
+    type: item.type
+  }));
 };
 
 const applyMessageLimit = (next: ChatMessage[]) => {
@@ -423,11 +500,7 @@ const clearConversation = () => {
 const runInit = async () => {
   emit('init-start');
   try {
-    if (props.modelOptions) {
-      await init(props.modelOptions);
-    } else {
-      await init();
-    }
+    await init(resolveModelOptions());
     emit('init-complete');
   } catch (error) {
     emit('error', error);
@@ -435,10 +508,10 @@ const runInit = async () => {
   }
 };
 
-const runCreate = async () => {
+const runCreate = async (createOptions: { initialPrompts?: LanguageModelCreateOptions['initialPrompts'] } = {}) => {
   emit('create-start');
   try {
-    await create();
+    await create(createOptions);
     emit('create-complete');
   } catch (error) {
     emit('error', error);
@@ -446,14 +519,42 @@ const runCreate = async () => {
   }
 };
 
-const pickMessagesForHydration = async (history: LanguageModelMessage[]) => {
-  const quota = inputQuota.value;
-  const budget = quota ? Math.floor(quota * 0.88) : null;
+const buildInitialPrompts = (historyMessages: ChatMessage[]) => {
+  const initialPrompts: Array<LanguageModelSystemMessage | LanguageModelMessage> = [];
+  const systemPrompt = props.systemPrompt.trim();
+
+  if (systemPrompt) {
+    initialPrompts.push({
+      role: 'system',
+      content: systemPrompt
+    });
+  }
+
+  historyMessages
+    .filter((message) => message.content.trim().length > 0)
+    .forEach((message) => {
+      initialPrompts.push({
+        role: message.role,
+        content: message.content
+      });
+    });
+
+  return initialPrompts;
+};
+
+const pickMessagesForHydration = async (history: Array<LanguageModelSystemMessage | LanguageModelMessage>) => {
+  const leadingSystemMessage = history[0]?.role === 'system'
+    ? history[0] as LanguageModelSystemMessage
+    : null;
+  const conversationHistory = leadingSystemMessage
+    ? history.slice(1) as LanguageModelMessage[]
+    : history as LanguageModelMessage[];
+  const budget = contextWindow.value ? Math.floor(contextWindow.value * 0.88) : null;
 
   let selected: LanguageModelMessage[] = [];
 
-  for (let index = history.length - 1; index >= 0; index -= 1) {
-    const candidate = [history[index], ...selected] as LanguageModelMessage[];
+  for (let index = conversationHistory.length - 1; index >= 0; index -= 1) {
+    const candidate = [conversationHistory[index], ...selected] as LanguageModelMessage[];
 
     if (!budget) {
       selected = candidate;
@@ -461,7 +562,7 @@ const pickMessagesForHydration = async (history: LanguageModelMessage[]) => {
     }
 
     try {
-      const usage = await measureInputUsage(candidate);
+      const usage = await measureContextUsage(candidate);
       if (usage <= budget || selected.length === 0) {
         selected = candidate;
       } else {
@@ -472,35 +573,52 @@ const pickMessagesForHydration = async (history: LanguageModelMessage[]) => {
     }
   }
 
-  return selected;
+  return leadingSystemMessage ? [leadingSystemMessage, ...selected] : selected;
 };
 
-const hydrateSessionFromMessages = async (historyMessages: ChatMessage[], currentSwitchVersion: number) => {
-  const mapped = historyMessages
-    .filter((message) => message.content.trim().length > 0)
-    .map((message) => ({
-      role: message.role,
-      content: message.content
-    })) as LanguageModelMessage[];
-
-  if (mapped.length === 0) {
-    contextPartiallyLoaded.value = false;
-    return;
-  }
-
+const createSessionFromMessages = async (
+  historyMessages: ChatMessage[],
+  currentSwitchVersion: number,
+  allowDownloadCreate = false
+) => {
   isHydrating.value = true;
 
   try {
-    const selected = await pickMessagesForHydration(mapped);
-    if (currentSwitchVersion !== switchVersion) return;
+    await runInit();
+    if (currentSwitchVersion !== switchVersion) return false;
 
-    if (selected.length > 0) {
-      await append(selected);
+    if (!props.autoCreate && !allowDownloadCreate) {
+      return false;
     }
 
-    contextPartiallyLoaded.value = selected.length < mapped.length;
+    if (availability.value !== 'available' && !allowDownloadCreate) {
+      return false;
+    }
+
+    const allInitialPrompts = buildInitialPrompts(historyMessages);
+    if (allInitialPrompts.length === 0) {
+      await runCreate();
+      contextPartiallyLoaded.value = false;
+      return true;
+    }
+
+    await runCreate();
+    if (currentSwitchVersion !== switchVersion) return false;
+
+    const selected = await pickMessagesForHydration(allInitialPrompts);
+    if (currentSwitchVersion !== switchVersion) return;
+
+    await runCreate({
+      initialPrompts: selected as LanguageModelCreateOptions['initialPrompts']
+    });
+
+    const selectedConversationCount = selected.filter((message) => message.role !== 'system').length;
+    const fullConversationCount = allInitialPrompts.filter((message) => message.role !== 'system').length;
+    contextPartiallyLoaded.value = selectedConversationCount < fullConversationCount;
+    return true;
   } catch (error) {
     emit('error', error);
+    return false;
   } finally {
     if (currentSwitchVersion === switchVersion) {
       isHydrating.value = false;
@@ -530,13 +648,9 @@ const switchToChat = async (chatId: string) => {
   setMessages(fromStoredMessages(target.messages), { persist: false });
 
   try {
-    await runInit();
-    if (currentSwitchVersion !== switchVersion) return;
-
-    await runCreate();
-    if (currentSwitchVersion !== switchVersion) return;
-
-    await hydrateSessionFromMessages(messages.value, currentSwitchVersion);
+    if (props.autoInit) {
+      await createSessionFromMessages(messages.value, currentSwitchVersion);
+    }
   } catch {
     // Errors are already emitted
   } finally {
@@ -547,8 +661,22 @@ const switchToChat = async (chatId: string) => {
 };
 
 const createAndSwitchChat = async () => {
-  const created = await chatStore.createChat(DEFAULT_CHAT_TITLE);
-  await switchToChat(created.id);
+  switchVersion += 1;
+  const currentSwitchVersion = switchVersion;
+
+  if (processing.value === 'prompt') {
+    interruptPrompt();
+  }
+
+  chatStore.clearActiveChat();
+  draft.value = '';
+  attachments.value = [];
+  contextPartiallyLoaded.value = false;
+  setMessages(props.initialMessages, { persist: false });
+
+  if (props.autoInit) {
+    await createSessionFromMessages(messages.value, currentSwitchVersion);
+  }
 };
 
 const handleSelectChat = async (chatId: string) => {
@@ -649,6 +777,7 @@ const fallbackTitleFromPrompt = (input: string) => {
 
 const generateChatTitle = async (firstPrompt: string) => {
   const fallback = fallbackTitleFromPrompt(firstPrompt);
+  const LanguageModel = getLanguageModel();
 
   if (typeof LanguageModel?.availability !== 'function' || typeof LanguageModel?.create !== 'function') {
     return fallback;
@@ -666,12 +795,8 @@ const generateChatTitle = async (firstPrompt: string) => {
       const title = await titleSession.prompt(
         [
           {
-            role: 'assistant',
-            content: 'Create a concise chat title in the same language as the input. Use 4 to 6 words. Return only the title text.'
-          },
-          {
             role: 'user',
-            content: firstPrompt
+            content: `Create a concise chat title in the same language as the input. Use 4 to 6 words. Return only the title text.\n\n${firstPrompt}`
           }
         ]
       );
@@ -728,22 +853,25 @@ const handleSend = async () => {
   const text = draft.value.trim();
   if (!text && attachments.value.length === 0) return;
 
-  const activeChatId = chatStore.activeChatId.value;
-  if (!activeChatId) {
-    await createAndSwitchChat();
-  }
-
-  const currentChatId = chatStore.activeChatId.value;
-  if (!currentChatId) return;
-
+  const historyBeforeSend = messages.value.map((message) => ({ ...message }));
   const selectedAttachments = cloneAttachments(attachments.value);
   emit('send', { text, attachments: selectedAttachments });
+
+  let currentChatId = chatStore.activeChatId.value;
+  if (!currentChatId) {
+    const created = await chatStore.createChat(
+      DEFAULT_CHAT_TITLE,
+      toStoredMessages(historyBeforeSend)
+    );
+    currentChatId = created.id;
+  }
 
   const userMessage: ChatMessage = {
     id: generateMessageId(),
     role: 'user',
     content: text || 'Describe the attached image.',
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    attachments: createMessageAttachments(selectedAttachments)
   };
 
   addMessage(userMessage, { chatId: currentChatId });
@@ -759,18 +887,21 @@ const handleSend = async () => {
   }
 
   if (!isReady.value) {
-    addMessage({
-      id: generateMessageId(),
-      role: 'assistant',
-      content: props.notReadyMessage,
-      timestamp: Date.now()
-    }, {
-      persist: false
-    });
-    return;
+    const ready = await createSessionFromMessages(historyBeforeSend, switchVersion, true);
+    if (!ready || !isReady.value) {
+      addMessage({
+        id: generateMessageId(),
+        role: 'assistant',
+        content: props.notReadyMessage,
+        timestamp: Date.now()
+      }, {
+        persist: false
+      });
+      return;
+    }
   }
 
-  const input = buildPromptInput(userMessage.content);
+  const input = await buildPromptInput(userMessage.content, selectedAttachments);
   const options = resolvePromptOptions(text, selectedAttachments);
   emit('prompt-start', {
     streaming: props.streaming,
@@ -862,14 +993,7 @@ const handleSend = async () => {
 };
 
 const handleVoice = () => {
-  addMessage({
-    id: generateMessageId(),
-    role: 'assistant',
-    content: 'Voice input is not wired yet, but the UI is ready.',
-    timestamp: Date.now()
-  }, {
-    persist: false
-  });
+  emit('voice');
 };
 
 const handleRenameChat = async (chatId: string) => {
@@ -919,10 +1043,13 @@ watch(downloadProgress, (value) => {
   emit('download-progress', value);
 }, { immediate: true });
 
-watch([inputUsage, inputQuota], ([usage, quota]) => {
+watch([contextUsage, contextWindow, contextWindowAvailable], ([usage, window, available]) => {
   emit('usage-change', {
+    contextUsage: usage,
+    contextWindow: window,
+    contextWindowAvailable: available,
     inputUsage: usage,
-    inputQuota: quota
+    inputQuota: window
   });
 }, { immediate: true });
 
@@ -931,15 +1058,18 @@ onMounted(async () => {
 
   await chatStore.loadChats();
 
-  let targetChat = chatStore.activeChat.value;
-  if (!targetChat) {
-    targetChat = await chatStore.createChat(
-      DEFAULT_CHAT_TITLE,
-      toStoredMessages(props.initialMessages)
-    );
+  const targetChat = chatStore.activeChat.value;
+  if (targetChat) {
+    await switchToChat(targetChat.id);
+    return;
   }
 
-  await switchToChat(targetChat.id);
+  chatStore.clearActiveChat();
+  setMessages(props.initialMessages, { persist: false });
+
+  if (props.autoInit) {
+    await createSessionFromMessages(messages.value, switchVersion);
+  }
 });
 
 onBeforeUnmount(() => {
@@ -958,6 +1088,10 @@ onBeforeUnmount(() => {
     persistPayload = null;
     void chatStore.updateMessages(payload.chatId, toStoredMessages(payload.messages));
   }
+
+  messages.value.forEach((message) => {
+    message.attachments?.forEach((attachment) => URL.revokeObjectURL(attachment.url));
+  });
 
   if (!props.disposeOnUnmount) {
     return;
@@ -982,7 +1116,7 @@ defineExpose({
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .prompt-api {
   flex: 1;
   min-height: 0;

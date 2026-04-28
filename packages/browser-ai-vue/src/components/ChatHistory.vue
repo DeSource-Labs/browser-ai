@@ -56,6 +56,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+
 export type ChatAttachment = {
   id: string;
   url: string;
@@ -165,7 +167,7 @@ const formatTime = (timestamp?: number) => {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .chat-history {
   flex: 1;
   display: flex;
@@ -183,25 +185,26 @@ const formatTime = (timestamp?: number) => {
   scrollbar-width: thin;
   scrollbar-color: rgba(120, 120, 120, 0.5) transparent;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
+}
 
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.chat-history::-webkit-scrollbar {
+  width: 8px;
+}
 
-  &::-webkit-scrollbar-thumb {
-    background: rgba(120, 120, 120, 0.4);
-    border-radius: 4px;
-    border: 2px solid transparent;
-    background-clip: content-box;
+.chat-history::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-    &:hover {
-      background: rgba(120, 120, 120, 0.6);
-      background-clip: content-box;
-    }
-  }
+.chat-history::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.4);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.chat-history::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 120, 0.6);
+  background-clip: content-box;
 }
 
 .chat-history__empty {
@@ -245,13 +248,13 @@ const formatTime = (timestamp?: number) => {
   overflow: hidden;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  img {
-    width: 100%;
-    height: 80px;
-    object-fit: cover;
-    display: block;
-  }
+.chat-message__attachment img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
 }
 
 .chat-message__file {

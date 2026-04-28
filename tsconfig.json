@@ -15,7 +15,6 @@
     "outDir": "dist"
   },
   "references": [
-    { "path": "./packages/browser-ai" },
     { "path": "./packages/browser-ai-vue" },
     { "path": "./packages/browser-ai-nuxt" }
   ],

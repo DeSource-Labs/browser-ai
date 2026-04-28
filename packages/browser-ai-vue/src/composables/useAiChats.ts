@@ -1,3 +1,5 @@
+import { computed, ref } from 'vue';
+
 export type AiChatTool = string;
 
 export interface AiChatMessage {
@@ -16,7 +18,7 @@ export interface AiChatRecord {
   messages: AiChatMessage[];
 }
 
-const DB_NAME = 'browser-ai-demo';
+const DB_NAME = 'browser-ai';
 const DB_VERSION = 1;
 const CHATS_STORE = 'chats';
 
@@ -321,6 +323,10 @@ export function useAiChats(tool: AiChatTool) {
     setActiveChat(chatId);
   };
 
+  const clearActiveChat = () => {
+    setActiveChat(null);
+  };
+
   const getChatById = (chatId: string) => {
     const target = chats.value.find((chat) => chat.id === chatId);
     return target ? cloneChat(target) : null;
@@ -398,6 +404,7 @@ export function useAiChats(tool: AiChatTool) {
     loadChats,
     createChat,
     selectChat,
+    clearActiveChat,
     renameChat,
     updateMessages,
     deleteChat,

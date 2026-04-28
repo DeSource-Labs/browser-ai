@@ -3,7 +3,7 @@ import { defineNuxtPlugin, type Plugin } from '#app';
 
 const plugin: Plugin = defineNuxtPlugin({
   name: 'browser-ai',
-  setup(nuxtApp) {
+  setup() {
     // nuxtApp.vueApp.directive('browser-ai', tbd);
   }
 });

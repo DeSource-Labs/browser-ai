@@ -86,7 +86,7 @@ const formatTime = (timestamp: number) => {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .chat-sidebar {
   width: 250px;
   min-width: 250px;

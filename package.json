@@ -9,7 +9,7 @@
   "scripts": {
     "build": "pnpm -w -r --filter \"./packages/**\" --stream run build",
     "clean": "pnpm -w -r --filter \"./packages/**\" --stream run clean",
-    "dev:demo": "pnpm --filter demo dev",
+    "dev:demo": "pnpm build && pnpm --filter demo dev",
     "dev:prepare": "pnpm --filter demo deps:prepare",
     "build:demo": "pnpm --filter demo build",
     "vercel-build": "pnpm clean && pnpm build && pnpm dev:prepare && pnpm build:demo",

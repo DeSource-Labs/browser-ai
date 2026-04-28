@@ -1,17 +1,33 @@
-import { readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { readdirSync, readFileSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dtsPath = join(__dirname, '../dist/types/composables/usePromptApi.d.ts');
-
-// Read the generated declaration file
-let content = readFileSync(dtsPath, 'utf-8');
-
-// Prepend the triple-slash reference if not already present
+const typesDir = join(__dirname, '../dist/types');
 const reference = '/// <reference types="@types/dom-chromium-ai" />\n';
-if (!content.startsWith(reference)) {
+const chromiumAiTypeNames = [
+  'Availability',
+  'LanguageModel',
+  'LanguageModelCreate',
+  'LanguageModelMessage',
+  'LanguageModelPrompt',
+  'LanguageModelSystemMessage',
+];
+
+const walk = (dir) => {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    return entry.isDirectory() ? walk(path) : [path];
+  });
+};
+
+for (const path of walk(typesDir)) {
+  if (!path.endsWith('.d.ts')) continue;
+
+  let content = readFileSync(path, 'utf-8');
+  if (content.startsWith(reference)) continue;
+  if (!chromiumAiTypeNames.some((typeName) => content.includes(typeName))) continue;
+
   content = reference + content;
-  writeFileSync(dtsPath, content, 'utf-8');
-  console.log('✓ Added @types/dom-chromium-ai reference to usePromptApi.d.ts');
+  writeFileSync(path, content, 'utf-8');
 }

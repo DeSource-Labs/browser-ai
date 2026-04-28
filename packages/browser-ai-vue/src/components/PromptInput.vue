@@ -13,13 +13,27 @@
     </div>
 
     <div class="prompt-input__row">
-      <button type="button" class="prompt-input__icon" :disabled="disabled" @click="handleVoice">
+      <button
+        v-if="allowVoice"
+        type="button"
+        class="prompt-input__icon"
+        :disabled="disabled"
+        aria-label="Start voice input"
+        @click="handleVoice"
+      >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3Zm-5 8a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.92V21h-2v-3.08A7 7 0 0 1 5 11h2Z" fill="currentColor" />
         </svg>
       </button>
 
-      <button v-if="allowAttachments" type="button" class="prompt-input__icon" :disabled="disabled" @click="triggerFile">
+      <button
+        v-if="allowAttachments"
+        type="button"
+        class="prompt-input__icon"
+        :disabled="disabled"
+        aria-label="Attach files"
+        @click="triggerFile"
+      >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M7.5 6.5A4.5 4.5 0 0 1 12 2h5a1 1 0 0 1 1 1v5.5a4.5 4.5 0 0 1-9 0V6.5Zm4.5 12a6.5 6.5 0 0 0 6.5-6.5V5h-5a2.5 2.5 0 0 0-2.5 2.5V10a6.5 6.5 0 0 0 1 8.5Zm-7 1.5a1 1 0 0 1-1-1v-4a6.5 6.5 0 0 1 6.5-6.5h1a1 1 0 1 1 0 2h-1A4.5 4.5 0 0 0 6 15v4a1 1 0 0 1-1 1Z" fill="currentColor" />
         </svg>
@@ -46,7 +60,13 @@
         @keydown="onKeydown"
       ></textarea>
 
-      <button type="button" class="prompt-input__send" :disabled="disabled || busy || !canSend" @click="emitSend">
+      <button
+        type="button"
+        class="prompt-input__send"
+        :disabled="disabled || busy || !canSend"
+        aria-label="Send prompt"
+        @click="emitSend"
+      >
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
           <path d="M4 12 20 4l-4 16-5-6-7-2Z" fill="currentColor" />
         </svg>
@@ -56,6 +76,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+
 export type PromptAttachment = {
   id: string;
   file: File;
@@ -72,6 +94,7 @@ interface Props {
   busy?: boolean;
   sendOnEnter?: boolean;
   allowAttachments?: boolean;
+  allowVoice?: boolean;
   accept?: string;
   maxAttachments?: number;
 }
@@ -81,7 +104,8 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   busy: false,
   sendOnEnter: true,
-  allowAttachments: true,
+  allowAttachments: false,
+  allowVoice: false,
   accept: 'image/*',
   maxAttachments: undefined
 });
@@ -176,7 +200,7 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .prompt-input {
   flex-shrink: 0;
   display: flex;
@@ -204,13 +228,13 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+.prompt-input__attachment img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .prompt-input__file {

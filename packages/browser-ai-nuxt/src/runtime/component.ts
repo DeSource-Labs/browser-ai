@@ -1,3 +1,1 @@
-// import { tbd } from '@desource/browser-ai-vue';
-
-// export default tbd;
+export { PromptApi as default } from '@desource/browser-ai-vue';

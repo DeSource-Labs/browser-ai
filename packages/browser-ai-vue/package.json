@@ -29,9 +29,9 @@
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "build": "pnpm build-lib && pnpm build-types && pnpm postbuild",
     "build-lib": "vite build",
-    "build-types": "vue-tsc --emitDeclarationOnly --declaration -p tsconfig.json",
+    "build-types": "rimraf dist/types tsconfig.tsbuildinfo && vue-tsc --emitDeclarationOnly --declaration -p tsconfig.json",
     "postbuild": "node scripts/fix-dts.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.6",

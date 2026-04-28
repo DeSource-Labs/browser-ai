@@ -1,4 +1,4 @@
-import type { SocialMediaItem, SocialMediaKey, LibItem, Library, Tool, ToolItem } from '../types';
+import type { SocialMediaItem, SocialMediaKey, LibItem, Library, ToolItem } from '../types';
 
 export const socialMedia = {
   email: 'mailto:hello@desource-labs.org',

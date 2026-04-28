@@ -42,8 +42,6 @@
           <PromptApi
             v-if="selected === 'prompt-api'"
             @availability-change="handleAvailabilityChange"
-            @ready-change="handleReadyChange"
-            @processing-change="handleProcessingChange"
           />
         </div>
       </div>
@@ -59,15 +57,6 @@ const availability = ref<Availability>('unavailable');
 
 const handleAvailabilityChange = (value: Availability) => {
   availability.value = value;
-  console.log('Prompt API availability changed to:', value);
-};
-
-const handleReadyChange = (value: boolean) => {
-  console.log('Prompt API is ready:', value);
-};
-
-const handleProcessingChange = (value: 'availability' | 'create' | 'measure' | 'prompt' | '') => {
-  console.log('Prompt API is processing:', value);
 };
 </script>
 
