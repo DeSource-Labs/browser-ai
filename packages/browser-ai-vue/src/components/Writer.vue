@@ -738,6 +738,7 @@ onBeforeUnmount(() => {
   min-height: 0;
   overflow: auto;
   padding: 0.85rem;
+  user-select: text;
 }
 
 .writer__output pre,
