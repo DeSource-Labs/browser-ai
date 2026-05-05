@@ -1,6 +1,6 @@
 # browser-ai-kit
 
-Vue and Nuxt helpers for Chrome built-in AI APIs, starting with Prompt API, Summarizer API, Writer API, and Rewriter API powered by Gemini Nano in the browser.
+Vue and Nuxt helpers for Chrome built-in AI APIs, starting with Prompt API, Summarizer API, Writer API, Rewriter API, and Translator API powered by local Chrome AI models.
 
 ## Status
 
@@ -41,6 +41,15 @@ The Rewriter implementation targets the current `Rewriter` API:
 - `rewriter.inputQuota`
 - `tone`, `format`, `length`, language, shared context, and per-run context options
 
+The Translator implementation targets the current `Translator` API:
+
+- `Translator.availability()`
+- `Translator.create({ sourceLanguage, targetLanguage })`
+- `translator.translate()` and `translator.translateStreaming()`
+- `translator.measureInputUsage()`
+- `translator.inputQuota`
+- BCP 47 source/target language pair options
+
 ## Packages
 
 - `@desource/browser-ai-vue`: Vue components and composables.
@@ -54,8 +63,33 @@ Use a desktop Chrome build with the built-in AI flags enabled. For localhost dev
 - `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`
 - `chrome://flags/#writer-api-for-gemini-nano`
 - `chrome://flags/#rewriter-api-for-gemini-nano`
+- `chrome://flags/#translation-api`
 
-The API is available only in supported Chrome desktop environments and only when Gemini Nano is available for the current profile/device.
+Prompt API, Summarizer, Writer, and Rewriter require Gemini Nano to be available for the current Chrome profile/device. Translator uses Chrome's on-device translation language packs instead of the Gemini Nano model lifecycle.
+
+## Chrome Model Management
+
+Chrome owns the storage, update, and deletion lifecycle for built-in AI models. Browser AI Kit cannot list installed models, pin models, uninstall models, or read model file paths from JavaScript. Use the Chrome internal pages below while debugging a local profile.
+
+| API | Chrome resource | Inspect or manage in Chrome | Install trigger | Uninstall / purge behavior |
+| --- | --- | --- | --- | --- |
+| Prompt API | Gemini Nano base model | `chrome://on-device-internals` for model/debug state and event logs | `LanguageModel.create()` from a meaningful user interaction when `LanguageModel.availability()` is `downloadable` | No documented per-API uninstall. Chrome can purge the shared model automatically under storage pressure, policy changes, or eligibility changes. Disabling the related flags/policies or using a fresh Chrome profile prevents reuse. |
+| Summarizer | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals` | `Summarizer.create()` from a user interaction when `Summarizer.availability()` is `downloadable` | Same shared Gemini Nano lifecycle; there is no separate Summarizer model to uninstall from web code. |
+| Writer | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals` | `Writer.create()` from a user interaction when `Writer.availability()` is `downloadable` | Same shared Gemini Nano lifecycle; there is no separate Writer model to uninstall from web code. |
+| Rewriter | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals` | `Rewriter.create()` from a user interaction when `Rewriter.availability()` is `downloadable` | Same shared Gemini Nano lifecycle; there is no separate Rewriter model to uninstall from web code. |
+| Translator | On-device translation language packs for a `sourceLanguage` and `targetLanguage` pair | `chrome://on-device-translation-internals/` for manual language-pack install/uninstall in supported Chrome builds | `Translator.create({ sourceLanguage, targetLanguage })` from a real user gesture when `Translator.availability()` is `downloadable` | Manage packs in `chrome://on-device-translation-internals/`. Chrome may also evict packs automatically. Treat `en -> ru` and `ru -> en` as separate API capabilities. |
+
+Important Chrome behavior:
+
+- `available`, `downloadable`, `downloading`, and `unavailable` are browser-owned states returned by each API's `availability()` method.
+- `create()` is the operation that prepares a usable local session and starts downloads when needed.
+- Downloadable or downloading resources require a real user activation. Programmatic `.click()` calls from tests are not enough.
+- Translator availability is intentionally privacy-masked. Chrome may report language pairs as `downloadable` until the site creates a translator for that pair, even if related language resources already exist.
+- `chrome://on-device-internals` does not show Translator language packs. Use `chrome://on-device-translation-internals/` for Translator.
+- Model and language-pack files are stored in Chrome-managed profile storage. Exact paths are implementation details and should not be used by apps.
+- Chrome can remove Gemini Nano when free disk space drops below its threshold or when policies/eligibility change; after purge, a later `create()` must trigger a new download.
+
+References: [Prompt API](https://developer.chrome.com/docs/ai/prompt-api), [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/).
 
 ## Vue
 
@@ -69,10 +103,11 @@ npm install @desource/browser-ai-vue
   <Summarizer />
   <Writer />
   <Rewriter />
+  <Translator />
 </template>
 
 <script setup lang="ts">
-import { PromptApi, Rewriter, Summarizer, Writer } from '@desource/browser-ai-vue';
+import { PromptApi, Rewriter, Summarizer, Translator, Writer } from '@desource/browser-ai-vue';
 import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 ```
@@ -142,6 +177,24 @@ const rewrite = await rewriter.rewriteStreamingToText('This update is kind of co
 
 `useWriter()` and `useRewriter()` share the same production path for availability, download monitoring, abort handling, input quota preflight, streaming, batch runs, and optional-context fitting.
 
+Translator usage:
+
+```ts
+import { useTranslator } from '@desource/browser-ai-vue';
+
+const translator = useTranslator({
+  sourceLanguage: 'en',
+  targetLanguage: 'fr',
+});
+
+const translated = await translator.translateStreamingToText('Where is the next bus stop?', {
+  createOptions: { sourceLanguage: 'en', targetLanguage: 'fr' },
+  chunking: 'auto',
+});
+```
+
+`useTranslator()` checks language-pair availability, reports language-pack download progress, bypasses same-language translations, measures input quota, chunks long text on paragraph/sentence boundaries, streams output, and supports batch translation.
+
 ## Nuxt
 
 ```bash
@@ -154,7 +207,7 @@ export default defineNuxtConfig({
 });
 ```
 
-The module registers `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiWriter />`, `<BrowserAiRewriter />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports `usePromptApi()`, `useSummarizer()`, `useWriter()`, `useRewriter()`, and `useAiChats()`.
+The module registers `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`, `<Translator />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiWriter />`, `<BrowserAiRewriter />`, `<BrowserAiTranslator />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports `usePromptApi()`, `useSummarizer()`, `useWriter()`, `useRewriter()`, `useTranslator()`, and `useAiChats()`.
 
 ## Demo
 
@@ -177,6 +230,6 @@ pnpm lint
 
 ## Roadmap
 
-- Add the remaining Chrome built-in AI APIs: Translator, Language Detector, and Proofreader.
+- Add the remaining Chrome built-in AI APIs: Language Detector and Proofreader.
 - Add framework packages for React and plain TypeScript once the current API surfaces are stable.
 - Add automated browser smoke tests that can attach to a Chrome profile with Gemini Nano enabled.

@@ -8,6 +8,27 @@ Vue components and composables for Chrome built-in AI APIs.
 npm install @desource/browser-ai-vue
 ```
 
+## Chrome Model Management
+
+Chrome stores built-in AI resources inside the current Chrome profile and manages downloads, updates, and deletion itself. The package can observe `availability()`, call `create()`, and display `downloadprogress`; it cannot list installed models, read model file paths, uninstall models, or force Chrome to keep a model installed.
+
+| API | Local resource | Chrome page | Download trigger | Manual management |
+| --- | --- | --- | --- | --- |
+| Prompt API | Shared Gemini Nano model | `chrome://on-device-internals` | `LanguageModel.create()` | No documented per-API uninstall. Chrome purges automatically under storage pressure, policy changes, or eligibility changes. |
+| Summarizer | Shared Gemini Nano model | `chrome://on-device-internals` | `Summarizer.create()` | No separate Summarizer uninstall; it uses the shared Gemini Nano lifecycle. |
+| Writer | Shared Gemini Nano model | `chrome://on-device-internals` | `Writer.create()` | No separate Writer uninstall; it uses the shared Gemini Nano lifecycle. |
+| Rewriter | Shared Gemini Nano model | `chrome://on-device-internals` | `Rewriter.create()` | No separate Rewriter uninstall; it uses the shared Gemini Nano lifecycle. |
+| Translator | On-device translation language packs | `chrome://on-device-translation-internals/` | `Translator.create({ sourceLanguage, targetLanguage })` | Supported Chrome builds expose manual language-pack install/uninstall here. Direction can matter, so treat `en -> ru` and `ru -> en` as separate capabilities. |
+
+Notes:
+
+- Availability states are Chrome-owned and reported as `available`, `downloadable`, `downloading`, or `unavailable`.
+- Downloading resources requires a real user gesture when `availability()` returns `downloadable` or `downloading`.
+- `chrome://on-device-internals` is for Gemini Nano debugging and event logs; it does not show Translator language packs.
+- Translator pair availability is privacy-masked by Chrome, so `availability()` may report `downloadable` until `create()` is called for a pair.
+- Exact storage paths are Chrome implementation details. App code should never depend on them.
+- References: [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/).
+
 ## Prompt API Component
 
 ```vue
@@ -208,19 +229,70 @@ console.log(rewrite);
 
 `useRewriter()` shares the same writing-assistant engine as `useWriter()`: availability, creation, abort handling, download monitoring, input quota measurement, streaming and non-streaming runs, batch rewriting, cleanup, and explicit optional-context fitting are implemented once.
 
+## Translator Component
+
+```vue
+<template>
+  <Translator
+    source-language="en"
+    target-language="fr"
+  />
+</template>
+
+<script setup lang="ts">
+import { Translator } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
+</script>
+```
+
+`Translator` provides a local translation surface backed by Chrome's `Translator` API. It keeps source and translated text side by side, exposes source/target language selectors, streams translations by default, reports language-pack download and token state, bypasses same-language requests, and can chunk long input instead of failing once a native request is too large.
+
+## Translator Composable
+
+```ts
+import { useTranslator } from '@desource/browser-ai-vue';
+
+const translator = useTranslator({
+  sourceLanguage: 'en',
+  targetLanguage: 'fr',
+});
+
+await translator.requestAvailability({
+  sourceLanguage: 'en',
+  targetLanguage: 'fr',
+});
+
+const translated = await translator.translateStreamingToText('Where is the next bus stop?', {
+  createOptions: {
+    sourceLanguage: 'en',
+    targetLanguage: 'fr',
+  },
+  chunking: 'auto',
+  stripHtml: true,
+});
+
+console.log(translated);
+```
+
+The composable wraps availability, creation, abort handling, language-pack download monitoring, input quota measurement, streaming and non-streaming translation, batch translation, cleanup, same-language bypass, and measured long-text chunking. The package also exports `TRANSLATOR_LANGUAGE_OPTIONS` and `getTranslatorLanguageName()` for custom UIs.
+
 ## Exports
 
 - `PromptApi`
 - `PromptInput`
 - `Rewriter`
 - `Summarizer`
+- `Translator`
 - `Writer`
 - `ChatHistory`
 - `ChatSidebar`
 - `usePromptApi`
 - `useRewriter`
 - `useSummarizer`
+- `useTranslator`
 - `useWriter`
 - `useAiChats`
+- `TRANSLATOR_LANGUAGE_OPTIONS`
+- `getTranslatorLanguageName`
 
 The package uses `@types/dom-chromium-ai` for the current Chrome AI API types.

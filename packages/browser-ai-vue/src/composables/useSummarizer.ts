@@ -7,12 +7,10 @@ import {
   useAbortableOperation
 } from '../utils/browserAi';
 import {
-  createTextChunk,
+  buildMeasuredTextChunks,
   normalizeSummaryInput,
-  splitTextIntoSegments,
   stripHtmlForSummary,
   type TextChunk,
-  type TextSegment
 } from '../utils/text';
 
 export type SummarizerAvailability = Availability;
@@ -113,10 +111,6 @@ const getNativeSummarizeOptions = (
     ...nativeOptions
   } = options;
   return nativeOptions;
-};
-
-const joinChunkText = (current: string, next: string) => {
-  return current ? `${current}\n\n${next}` : next;
 };
 
 const clampRatio = (value: number | undefined, fallback: number) => {
@@ -336,53 +330,6 @@ export function useSummarizer() {
     }
   };
 
-  const splitOversizedSegment = async (
-    segment: TextSegment,
-    budget: number,
-    instance: Summarizer,
-    options: SummarizerRunNativeOptions | undefined,
-    signal: AbortSignal,
-    startIndex: number
-  ) => {
-    const chunks: TextChunk[] = [];
-    let remaining = segment.text;
-    let absoluteStart = segment.start;
-    let index = startIndex;
-
-    while (remaining.trim()) {
-      let low = 1;
-      let high = remaining.length;
-      let best = 0;
-
-      while (low <= high) {
-        const middle = Math.floor((low + high) / 2);
-        const candidate = remaining.slice(0, middle).trim();
-        const usage = await measureWithSignal(instance, candidate, options, signal);
-        if (usage <= budget) {
-          best = middle;
-          low = middle + 1;
-        } else {
-          high = middle - 1;
-        }
-      }
-
-      if (best <= 0) {
-        best = Math.min(remaining.length, 1200);
-      }
-
-      const whitespace = remaining.lastIndexOf(' ', best);
-      const sliceEnd = whitespace > 240 ? whitespace : best;
-      const text = remaining.slice(0, sliceEnd).trim();
-      chunks.push(createTextChunk(text, index, absoluteStart));
-
-      absoluteStart += sliceEnd;
-      remaining = remaining.slice(sliceEnd).trim();
-      index += 1;
-    }
-
-    return chunks;
-  };
-
   const buildMeasuredChunks = async (
     input: string,
     budget: number,
@@ -391,49 +338,17 @@ export function useSummarizer() {
     signal: AbortSignal,
     onProgress?: SummarizerRunOptions['onProgress']
   ) => {
-    const segments = splitTextIntoSegments(input);
-    const chunks: TextChunk[] = [];
-    let current = '';
-    let currentStart = segments[0]?.start ?? 0;
-
-    for (const segment of segments) {
-      const candidate = joinChunkText(current, segment.text);
-      const usage = await measureWithSignal(instance, candidate, options, signal);
-
-      if (usage <= budget) {
-        if (!current) {
-          currentStart = segment.start;
-        }
-        current = candidate;
-      } else if (!current) {
-        const split = await splitOversizedSegment(
-          segment,
-          budget,
-          instance,
-          options,
-          signal,
-          chunks.length
-        );
-        chunks.push(...split);
-      } else {
-        chunks.push(createTextChunk(current, chunks.length, currentStart));
-        current = segment.text;
-        currentStart = segment.start;
-      }
-
-      setProgressState({
+    return buildMeasuredTextChunks({
+      input,
+      budget,
+      measure: (candidate) => measureWithSignal(instance, candidate, options, signal),
+      onProgress: (chunks) => setProgressState({
         phase: 'chunking',
         processedChunks: chunks.length,
         totalChunks: Math.max(chunks.length + 1, 1),
         chunked: true
-      }, onProgress);
-    }
-
-    if (current.trim()) {
-      chunks.push(createTextChunk(current, chunks.length, currentStart));
-    }
-
-    return chunks;
+      }, onProgress)
+    });
   };
 
   const summarizeChunk = async (

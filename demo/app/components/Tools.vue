@@ -7,7 +7,7 @@
             <h2>Browser AI APIs</h2>
             <p>
               Framework helpers for Chrome's built-in AI APIs. Prompt API, Summarizer, Writer,
-              and Rewriter are implemented now; the remaining APIs are listed as roadmap targets.
+              Rewriter, and Translator are implemented now; the remaining APIs are listed as roadmap targets.
             </p>
           </div>
           <span class="tools__count">{{ availableCount }} available</span>
@@ -67,13 +67,14 @@ const promptApiAvailability = ref<DemoAvailability>('checking');
 const summarizerAvailability = ref<DemoAvailability>('checking');
 const writerAvailability = ref<DemoAvailability>('checking');
 const rewriterAvailability = ref<DemoAvailability>('checking');
+const translatorAvailability = ref<DemoAvailability>('checking');
 const { checkAvailability: checkPromptApiAvailability } = usePromptApi();
 const { checkAvailability: checkSummarizerAvailability } = useSummarizer();
 const { checkAvailability: checkWriterAvailability } = useWriter();
 const { checkAvailability: checkRewriterAvailability } = useRewriter();
+const { checkAvailability: checkTranslatorAvailability } = useTranslator();
 
-const mockedAvailability: Record<Exclude<Tool, 'prompt-api' | 'summarizer' | 'writer' | 'rewriter'>, Availability> = {
-  translator: 'unavailable',
+const mockedAvailability: Record<Exclude<Tool, 'prompt-api' | 'summarizer' | 'writer' | 'rewriter' | 'translator'>, Availability> = {
   'language-detector': 'unavailable',
   proofreader: 'unavailable'
 };
@@ -128,6 +129,15 @@ const apiRows = computed<ApiRow[]>(() => {
       };
     }
 
+    if (item.id === 'translator') {
+      return {
+        ...item,
+        availability: translatorAvailability.value,
+        href: canOpenDemo(translatorAvailability.value) ? '/translator' : '',
+        kitStatus: 'Vue / Nuxt ready'
+      };
+    }
+
     return {
       ...item,
       availability: mockedAvailability[item.id],
@@ -142,11 +152,12 @@ const availableCount = computed(() => {
 });
 
 onMounted(async () => {
-  const [promptStatus, summarizerStatus, writerStatus, rewriterStatus] = await Promise.allSettled([
+  const [promptStatus, summarizerStatus, writerStatus, rewriterStatus, translatorStatus] = await Promise.allSettled([
     checkPromptApiAvailability(),
     checkSummarizerAvailability(),
     checkWriterAvailability(),
-    checkRewriterAvailability()
+    checkRewriterAvailability(),
+    checkTranslatorAvailability()
   ]);
 
   promptApiAvailability.value = promptStatus.status === 'fulfilled'
@@ -163,6 +174,10 @@ onMounted(async () => {
 
   rewriterAvailability.value = rewriterStatus.status === 'fulfilled'
     ? rewriterStatus.value
+    : 'unavailable';
+
+  translatorAvailability.value = translatorStatus.status === 'fulfilled'
+    ? translatorStatus.value
     : 'unavailable';
 });
 </script>

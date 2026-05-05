@@ -18,12 +18,19 @@ export {
   useRewriter,
 } from './composables/useRewriter';
 
+export {
+  useTranslator,
+  TRANSLATOR_LANGUAGE_OPTIONS,
+  getTranslatorLanguageName,
+} from './composables/useTranslator';
+
 export { default as ChatHistory } from './components/ChatHistory.vue';
 export { default as ChatSidebar } from './components/ChatSidebar.vue';
 export { default as PromptApi } from './components/PromptApi.vue';
 export { default as PromptInput } from './components/PromptInput.vue';
 export { default as Rewriter } from './components/Rewriter.vue';
 export { default as Summarizer } from './components/Summarizer.vue';
+export { default as Translator } from './components/Translator.vue';
 export { default as Writer } from './components/Writer.vue';
 
 export type {
@@ -79,6 +86,23 @@ export type {
   RewriterRunNativeOptions,
   RewriterRunOptions,
 } from './composables/useRewriter';
+
+export type {
+  TranslatorAvailability,
+  TranslatorBatchItem,
+  TranslatorBatchOptions,
+  TranslatorChunking,
+  TranslatorChunkResult,
+  TranslatorCreate,
+  TranslatorCreateCore,
+  TranslatorLanguageOption,
+  TranslatorProcessingState,
+  TranslatorProgressPhase,
+  TranslatorProgressState,
+  TranslatorResult,
+  TranslatorRunNativeOptions,
+  TranslatorRunOptions,
+} from './composables/useTranslator';
 
 export type {
   WriterAvailability,
