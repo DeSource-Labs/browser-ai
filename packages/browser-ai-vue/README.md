@@ -18,6 +18,7 @@ Chrome stores built-in AI resources inside the current Chrome profile and manage
 | Summarizer | Shared Gemini Nano model | `chrome://on-device-internals` | `Summarizer.create()` | No separate Summarizer uninstall; it uses the shared Gemini Nano lifecycle. |
 | Writer | Shared Gemini Nano model | `chrome://on-device-internals` | `Writer.create()` | No separate Writer uninstall; it uses the shared Gemini Nano lifecycle. |
 | Rewriter | Shared Gemini Nano model | `chrome://on-device-internals` | `Rewriter.create()` | No separate Rewriter uninstall; it uses the shared Gemini Nano lifecycle. |
+| Proofreader | Shared Gemini Nano model | `chrome://on-device-internals` | `Proofreader.create()` | No separate Proofreader uninstall; it uses the shared Gemini Nano lifecycle. |
 | Translator | On-device translation language packs | `chrome://on-device-translation-internals/` | `Translator.create({ sourceLanguage, targetLanguage })` | Supported Chrome builds expose manual language-pack install/uninstall here. Direction can matter, so treat `en -> ru` and `ru -> en` as separate capabilities. |
 | Language Detector | Small local language-detection model and language resources | `chrome://on-device-translation-internals/` for TranslateKit resources in supported Chrome builds | `LanguageDetector.create({ expectedInputLanguages })` | Chrome manages detector resources. Language coverage is browser-defined and not every BCP 47 language is supported. |
 
@@ -28,8 +29,9 @@ Notes:
 - `chrome://on-device-internals` is for Gemini Nano debugging and event logs; it does not show Translator language packs.
 - Translator pair availability is privacy-masked by Chrome, so `availability()` may report `downloadable` until `create()` is called for a pair.
 - Language Detector returns ranked candidates with confidence scores. Treat low-confidence results and `und` as unknown in product UI.
+- Proofreader has no `inputQuota`, `measureInputUsage()`, or streaming method in `@types/dom-chromium-ai@0.0.16`; the package chunks long proofreader input by character boundaries.
 - Exact storage paths are Chrome implementation details. App code should never depend on them.
-- References: [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Language Detector API](https://developer.chrome.com/docs/ai/language-detection), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/), [Language Detector playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/language-detector-api/).
+- References: [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Language Detector API](https://developer.chrome.com/docs/ai/language-detection), [Proofreader API](https://developer.chrome.com/docs/ai/proofreader-api), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/), [Language Detector playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/language-detector-api/), [Proofreader API draft](https://webmachinelearning.github.io/proofreader-api/).
 
 ## Prompt API Component
 
@@ -318,9 +320,51 @@ console.log(result.detectedLanguage, result.confidence, result.results);
 
 The composable wraps availability, creation, abort handling, download monitoring, input quota measurement, ranked confidence normalization, batch detection, cleanup, confidence thresholding, and measured long-input chunking. For text that exceeds the native quota, it can detect language per chunk and merge weighted confidence scores instead of truncating the input.
 
+## Proofreader Component
+
+```vue
+<template>
+  <Proofreader :expected-input-languages="['en']" />
+</template>
+
+<script setup lang="ts">
+import { Proofreader } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
+</script>
+```
+
+`Proofreader` provides a local proofreading surface backed by Chrome's `Proofreader` API. It keeps the draft and corrected text side by side, exposes expected-language hints, optional correction labels/explanations, HTML stripping, long-input splitting, download progress, highlighted edits, and a correction list.
+
+## Proofreader Composable
+
+```ts
+import { useProofreader } from '@desource/browser-ai-vue';
+
+const proofreader = useProofreader({
+  expectedInputLanguages: ['en'],
+});
+
+await proofreader.requestAvailability({
+  expectedInputLanguages: ['en'],
+});
+
+const result = await proofreader.proofreadWithDetails(
+  'I seen him yesterday at the store, and he bought two loafs of bread.',
+  {
+    largeInputStrategy: 'auto',
+    stripHtml: true,
+  }
+);
+
+console.log(result.correctedInput, result.corrections);
+```
+
+The composable wraps availability, creation, abort handling, download monitoring, corrected-output normalization, correction range normalization, batch proofreading, cleanup, and character-based long-input chunking. The current `@types/dom-chromium-ai@0.0.16` Proofreader surface does not include `inputQuota`, `measureInputUsage()`, or streaming, so those are not required for normal Proofreader usage.
+
 ## Exports
 
 - `LanguageDetector`
+- `Proofreader`
 - `PromptApi`
 - `PromptInput`
 - `Rewriter`
@@ -331,6 +375,7 @@ The composable wraps availability, creation, abort handling, download monitoring
 - `ChatSidebar`
 - `usePromptApi`
 - `useLanguageDetector`
+- `useProofreader`
 - `useRewriter`
 - `useSummarizer`
 - `useTranslator`
@@ -340,5 +385,7 @@ The composable wraps availability, creation, abort handling, download monitoring
 - `getTranslatorLanguageName`
 - `LANGUAGE_DETECTOR_LANGUAGE_OPTIONS`
 - `getLanguageDetectorLanguageName`
+- `PROOFREADER_LANGUAGE_OPTIONS`
+- `getProofreaderLanguageName`
 
 The package uses `@types/dom-chromium-ai` for the current Chrome AI API types.

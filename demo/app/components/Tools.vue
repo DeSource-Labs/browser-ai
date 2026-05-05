@@ -7,7 +7,7 @@
             <h2>Browser AI APIs</h2>
             <p>
               Framework helpers for Chrome's built-in AI APIs. Prompt API, Summarizer, Writer,
-              Rewriter, Translator, and Language Detector are implemented now; the remaining APIs are listed as roadmap targets.
+              Rewriter, Translator, Language Detector, and Proofreader are implemented now.
             </p>
           </div>
           <span class="tools__count">{{ availableCount }} available</span>
@@ -69,16 +69,14 @@ const writerAvailability = ref<DemoAvailability>('checking');
 const rewriterAvailability = ref<DemoAvailability>('checking');
 const translatorAvailability = ref<DemoAvailability>('checking');
 const languageDetectorAvailability = ref<DemoAvailability>('checking');
+const proofreaderAvailability = ref<DemoAvailability>('checking');
 const { checkAvailability: checkPromptApiAvailability } = usePromptApi();
 const { checkAvailability: checkSummarizerAvailability } = useSummarizer();
 const { checkAvailability: checkWriterAvailability } = useWriter();
 const { checkAvailability: checkRewriterAvailability } = useRewriter();
 const { checkAvailability: checkTranslatorAvailability } = useTranslator();
 const { checkAvailability: checkLanguageDetectorAvailability } = useLanguageDetector();
-
-const mockedAvailability: Record<Exclude<Tool, 'prompt-api' | 'summarizer' | 'writer' | 'rewriter' | 'translator' | 'language-detector'>, Availability> = {
-  proofreader: 'unavailable'
-};
+const { checkAvailability: checkProofreaderAvailability } = useProofreader();
 
 const getAvailabilityLabel = (status: DemoAvailability) => {
   if (status === 'checking') return 'Checking';
@@ -148,9 +146,18 @@ const apiRows = computed<ApiRow[]>(() => {
       };
     }
 
+    if (item.id === 'proofreader') {
+      return {
+        ...item,
+        availability: proofreaderAvailability.value,
+        href: canOpenDemo(proofreaderAvailability.value) ? '/proofreader' : '',
+        kitStatus: 'Vue / Nuxt ready'
+      };
+    }
+
     return {
       ...item,
-      availability: mockedAvailability[item.id],
+      availability: 'unavailable',
       href: '',
       kitStatus: 'Planned'
     };
@@ -168,14 +175,16 @@ onMounted(async () => {
     writerStatus,
     rewriterStatus,
     translatorStatus,
-    languageDetectorStatus
+    languageDetectorStatus,
+    proofreaderStatus
   ] = await Promise.allSettled([
     checkPromptApiAvailability(),
     checkSummarizerAvailability(),
     checkWriterAvailability(),
     checkRewriterAvailability(),
     checkTranslatorAvailability(),
-    checkLanguageDetectorAvailability()
+    checkLanguageDetectorAvailability(),
+    checkProofreaderAvailability()
   ]);
 
   promptApiAvailability.value = promptStatus.status === 'fulfilled'
@@ -200,6 +209,10 @@ onMounted(async () => {
 
   languageDetectorAvailability.value = languageDetectorStatus.status === 'fulfilled'
     ? languageDetectorStatus.value
+    : 'unavailable';
+
+  proofreaderAvailability.value = proofreaderStatus.status === 'fulfilled'
+    ? proofreaderStatus.value
     : 'unavailable';
 });
 </script>

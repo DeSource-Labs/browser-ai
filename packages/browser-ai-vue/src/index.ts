@@ -30,9 +30,16 @@ export {
   getLanguageDetectorLanguageName,
 } from './composables/useLanguageDetector';
 
+export {
+  useProofreader,
+  PROOFREADER_LANGUAGE_OPTIONS,
+  getProofreaderLanguageName,
+} from './composables/useProofreader';
+
 export { default as ChatHistory } from './components/ChatHistory.vue';
 export { default as ChatSidebar } from './components/ChatSidebar.vue';
 export { default as LanguageDetector } from './components/LanguageDetector.vue';
+export { default as Proofreader } from './components/Proofreader.vue';
 export { default as PromptApi } from './components/PromptApi.vue';
 export { default as PromptInput } from './components/PromptInput.vue';
 export { default as Rewriter } from './components/Rewriter.vue';
@@ -111,6 +118,25 @@ export type {
   LanguageDetectorRunOptions,
   NormalizedLanguageDetectionResult,
 } from './composables/useLanguageDetector';
+
+export type {
+  NormalizedProofreadCorrection,
+  ProofreaderAvailability,
+  ProofreaderBatchItem,
+  ProofreaderBatchOptions,
+  ProofreaderChunkResult,
+  ProofreaderCorrectionType,
+  ProofreaderCreate,
+  ProofreaderCreateCore,
+  ProofreaderLargeInputStrategy,
+  ProofreaderProcessingState,
+  ProofreaderProgressPhase,
+  ProofreaderProgressState,
+  ProofreaderResult,
+  ProofreaderRunNativeOptions,
+  ProofreaderRunOptions,
+  ProofreaderTextSegment,
+} from './composables/useProofreader';
 
 export type {
   TranslatorAvailability,
