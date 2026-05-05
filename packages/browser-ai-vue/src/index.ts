@@ -24,8 +24,15 @@ export {
   getTranslatorLanguageName,
 } from './composables/useTranslator';
 
+export {
+  useLanguageDetector,
+  LANGUAGE_DETECTOR_LANGUAGE_OPTIONS,
+  getLanguageDetectorLanguageName,
+} from './composables/useLanguageDetector';
+
 export { default as ChatHistory } from './components/ChatHistory.vue';
 export { default as ChatSidebar } from './components/ChatSidebar.vue';
+export { default as LanguageDetector } from './components/LanguageDetector.vue';
 export { default as PromptApi } from './components/PromptApi.vue';
 export { default as PromptInput } from './components/PromptInput.vue';
 export { default as Rewriter } from './components/Rewriter.vue';
@@ -86,6 +93,24 @@ export type {
   RewriterRunNativeOptions,
   RewriterRunOptions,
 } from './composables/useRewriter';
+
+export type {
+  LanguageDetectorAvailability,
+  LanguageDetectorBatchItem,
+  LanguageDetectorBatchOptions,
+  LanguageDetectorChunkResult,
+  LanguageDetectorCreate,
+  LanguageDetectorCreateCore,
+  LanguageDetectorLanguageOption,
+  LanguageDetectorLargeInputStrategy,
+  LanguageDetectorProcessingState,
+  LanguageDetectorProgressPhase,
+  LanguageDetectorProgressState,
+  LanguageDetectorResult,
+  LanguageDetectorRunNativeOptions,
+  LanguageDetectorRunOptions,
+  NormalizedLanguageDetectionResult,
+} from './composables/useLanguageDetector';
 
 export type {
   TranslatorAvailability,

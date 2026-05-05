@@ -19,6 +19,7 @@ Chrome stores built-in AI resources inside the current Chrome profile and manage
 | Writer | Shared Gemini Nano model | `chrome://on-device-internals` | `Writer.create()` | No separate Writer uninstall; it uses the shared Gemini Nano lifecycle. |
 | Rewriter | Shared Gemini Nano model | `chrome://on-device-internals` | `Rewriter.create()` | No separate Rewriter uninstall; it uses the shared Gemini Nano lifecycle. |
 | Translator | On-device translation language packs | `chrome://on-device-translation-internals/` | `Translator.create({ sourceLanguage, targetLanguage })` | Supported Chrome builds expose manual language-pack install/uninstall here. Direction can matter, so treat `en -> ru` and `ru -> en` as separate capabilities. |
+| Language Detector | Small local language-detection model and language resources | `chrome://on-device-translation-internals/` for TranslateKit resources in supported Chrome builds | `LanguageDetector.create({ expectedInputLanguages })` | Chrome manages detector resources. Language coverage is browser-defined and not every BCP 47 language is supported. |
 
 Notes:
 
@@ -26,8 +27,9 @@ Notes:
 - Downloading resources requires a real user gesture when `availability()` returns `downloadable` or `downloading`.
 - `chrome://on-device-internals` is for Gemini Nano debugging and event logs; it does not show Translator language packs.
 - Translator pair availability is privacy-masked by Chrome, so `availability()` may report `downloadable` until `create()` is called for a pair.
+- Language Detector returns ranked candidates with confidence scores. Treat low-confidence results and `und` as unknown in product UI.
 - Exact storage paths are Chrome implementation details. App code should never depend on them.
-- References: [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/).
+- References: [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Language Detector API](https://developer.chrome.com/docs/ai/language-detection), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/), [Language Detector playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/language-detector-api/).
 
 ## Prompt API Component
 
@@ -276,8 +278,49 @@ console.log(translated);
 
 The composable wraps availability, creation, abort handling, language-pack download monitoring, input quota measurement, streaming and non-streaming translation, batch translation, cleanup, same-language bypass, and measured long-text chunking. The package also exports `TRANSLATOR_LANGUAGE_OPTIONS` and `getTranslatorLanguageName()` for custom UIs.
 
+## Language Detector Component
+
+```vue
+<template>
+  <LanguageDetector :expected-input-languages="['en', 'fr', 'de']" />
+</template>
+
+<script setup lang="ts">
+import { LanguageDetector } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
+</script>
+```
+
+`LanguageDetector` provides a local language identification surface backed by Chrome's `LanguageDetector` API. It keeps the input and ranked confidence results visible, exposes expected-language hints, confidence thresholds, HTML stripping, long-input strategy, download progress, and token usage.
+
+## Language Detector Composable
+
+```ts
+import { useLanguageDetector } from '@desource/browser-ai-vue';
+
+const detector = useLanguageDetector({
+  expectedInputLanguages: ['en', 'fr', 'de'],
+});
+
+await detector.requestAvailability({
+  expectedInputLanguages: ['en', 'fr', 'de'],
+});
+
+const result = await detector.detectWithDetails('Bonjour et bienvenue dans notre application.', {
+  minConfidence: 0.45,
+  maxResults: 5,
+  largeInputStrategy: 'chunk',
+  stripHtml: true,
+});
+
+console.log(result.detectedLanguage, result.confidence, result.results);
+```
+
+The composable wraps availability, creation, abort handling, download monitoring, input quota measurement, ranked confidence normalization, batch detection, cleanup, confidence thresholding, and measured long-input chunking. For text that exceeds the native quota, it can detect language per chunk and merge weighted confidence scores instead of truncating the input.
+
 ## Exports
 
+- `LanguageDetector`
 - `PromptApi`
 - `PromptInput`
 - `Rewriter`
@@ -287,6 +330,7 @@ The composable wraps availability, creation, abort handling, language-pack downl
 - `ChatHistory`
 - `ChatSidebar`
 - `usePromptApi`
+- `useLanguageDetector`
 - `useRewriter`
 - `useSummarizer`
 - `useTranslator`
@@ -294,5 +338,7 @@ The composable wraps availability, creation, abort handling, language-pack downl
 - `useAiChats`
 - `TRANSLATOR_LANGUAGE_OPTIONS`
 - `getTranslatorLanguageName`
+- `LANGUAGE_DETECTOR_LANGUAGE_OPTIONS`
+- `getLanguageDetectorLanguageName`
 
 The package uses `@types/dom-chromium-ai` for the current Chrome AI API types.
