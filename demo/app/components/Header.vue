@@ -1,10 +1,13 @@
 <template>
-  <header class="header">
+  <header class="header" :class="{ 'header--compact': compact }">
     <div class="header__title">
       <LiquidGlass actionable>
-        <NuxtLink to="/" class="examples"><span class="emoji">🔥</span> Examples</NuxtLink>
+        <NuxtLink :to="leadingTo" class="examples">
+          <span v-if="leadingIcon" class="emoji">{{ leadingIcon }}</span>
+          {{ leadingLabel }}
+        </NuxtLink>
       </LiquidGlass>
-      <h1>Browser AI Kit</h1>
+      <h1>{{ title }}</h1>
       <LiquidGlass actionable>
         <a class="stars" :href="Links.coreRepo" target="_blank" rel="noopener noreferrer">
           Star
@@ -14,12 +17,30 @@
         </a>
       </LiquidGlass>
     </div>
-    <p class="header__subtitle h3">The ultimate toolkit for building AI-powered web applications with ease.</p>
+    <p class="header__subtitle h3">{{ subtitle }}</p>
   </header>
 </template>
 
 <script setup lang="ts">
 import { gsap } from 'gsap';
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  leadingLabel?: string;
+  leadingIcon?: string;
+  leadingTo?: string;
+  compact?: boolean;
+}
+
+withDefaults(defineProps<Props>(), {
+  title: 'Browser AI Kit',
+  subtitle: 'The ultimate toolkit for building AI-powered web applications with ease.',
+  leadingLabel: 'Examples',
+  leadingIcon: '🔥',
+  leadingTo: '/',
+  compact: false
+});
 
 const starCountRef = useTemplateRef('starCountRef');
 const stars = useGhStars();
@@ -60,6 +81,9 @@ watch(
   text-align: center;
   gap: 0.5rem;
 }
+.header--compact {
+  margin-bottom: 1rem;
+}
 .header__title {
   display: flex;
   align-items: center;
@@ -67,6 +91,7 @@ watch(
 }
 .header__title h1 {
   margin: 0;
+  min-width: 0;
 }
 .header__subtitle {
   margin: 0;

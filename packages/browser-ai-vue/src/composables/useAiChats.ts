@@ -9,6 +9,19 @@ export interface AiChatMessage {
   timestamp: number;
 }
 
+export interface AiChatSummaryRecord {
+  id: string;
+  startIndex: number;
+  endIndex: number;
+  messageIds: string[];
+  hash: string;
+  summary: string;
+  tokenUsage: number | null;
+  level: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface AiChatRecord {
   id: string;
   tool: AiChatTool;
@@ -16,6 +29,7 @@ export interface AiChatRecord {
   createdAt: number;
   updatedAt: number;
   messages: AiChatMessage[];
+  summaries: AiChatSummaryRecord[];
 }
 
 const DB_NAME = 'browser-ai';
@@ -31,9 +45,15 @@ const canUseIndexedDB = () => {
 
 const cloneMessage = (message: AiChatMessage): AiChatMessage => ({ ...message });
 
+const cloneSummary = (summary: AiChatSummaryRecord): AiChatSummaryRecord => ({
+  ...summary,
+  messageIds: [...summary.messageIds]
+});
+
 const cloneChat = (chat: AiChatRecord): AiChatRecord => ({
   ...chat,
-  messages: chat.messages.map(cloneMessage)
+  messages: Array.isArray(chat.messages) ? chat.messages.map(cloneMessage) : [],
+  summaries: Array.isArray(chat.summaries) ? chat.summaries.map(cloneSummary) : []
 });
 
 const requestToPromise = <T>(request: IDBRequest<T>): Promise<T> => {
@@ -184,6 +204,86 @@ const normalizeMessages = (
   return { messages, changed };
 };
 
+const normalizeSummaries = (
+  source: unknown,
+  messageCount: number
+): { summaries: AiChatSummaryRecord[]; changed: boolean } => {
+  const rawSummaries = Array.isArray(source) ? source : [];
+  let changed = !Array.isArray(source);
+  const seen = new Set<string>();
+  const summaries: AiChatSummaryRecord[] = [];
+
+  rawSummaries.forEach((rawSummary) => {
+    const entry = (rawSummary ?? {}) as Partial<AiChatSummaryRecord>;
+    const startIndex = Number.isInteger(entry.startIndex) ? entry.startIndex as number : -1;
+    const endIndex = Number.isInteger(entry.endIndex) ? entry.endIndex as number : -1;
+    const hash = typeof entry.hash === 'string' ? entry.hash : '';
+    const summary = typeof entry.summary === 'string' ? entry.summary : '';
+
+    if (
+      startIndex < 0
+      || endIndex <= startIndex
+      || endIndex > messageCount
+      || hash.length === 0
+      || summary.trim().length === 0
+    ) {
+      changed = true;
+      return;
+    }
+
+    const level = Number.isInteger(entry.level) && entry.level! >= 0 ? entry.level! : 0;
+    const key = `${level}:${startIndex}:${endIndex}:${hash}`;
+    if (seen.has(key)) {
+      changed = true;
+      return;
+    }
+    seen.add(key);
+
+    const id = typeof entry.id === 'string' && entry.id.length > 0 ? entry.id : generateId();
+    const createdAt = isValidTimestamp(entry.createdAt) ? entry.createdAt : Date.now();
+    const updatedAt = isValidTimestamp(entry.updatedAt) ? entry.updatedAt : createdAt;
+    const messageIds = Array.isArray(entry.messageIds)
+      ? entry.messageIds.filter((item): item is string => typeof item === 'string' && item.length > 0)
+      : [];
+    const tokenUsage = typeof entry.tokenUsage === 'number' && Number.isFinite(entry.tokenUsage)
+      ? entry.tokenUsage
+      : null;
+
+    if (
+      id !== entry.id
+      || createdAt !== entry.createdAt
+      || updatedAt !== entry.updatedAt
+      || level !== entry.level
+      || tokenUsage !== entry.tokenUsage
+      || messageIds.length !== entry.messageIds?.length
+    ) {
+      changed = true;
+    }
+
+    summaries.push({
+      id,
+      startIndex,
+      endIndex,
+      messageIds,
+      hash,
+      summary,
+      tokenUsage,
+      level,
+      createdAt,
+      updatedAt,
+    });
+  });
+
+  return {
+    summaries: summaries.sort((a, b) => {
+      if (a.level !== b.level) return a.level - b.level;
+      if (a.startIndex !== b.startIndex) return a.startIndex - b.startIndex;
+      return a.endIndex - b.endIndex;
+    }),
+    changed,
+  };
+};
+
 const normalizeChatRecord = (
   source: Partial<AiChatRecord>,
   tool: AiChatTool
@@ -212,6 +312,8 @@ const normalizeChatRecord = (
 
   const normalizedMessages = normalizeMessages(source.messages, createdAt);
   changed = changed || normalizedMessages.changed;
+  const normalizedSummaries = normalizeSummaries(source.summaries, normalizedMessages.messages.length);
+  changed = changed || normalizedSummaries.changed;
 
   const lastMessageTimestamp = normalizedMessages.messages[normalizedMessages.messages.length - 1]?.timestamp ?? createdAt;
 
@@ -239,6 +341,7 @@ const normalizeChatRecord = (
       createdAt,
       updatedAt,
       messages: normalizedMessages.messages,
+      summaries: normalizedSummaries.summaries,
     },
     changed,
   };
@@ -307,6 +410,7 @@ export function useAiChats(tool: AiChatTool) {
       createdAt: now,
       updatedAt: now,
       messages: normalizedMessages,
+      summaries: [],
     };
 
     chats.value = [record, ...chats.value];
@@ -371,7 +475,21 @@ export function useAiChats(tool: AiChatTool) {
     const next: AiChatRecord = {
       ...target,
       messages: normalizedMessages,
+      summaries: target.summaries,
       updatedAt: Date.now()
+    };
+
+    await upsertChat(next);
+  };
+
+  const updateSummaries = async (chatId: string, summaries: AiChatSummaryRecord[]) => {
+    const target = chats.value.find((chat) => chat.id === chatId);
+    if (!target) return;
+
+    const normalizedSummaries = normalizeSummaries(summaries, target.messages.length).summaries;
+    const next: AiChatRecord = {
+      ...target,
+      summaries: normalizedSummaries
     };
 
     await upsertChat(next);
@@ -407,6 +525,7 @@ export function useAiChats(tool: AiChatTool) {
     clearActiveChat,
     renameChat,
     updateMessages,
+    updateSummaries,
     deleteChat,
     restoreChat,
     getChatById,

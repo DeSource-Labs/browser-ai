@@ -14,8 +14,6 @@ The Prompt API implementation targets the current `LanguageModel` API:
 - `contextoverflow` events
 - `responseConstraint` prompt options for structured output
 
-Deprecated extension-only aliases such as `measureInputUsage`, `inputUsage`, `inputQuota`, and `quotaoverflow` are kept only as compatibility aliases where practical.
-
 ## Packages
 
 - `@desource/browser-ai-vue`: Vue components and composables.
@@ -38,7 +36,7 @@ npm install @desource/browser-ai-vue
 
 ```vue
 <template>
-  <PromptApi />
+  <PromptApi context-strategy="summarize" />
 </template>
 
 <script setup lang="ts">
@@ -62,6 +60,8 @@ await ai.init({
 await ai.create();
 const response = await ai.prompt('Reply with one short sentence.');
 ```
+
+For restored chats, `<PromptApi />` delegates to `usePromptApi().restoreSession()`, which creates one final `LanguageModel` session with `initialPrompts`; it does not append messages one by one. Large histories are measured against the browser-reported `contextWindow` with a binary-search fit. When the full chat does not fit, the default `contextStrategy="summarize"` summarizes only the omitted older prefix, splits that prefix into measured chunks, stores chunk and rollup summaries in IndexedDB, and reuses unchanged cached summaries on later reloads. The default `contextSummaryMode="cache-first"` restores immediately with recent messages when summaries are missing, then warms the cache in the background so the input is not blocked by local summarization. During an active session, `contextoverflow` triggers automatic compaction into a fresh summarized session instead of showing a blocking overflow dialog.
 
 ## Nuxt
 

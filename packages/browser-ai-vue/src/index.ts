@@ -14,6 +14,7 @@ export { default as PromptInput } from './components/PromptInput.vue';
 export type {
   AiChatMessage,
   AiChatRecord,
+  AiChatSummaryRecord,
   AiChatTool,
 } from './composables/useAiChats';
 
@@ -23,7 +24,16 @@ export type {
   LLMPromptOptions,
   LLMProcessingState,
   LLMCreateCoreOptions,
+  LLMContextRestorePhase,
+  LLMContextRestoreState,
+  LLMContextStrategy,
+  LLMContextSummaryMode,
+  LLMContextMessageMetadata,
+  LLMContextSummaryRecord,
   LLMPrompt,
+  LLMRestoreSessionOptions,
+  LLMRestoreSessionResult,
+  LLMTemporaryPromptOptions,
   UsePromptApiOptions,
 } from './composables/usePromptApi';
 

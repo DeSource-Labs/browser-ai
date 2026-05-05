@@ -1,48 +1,53 @@
 <template>
   <div class="tools">
-    <LiquidGlass height="500px">
-      <div class="tools-container">
-        <!-- Header with dropdown and status -->
-        <div class="tools-header">
-          <ToolDropdown v-model="selected" :items="ToolItems" />
-          <div class="tools-status">
-            <span
-              class="tools-status__badge"
-              :class="{
-                'tools-status__badge--unavailable': availability === 'unavailable',
-                'tools-status__badge--downloadable': availability === 'downloadable',
-                'tools-status__badge--downloading': availability === 'downloading',
-                'tools-status__badge--available': availability === 'available',
-              }"
-            >
-              <svg v-if="availability === 'available'" class="tools-status__icon" viewBox="0 0 16 16" width="14" height="14">
-                <path d="M13.78 2.22A.75.75 0 1 0 12.22.66L6.5 6.38 3.78 3.66A.75.75 0 0 0 2.22 5.22l3.5 3.5a.75.75 0 0 0 1.06 0l7-7Z" fill="currentColor" />
-              </svg>
-              <svg v-else-if="availability === 'downloading'" class="tools-status__icon tools-status__icon--spinning" viewBox="0 0 16 16" width="14" height="14">
-                <path d="M8 1a7 7 0 1 0 7 7h-1.5A5.5 5.5 0 1 1 8 2.5V1Z" fill="currentColor" />
-              </svg>
-              <svg v-else-if="availability === 'downloadable'" class="tools-status__icon" viewBox="0 0 16 16" width="14" height="14">
-                <path d="M2.75 9.5a.75.75 0 0 1 .75.75v2.5h9.5v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-2.5a.75.75 0 0 1 .75-.75ZM8 1.75a.75.75 0 0 1 .75.75v7.69l1.72-1.72a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l1.72 1.72V2.5a.75.75 0 0 1 .75-.75Z" fill="currentColor" />
-              </svg>
-              <svg v-else-if="availability === 'unavailable'" class="tools-status__icon" viewBox="0 0 16 16" width="14" height="14">
-                <path d="M3.72 3.72a.75.75 0 1 0-1.06 1.06L6.94 8l-4.28 4.28a.75.75 0 1 0 1.06 1.06L8 9.06l4.28 4.28a.75.75 0 1 0 1.06-1.06L9.06 8l4.28-4.28a.75.75 0 0 0-1.06-1.06L8 6.94 3.72 2.66Z" fill="currentColor" />
-              </svg>
-              <span class="tools-status__text">{{ availability }}</span>
-            </span>
+    <LiquidGlass width="100%" height="clamp(460px, 58svh, 650px)">
+      <div class="tools__content">
+        <div class="tools__summary">
+          <div>
+            <h2>Browser AI APIs</h2>
+            <p>
+              Framework helpers for Chrome's built-in AI APIs. Prompt API is implemented now;
+              the remaining APIs are listed as roadmap targets.
+            </p>
           </div>
+          <span class="tools__count">{{ availableCount }} available</span>
         </div>
 
-        <!-- Description -->
-        <div class="tools-description">
-          {{ selectedTool.description }}
-        </div>
-
-        <!-- Interactive tool content -->
-        <div class="tool">
-          <PromptApi
-            v-if="selected === 'prompt-api'"
-            @availability-change="handleAvailabilityChange"
-          />
+        <div class="tools__table-wrap">
+          <table class="tools__table" aria-label="Browser AI Kit API statuses">
+            <thead>
+              <tr>
+                <th scope="col">API</th>
+                <th scope="col">Browser</th>
+                <th scope="col">Kit</th>
+                <th scope="col">Demo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in apiRows" :key="item.id">
+                <td>
+                  <div class="tools__api">
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.description }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="tools__badge" :class="`tools__badge--${item.availability}`">
+                    {{ getAvailabilityLabel(item.availability) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="tools__kit-status">{{ item.kitStatus }}</span>
+                </td>
+                <td>
+                  <NuxtLink v-if="item.href" class="tools__action" :to="item.href">
+                    Open
+                  </NuxtLink>
+                  <span v-else class="tools__muted">Soon</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </LiquidGlass>
@@ -50,136 +55,270 @@
 </template>
 
 <script setup lang="ts">
-const selected = ref<Tool>('prompt-api');
-const selectedTool = computed(() => ToolItems.find(item => item.id === selected.value)!);
+type DemoAvailability = Availability | 'checking';
 
-const availability = ref<Availability>('unavailable');
-
-const handleAvailabilityChange = (value: Availability) => {
-  availability.value = value;
+type ApiRow = ToolItem & {
+  availability: DemoAvailability;
+  href: string;
+  kitStatus: string;
 };
+
+const promptApiAvailability = ref<DemoAvailability>('checking');
+const { checkAvailability } = usePromptApi();
+
+const mockedAvailability: Record<Exclude<Tool, 'prompt-api'>, Availability> = {
+  summarizer: 'unavailable',
+  writer: 'unavailable',
+  rewriter: 'unavailable',
+  translator: 'unavailable',
+  'language-detector': 'unavailable',
+  proofreader: 'unavailable'
+};
+
+const getAvailabilityLabel = (status: DemoAvailability) => {
+  if (status === 'checking') return 'Checking';
+  if (status === 'available') return 'Available';
+  if (status === 'downloadable') return 'Downloadable';
+  if (status === 'downloading') return 'Downloading';
+  return 'Not available';
+};
+
+const canOpenDemo = (availability: DemoAvailability) => {
+  return availability === 'available' || availability === 'downloadable';
+};
+
+const apiRows = computed<ApiRow[]>(() => {
+  return ToolItems.map((item) => {
+    if (item.id === 'prompt-api') {
+      return {
+        ...item,
+        availability: promptApiAvailability.value,
+        href: canOpenDemo(promptApiAvailability.value) ? '/promptapi' : '',
+        kitStatus: 'Vue / Nuxt ready'
+      };
+    }
+
+    return {
+      ...item,
+      availability: mockedAvailability[item.id],
+      href: '',
+      kitStatus: 'Planned'
+    };
+  });
+});
+
+const availableCount = computed(() => {
+  return apiRows.value.filter(item => item.availability === 'available').length;
+});
+
+onMounted(async () => {
+  try {
+    promptApiAvailability.value = await checkAvailability();
+  } catch {
+    promptApiAvailability.value = 'unavailable';
+  }
+});
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .tools {
+  width: min(1280px, calc(100vw - 3rem));
+  pointer-events: all;
+}
+
+.tools__content {
+  height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 1rem;
-  min-width: 400px;
-
-  &-container {
-    height: 100%;
-    width: 100%;
-    padding: 0.5rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-height: 0;
-  }
-
-  &-header {
-    flex-shrink: 0;
-    pointer-events: all;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-  }
-
-  &-status {
-    &__badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-      white-space: nowrap;
-      transition: all 0.3s ease;
-
-      &--available {
-        background-color: rgba(34, 197, 94, 0.15);
-        color: rgba(134, 239, 172, 1);
-        border: 1px solid rgba(34, 197, 94, 0.3);
-      }
-
-      &--downloadable {
-        background-color: rgba(59, 130, 246, 0.15);
-        color: rgba(147, 197, 253, 1);
-        border: 1px solid rgba(59, 130, 246, 0.3);
-      }
-
-      &--downloading {
-        background-color: rgba(251, 146, 60, 0.15);
-        color: rgba(254, 215, 170, 1);
-        border: 1px solid rgba(251, 146, 60, 0.3);
-      }
-
-      &--unavailable {
-        background-color: rgba(239, 68, 68, 0.15);
-        color: rgba(252, 165, 165, 1);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-      }
-    }
-
-    &__icon {
-      flex-shrink: 0;
-      opacity: 0.9;
-
-      &--spinning {
-        animation: spin 1s linear infinite;
-      }
-    }
-
-    &__text {
-      text-transform: capitalize;
-    }
-  }
-
-  &-description {
-    flex-shrink: 0;
-    pointer-events: all;
-    color: var(--color-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
+  padding: 1rem;
 }
 
-.tool {
-  flex: 1;
+.tools__summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.tools__summary h2 {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.tools__summary p {
+  max-width: 760px;
+  margin: 0.35rem 0 0;
+  color: var(--color-secondary);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.tools__count {
+  flex-shrink: 0;
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.36rem 0.62rem;
+  border-radius: 0.55rem;
+  color: rgba(134, 239, 172, 1);
+  background: rgba(34, 197, 94, 0.13);
+  border: 1px solid rgba(34, 197, 94, 0.26);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tools__table-wrap {
   min-height: 0;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.8rem;
+  background: rgba(7, 10, 18, 0.5);
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.tools__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-@media (max-width: 480px) {
+.tools__table th,
+.tools__table td {
+  padding: 0.78rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  vertical-align: middle;
+  text-align: left;
+}
+
+.tools__table tr:last-child td {
+  border-bottom: none;
+}
+
+.tools__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.66);
+  background: rgba(10, 13, 24, 0.92);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tools__table th:nth-child(1),
+.tools__table td:nth-child(1) {
+  width: 52%;
+}
+
+.tools__table th:nth-child(2),
+.tools__table td:nth-child(2) {
+  width: 18%;
+}
+
+.tools__table th:nth-child(3),
+.tools__table td:nth-child(3) {
+  width: 17%;
+}
+
+.tools__table th:nth-child(4),
+.tools__table td:nth-child(4) {
+  width: 13%;
+}
+
+.tools__api {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.tools__api strong {
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.tools__api span {
+  color: var(--color-secondary);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.tools__badge,
+.tools__action {
+  min-height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.34rem 0.58rem;
+  border-radius: 0.52rem;
+  font-size: 0.78rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.tools__badge {
+  border: 1px solid rgba(120, 120, 120, 0.3);
+}
+
+.tools__badge--available {
+  background: rgba(34, 197, 94, 0.15);
+  color: rgba(134, 239, 172, 1);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.tools__badge--downloadable,
+.tools__badge--checking {
+  background: rgba(59, 130, 246, 0.15);
+  color: rgba(147, 197, 253, 1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.tools__badge--downloading {
+  background: rgba(251, 146, 60, 0.15);
+  color: rgba(254, 215, 170, 1);
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.tools__badge--unavailable {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgba(252, 165, 165, 1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.tools__kit-status,
+.tools__muted {
+  color: var(--color-secondary);
+  font-size: 0.84rem;
+}
+
+.tools__action {
+  justify-content: center;
+  color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+@media (max-width: 760px) {
   .tools {
-    flex: 1;
-
-    &-header {
-      flex-direction: column;
-      align-items: stretch;
-
-      :deep(.dropdown) {
-        max-width: 100%;
-      }
-    }
+    width: min(100%, calc(100vw - 2rem));
   }
-}
 
-@media (max-width: 412px) {
-  .tools {
-    min-width: unset;
+  .tools__content {
+    padding: 0.75rem;
+  }
+
+  .tools__summary {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .tools__table {
+    min-width: 760px;
   }
 }
 </style>

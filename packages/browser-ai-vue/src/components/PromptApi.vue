@@ -29,8 +29,23 @@
 
         <div class="prompt-api__meta">
           <span>Tokens: {{ tokensUsedLabel }} used / {{ tokensLeftLabel }} left</span>
+          <div
+            v-if="isContextLoading"
+            class="prompt-api__header-loader"
+            role="status"
+            aria-live="polite"
+            :aria-label="contextLoadingDescription"
+          >
+            <div class="prompt-api__header-loader-heading">
+              <span>{{ contextLoadingTitle }}</span>
+              <span>{{ contextLoadProgressLabel }}</span>
+            </div>
+            <div class="prompt-api__header-loader-bar" aria-hidden="true">
+              <span :style="{ width: `${contextLoadProgress}%` }"></span>
+            </div>
+          </div>
           <span v-if="contextPartiallyLoaded" class="prompt-api__warning">
-            Context partially loaded to fit model quota.
+            {{ contextFitLabel }}
           </span>
         </div>
       </header>
@@ -40,7 +55,7 @@
       <PromptInput
         v-model="draft"
         v-model:attachments="attachments"
-        :placeholder="placeholder"
+        :placeholder="inputPlaceholder"
         :send-on-enter="sendOnEnter"
         :allow-attachments="allowAttachments"
         :allow-voice="allowVoice"
@@ -51,24 +66,6 @@
         @send="handleSend"
         @voice="handleVoice"
       />
-    </div>
-
-    <div v-if="showOverflowDialog" class="prompt-api__overlay" role="dialog" aria-modal="true">
-      <div class="prompt-api__dialog">
-        <h4>Context limit reached</h4>
-        <p>
-          Browser LLM may truncate older context to continue. You can continue with possible truncation,
-          or start a new chat.
-        </p>
-        <div class="prompt-api__dialog-actions">
-          <button type="button" class="prompt-api__button prompt-api__button--primary" @click="continueAfterOverflow">
-            Continue
-          </button>
-          <button type="button" class="prompt-api__button" @click="startNewChatAfterOverflow">
-            Start new chat
-          </button>
-        </div>
-      </div>
     </div>
 
     <div v-if="pendingDeleteChat" class="prompt-api__overlay" role="dialog" aria-modal="true">
@@ -107,7 +104,13 @@ import type { PromptAttachment } from './PromptInput.vue';
 import type { ChatSidebarItem } from './ChatSidebar.vue';
 import type { AiChatMessage, AiChatRecord } from '../composables/useAiChats';
 import { useAiChats } from '../composables/useAiChats';
-import { usePromptApi } from '../composables/usePromptApi';
+import {
+  usePromptApi,
+  type LLMContextRestoreState,
+  type LLMContextSummaryMode,
+  type LLMContextStrategy,
+  type LLMRestoreSessionOptions,
+} from '../composables/usePromptApi';
 
 type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
 type PromptProcessingState = 'availability' | 'create' | 'measure' | 'prompt' | '';
@@ -118,6 +121,18 @@ type PromptOptionsContext = {
   messages: ChatMessage[];
   streaming: boolean;
 };
+
+type RestoreSessionOverrides = Partial<Pick<
+  LLMRestoreSessionOptions,
+  | 'autoCreate'
+  | 'strategy'
+  | 'summaryMode'
+  | 'budgetRatio'
+  | 'summaryChunkBudgetRatio'
+  | 'summaryMaxCharacters'
+  | 'summaryTimeoutMs'
+  | 'summaryBackgroundTimeoutMs'
+>>;
 
 interface Props {
   modelOptions?: LanguageModelCreateCoreOptions;
@@ -141,6 +156,17 @@ interface Props {
   notReadyMessage?: string;
   emptyResponseMessage?: string;
   errorMessage?: string | ((error: unknown) => string);
+  contextStrategy?: LLMContextStrategy;
+  contextSummaryMode?: LLMContextSummaryMode;
+  contextBudgetRatio?: number;
+  contextSummaryChunkBudgetRatio?: number;
+  contextSummaryMaxCharacters?: number;
+  contextSummaryTimeoutMs?: number;
+  contextSummaryBackgroundTimeoutMs?: number;
+  autoCompactContext?: boolean;
+  contextCompactionThresholdRatio?: number;
+  contextCompactionSummaryMode?: LLMContextSummaryMode;
+  contextLoadingMessage?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -162,7 +188,18 @@ const props = withDefaults(defineProps<Props>(), {
   autoScroll: true,
   notReadyMessage: 'Model is not ready yet. Please try again in a moment.',
   emptyResponseMessage: 'No response received. Try again.',
-  errorMessage: undefined
+  errorMessage: undefined,
+  contextStrategy: 'summarize',
+  contextSummaryMode: 'cache-first',
+  contextBudgetRatio: 0.88,
+  contextSummaryChunkBudgetRatio: 0.18,
+  contextSummaryMaxCharacters: 0,
+  contextSummaryTimeoutMs: 15000,
+  contextSummaryBackgroundTimeoutMs: 60000,
+  autoCompactContext: true,
+  contextCompactionThresholdRatio: 0.22,
+  contextCompactionSummaryMode: 'eager',
+  contextLoadingMessage: 'Restoring previous messages for the local AI session...'
 });
 
 const emit = defineEmits<{
@@ -175,13 +212,14 @@ const emit = defineEmits<{
   'processing-change': [state: PromptProcessingState];
   'download-progress': [progress: number];
   'context-overflow': [];
-  'quota-overflow': [];
+  'context-load-start': [state: LLMContextRestoreState];
+  'context-load-progress': [state: LLMContextRestoreState];
+  'context-load-complete': [state: LLMContextRestoreState];
+  'summary-cache-error': [error: unknown];
   'usage-change': [usage: {
     contextUsage: number | null;
     contextWindow: number | null;
     contextWindowAvailable: number | null;
-    inputUsage: number | null;
-    inputQuota: number | null;
   }];
   send: [payload: { text: string; attachments: PromptAttachment[] }];
   voice: [];
@@ -208,8 +246,23 @@ const messages = ref<ChatMessage[]>([]);
 const isHydrating = ref(false);
 const isSwitchingChat = ref(false);
 const contextPartiallyLoaded = ref(false);
+const contextOverflowPending = ref(false);
+const isCompactingContext = ref(false);
+const isAssistantPending = ref(false);
+const lastContextUsage = ref<number | null>(null);
+const lastContextWindowAvailable = ref<number | null>(null);
+const contextLoadState = ref<LLMContextRestoreState>({
+  phase: 'idle',
+  loadedMessages: 0,
+  totalMessages: 0,
+  summarizedMessages: 0,
+  includedMessages: 0,
+  measuredTokens: null,
+  cachedSummaries: 0,
+  createdSummaries: 0,
+  summaryChunks: 0
+});
 
-const showOverflowDialog = ref(false);
 const pendingDeleteChatId = ref<string | null>(null);
 const undoState = ref<{ chat: AiChatRecord } | null>(null);
 
@@ -218,6 +271,7 @@ let persistTimer: ReturnType<typeof setTimeout> | null = null;
 let persistPayload: { chatId: string; messages: ChatMessage[] } | null = null;
 let undoTimer: ReturnType<typeof setTimeout> | null = null;
 let switchVersion = 0;
+let lastAutoCompactMessageCount = 0;
 
 const {
   availability,
@@ -226,7 +280,9 @@ const {
   dispose,
   prompt,
   promptStreaming,
-  measureContextUsage,
+  promptWithTemporarySession,
+  restoreSession,
+  checkAvailability,
   isReady,
   processing,
   downloadProgress,
@@ -236,13 +292,12 @@ const {
   interrupt: interruptOperation,
 } = usePromptApi({
   onContextOverflow: () => {
-    showOverflowDialog.value = true;
+    contextOverflowPending.value = true;
     emit('context-overflow');
-    emit('quota-overflow');
   }
 });
 
-const isTyping = computed(() => processing.value === 'prompt' && !isHydrating.value);
+const isTyping = computed(() => isAssistantPending.value || (processing.value === 'prompt' && !isHydrating.value));
 const isSidebarDisabled = computed(() => props.disabled || isTyping.value || isSwitchingChat.value || isHydrating.value);
 const isInputDisabled = computed(() => {
   return props.disabled
@@ -250,6 +305,21 @@ const isInputDisabled = computed(() => {
     || isHydrating.value
     || processing.value === 'create'
     || availability.value === 'unavailable';
+});
+const isContextLoading = computed(() => {
+  return isHydrating.value && contextLoadState.value.phase !== 'idle' && contextLoadState.value.phase !== 'ready';
+});
+
+const inputPlaceholder = computed(() => {
+  if (isCompactingContext.value) {
+    return 'Compressing chat context...';
+  }
+
+  if (isContextLoading.value) {
+    return 'Restoring chat context...';
+  }
+
+  return props.placeholder;
 });
 
 const activeChatId = computed(() => chatStore.activeChatId.value);
@@ -260,11 +330,89 @@ const pendingDeleteChat = computed(() => {
 });
 
 const tokensUsedLabel = computed(() => {
-  return contextUsage.value ?? 0;
+  if (isHydrating.value || isCompactingContext.value) {
+    return lastContextUsage.value ?? '—';
+  }
+
+  return contextUsage.value ?? lastContextUsage.value ?? 0;
 });
 
 const tokensLeftLabel = computed(() => {
-  return contextWindowAvailable.value ?? '—';
+  if (isHydrating.value || isCompactingContext.value) {
+    return lastContextWindowAvailable.value ?? '—';
+  }
+
+  return contextWindowAvailable.value ?? lastContextWindowAvailable.value ?? '—';
+});
+
+const contextLoadProgress = computed(() => {
+  const total = contextLoadState.value.totalMessages;
+  if (!isContextLoading.value) return 0;
+  if (total <= 0) return contextLoadState.value.phase === 'creating' ? 70 : 35;
+
+  const baseProgress = Math.round((contextLoadState.value.loadedMessages / total) * 100);
+  if (contextLoadState.value.phase === 'summarizing') {
+    return Math.min(Math.max(baseProgress, 55), 85);
+  }
+  if (contextLoadState.value.phase === 'restoring') {
+    return 92;
+  }
+
+  return Math.min(baseProgress, 95);
+});
+
+const contextLoadProgressLabel = computed(() => {
+  const total = contextLoadState.value.totalMessages;
+  if (total <= 0) {
+    return contextLoadState.value.phase === 'creating' ? 'Starting' : 'Checking';
+  }
+
+  return `${Math.min(contextLoadState.value.loadedMessages, total)} / ${total}`;
+});
+
+const contextLoadingTitle = computed(() => {
+  if (isCompactingContext.value) {
+    return 'Compressing chat context';
+  }
+
+  if (contextLoadState.value.phase === 'summarizing') {
+    return 'Summarizing older messages';
+  }
+  if (contextLoadState.value.phase === 'restoring') {
+    return 'Starting local AI session';
+  }
+  if (contextLoadState.value.phase === 'measuring') {
+    return 'Fitting chat history';
+  }
+  if (contextLoadState.value.phase === 'creating') {
+    return 'Preparing local AI';
+  }
+  return 'Restoring chat context';
+});
+
+const contextLoadingDescription = computed(() => {
+  if (isCompactingContext.value) {
+    return 'Compressing older turns into a fresh local AI session so future prompts keep more useful context.';
+  }
+
+  if (contextLoadState.value.phase === 'summarizing') {
+    return 'Older messages are being compressed into a short memory so the latest turns stay available.';
+  }
+  if (contextLoadState.value.phase === 'measuring') {
+    return 'Checking how much of this chat fits in the browser model context window.';
+  }
+  if (contextLoadState.value.phase === 'restoring') {
+    return 'Loading the selected history into a fresh local browser AI session.';
+  }
+  return props.contextLoadingMessage;
+});
+
+const contextFitLabel = computed(() => {
+  if (contextLoadState.value.summarizedMessages > 0) {
+    return `${contextLoadState.value.summarizedMessages} older messages summarized to fit context.`;
+  }
+
+  return 'Older context trimmed to fit the model window.';
 });
 
 const chatItems = computed<ChatSidebarItem[]>(() => {
@@ -316,10 +464,6 @@ const resolveErrorMessage = (error: unknown) => {
     return props.errorMessage;
   }
   return 'Something went wrong while sending your message.';
-};
-
-const getLanguageModel = () => {
-  return (globalThis as typeof globalThis & { LanguageModel?: typeof LanguageModel }).LanguageModel;
 };
 
 const hasExpectedInputType = (
@@ -488,6 +632,7 @@ const updateMessageContent = (
 };
 
 const interruptPrompt = () => {
+  isAssistantPending.value = false;
   interruptOperation();
   emit('interrupt');
 };
@@ -519,6 +664,27 @@ const runCreate = async (createOptions: { initialPrompts?: LanguageModelCreateOp
   }
 };
 
+const cloneContextLoadState = (): LLMContextRestoreState => ({ ...contextLoadState.value });
+
+const setContextLoadState = (
+  patch: Partial<LLMContextRestoreState>,
+  event: 'start' | 'progress' | 'complete' | null = 'progress'
+) => {
+  contextLoadState.value = {
+    ...contextLoadState.value,
+    ...patch
+  };
+
+  const payload = cloneContextLoadState();
+  if (event === 'start') {
+    emit('context-load-start', payload);
+  } else if (event === 'complete') {
+    emit('context-load-complete', payload);
+  } else if (event === 'progress') {
+    emit('context-load-progress', payload);
+  }
+};
+
 const buildInitialPrompts = (historyMessages: ChatMessage[]) => {
   const initialPrompts: Array<LanguageModelSystemMessage | LanguageModelMessage> = [];
   const systemPrompt = props.systemPrompt.trim();
@@ -542,86 +708,158 @@ const buildInitialPrompts = (historyMessages: ChatMessage[]) => {
   return initialPrompts;
 };
 
-const pickMessagesForHydration = async (history: Array<LanguageModelSystemMessage | LanguageModelMessage>) => {
-  const leadingSystemMessage = history[0]?.role === 'system'
-    ? history[0] as LanguageModelSystemMessage
-    : null;
-  const conversationHistory = leadingSystemMessage
-    ? history.slice(1) as LanguageModelMessage[]
-    : history as LanguageModelMessage[];
-  const budget = contextWindow.value ? Math.floor(contextWindow.value * 0.88) : null;
-
-  let selected: LanguageModelMessage[] = [];
-
-  for (let index = conversationHistory.length - 1; index >= 0; index -= 1) {
-    const candidate = [conversationHistory[index], ...selected] as LanguageModelMessage[];
-
-    if (!budget) {
-      selected = candidate;
-      continue;
-    }
-
-    try {
-      const usage = await measureContextUsage(candidate);
-      if (usage <= budget || selected.length === 0) {
-        selected = candidate;
-      } else {
-        break;
-      }
-    } catch {
-      selected = candidate;
-    }
-  }
-
-  return leadingSystemMessage ? [leadingSystemMessage, ...selected] : selected;
+const buildMessageMetadata = (historyMessages: ChatMessage[]) => {
+  return historyMessages
+    .filter((message) => message.content.trim().length > 0)
+    .map((message) => ({
+      id: message.id,
+      timestamp: message.timestamp
+    }));
 };
 
 const createSessionFromMessages = async (
   historyMessages: ChatMessage[],
   currentSwitchVersion: number,
-  allowDownloadCreate = false
+  allowDownloadCreate = false,
+  chatId = chatStore.activeChatId.value,
+  restoreOverrides: RestoreSessionOverrides = {}
 ) => {
   isHydrating.value = true;
 
   try {
-    await runInit();
-    if (currentSwitchVersion !== switchVersion) return false;
-
-    if (!props.autoCreate && !allowDownloadCreate) {
-      return false;
-    }
-
-    if (availability.value !== 'available' && !allowDownloadCreate) {
-      return false;
-    }
-
-    const allInitialPrompts = buildInitialPrompts(historyMessages);
-    if (allInitialPrompts.length === 0) {
-      await runCreate();
-      contextPartiallyLoaded.value = false;
-      return true;
-    }
-
-    await runCreate();
-    if (currentSwitchVersion !== switchVersion) return false;
-
-    const selected = await pickMessagesForHydration(allInitialPrompts);
-    if (currentSwitchVersion !== switchVersion) return;
-
-    await runCreate({
-      initialPrompts: selected as LanguageModelCreateOptions['initialPrompts']
+    const targetChat = chatId ? chatStore.getChatById(chatId) : null;
+    const result = await restoreSession(buildInitialPrompts(historyMessages), {
+      modelOptions: resolveModelOptions(),
+      allowDownloadCreate,
+      autoCreate: restoreOverrides.autoCreate ?? (props.autoCreate || allowDownloadCreate),
+      strategy: restoreOverrides.strategy ?? props.contextStrategy,
+      summaryMode: restoreOverrides.summaryMode ?? props.contextSummaryMode,
+      budgetRatio: restoreOverrides.budgetRatio ?? props.contextBudgetRatio,
+      summaryChunkBudgetRatio: restoreOverrides.summaryChunkBudgetRatio ?? props.contextSummaryChunkBudgetRatio,
+      summaryMaxCharacters: restoreOverrides.summaryMaxCharacters ?? props.contextSummaryMaxCharacters,
+      summaryTimeoutMs: restoreOverrides.summaryTimeoutMs ?? props.contextSummaryTimeoutMs,
+      summaryBackgroundTimeoutMs: restoreOverrides.summaryBackgroundTimeoutMs ?? props.contextSummaryBackgroundTimeoutMs,
+      messageMetadata: buildMessageMetadata(historyMessages),
+      summaryCache: targetChat?.summaries ?? [],
+      onSummaryCacheUpdate: async (summaries) => {
+        if (!chatId) {
+          return;
+        }
+        await chatStore.updateSummaries(chatId, summaries);
+      },
+      onSummaryCacheError: (error) => emit('summary-cache-error', error),
+      shouldContinue: () => currentSwitchVersion === switchVersion,
+      onInitStart: () => emit('init-start'),
+      onInitComplete: () => emit('init-complete'),
+      onCreateStart: () => emit('create-start'),
+      onCreateComplete: () => emit('create-complete'),
+      onStateChange: (state, event) => {
+        contextLoadState.value = state;
+        if (event === 'start') {
+          emit('context-load-start', state);
+        } else if (event === 'complete') {
+          emit('context-load-complete', state);
+        } else {
+          emit('context-load-progress', state);
+        }
+      },
     });
 
-    const selectedConversationCount = selected.filter((message) => message.role !== 'system').length;
-    const fullConversationCount = allInitialPrompts.filter((message) => message.role !== 'system').length;
-    contextPartiallyLoaded.value = selectedConversationCount < fullConversationCount;
-    return true;
+    if (currentSwitchVersion !== switchVersion) return false;
+
+    contextPartiallyLoaded.value = result.partiallyLoaded;
+    return result.ready;
   } catch (error) {
+    setContextLoadState({ phase: 'error' });
     emit('error', error);
     return false;
   } finally {
     if (currentSwitchVersion === switchVersion) {
       isHydrating.value = false;
+    }
+  }
+};
+
+const getCompactionThresholdTokens = () => {
+  if (!contextWindow.value) return null;
+
+  const ratio = Number.isFinite(props.contextCompactionThresholdRatio)
+    ? Math.min(Math.max(props.contextCompactionThresholdRatio, 0.05), 0.8)
+    : 0.22;
+
+  return Math.floor(contextWindow.value * ratio);
+};
+
+const shouldCompactBeforePrompt = () => {
+  if (!props.autoCompactContext || !isReady.value || isCompactingContext.value) {
+    return false;
+  }
+  if (contextWindowAvailable.value == null || messages.value.length <= 1) {
+    return false;
+  }
+
+  const threshold = getCompactionThresholdTokens();
+  if (!threshold || contextWindowAvailable.value > threshold) {
+    return false;
+  }
+
+  return lastAutoCompactMessageCount !== messages.value.length;
+};
+
+const compactActiveChatContext = async (
+  chatId: string,
+  force = false,
+  sourceMessagesOverride?: ChatMessage[]
+) => {
+  if (!props.autoCompactContext || isCompactingContext.value) {
+    return false;
+  }
+  if (!force && !shouldCompactBeforePrompt()) {
+    return false;
+  }
+
+  const target = chatStore.getChatById(chatId);
+  let sourceMessages: ChatMessage[] = [];
+
+  if (sourceMessagesOverride) {
+    sourceMessages = sourceMessagesOverride.map((message) => ({ ...message }));
+  } else if (chatStore.activeChatId.value === chatId) {
+    sourceMessages = messages.value.map((message) => ({ ...message }));
+  } else if (target) {
+    sourceMessages = fromStoredMessages(target.messages);
+  }
+
+  if (sourceMessages.filter((message) => message.content.trim().length > 0).length <= 1) {
+    return false;
+  }
+
+  const currentSwitchVersion = switchVersion;
+  isCompactingContext.value = true;
+  contextOverflowPending.value = false;
+
+  try {
+    const ready = await createSessionFromMessages(
+      sourceMessages,
+      currentSwitchVersion,
+      false,
+      chatId,
+      {
+        autoCreate: true,
+        strategy: 'summarize',
+        summaryMode: props.contextCompactionSummaryMode,
+      }
+    );
+
+    if (ready && currentSwitchVersion === switchVersion) {
+      lastAutoCompactMessageCount = sourceMessagesOverride && chatStore.activeChatId.value === chatId
+        ? messages.value.length
+        : sourceMessages.length;
+    }
+
+    return ready;
+  } finally {
+    if (currentSwitchVersion === switchVersion) {
+      isCompactingContext.value = false;
     }
   }
 };
@@ -639,7 +877,11 @@ const switchToChat = async (chatId: string) => {
 
   isSwitchingChat.value = true;
   isHydrating.value = false;
+  isCompactingContext.value = false;
+  isAssistantPending.value = false;
+  contextOverflowPending.value = false;
   contextPartiallyLoaded.value = false;
+  lastAutoCompactMessageCount = 0;
 
   chatStore.selectChat(chatId);
 
@@ -649,7 +891,7 @@ const switchToChat = async (chatId: string) => {
 
   try {
     if (props.autoInit) {
-      await createSessionFromMessages(messages.value, currentSwitchVersion);
+      await createSessionFromMessages(messages.value, currentSwitchVersion, false, chatId);
     }
   } catch {
     // Errors are already emitted
@@ -671,7 +913,11 @@ const createAndSwitchChat = async () => {
   chatStore.clearActiveChat();
   draft.value = '';
   attachments.value = [];
+  isCompactingContext.value = false;
+  isAssistantPending.value = false;
+  contextOverflowPending.value = false;
   contextPartiallyLoaded.value = false;
+  lastAutoCompactMessageCount = 0;
   setMessages(props.initialMessages, { persist: false });
 
   if (props.autoInit) {
@@ -777,34 +1023,27 @@ const fallbackTitleFromPrompt = (input: string) => {
 
 const generateChatTitle = async (firstPrompt: string) => {
   const fallback = fallbackTitleFromPrompt(firstPrompt);
-  const LanguageModel = getLanguageModel();
-
-  if (typeof LanguageModel?.availability !== 'function' || typeof LanguageModel?.create !== 'function') {
-    return fallback;
-  }
 
   try {
-    const status = await LanguageModel.availability(props.modelOptions ?? {});
-    if (status === 'unavailable') {
+    const status = await checkAvailability(props.modelOptions ?? {});
+    if (status !== 'available') {
       return fallback;
     }
 
-    const titleSession = await LanguageModel.create(props.modelOptions ?? {});
+    const title = await promptWithTemporarySession(
+      [
+        {
+          role: 'user',
+          content: `Create a concise chat title in the same language as the input. Use 4 to 6 words. Return only the title text.\n\n${firstPrompt}`
+        }
+      ],
+      {
+        modelOptions: props.modelOptions ?? {},
+        timeoutMs: 8000
+      }
+    );
 
-    try {
-      const title = await titleSession.prompt(
-        [
-          {
-            role: 'user',
-            content: `Create a concise chat title in the same language as the input. Use 4 to 6 words. Return only the title text.\n\n${firstPrompt}`
-          }
-        ]
-      );
-
-      return sanitizeGeneratedTitle(title, fallback);
-    } finally {
-      titleSession.destroy();
-    }
+    return sanitizeGeneratedTitle(title, fallback);
   } catch {
     return fallback;
   }
@@ -854,6 +1093,7 @@ const handleSend = async () => {
   if (!text && attachments.value.length === 0) return;
 
   const historyBeforeSend = messages.value.map((message) => ({ ...message }));
+  const shouldCompactHistoryBeforePrompt = shouldCompactBeforePrompt();
   const selectedAttachments = cloneAttachments(attachments.value);
   emit('send', { text, attachments: selectedAttachments });
 
@@ -876,6 +1116,17 @@ const handleSend = async () => {
 
   addMessage(userMessage, { chatId: currentChatId });
 
+  const assistantMessageId = generateMessageId();
+  addMessage({
+    id: assistantMessageId,
+    role: 'assistant',
+    content: '',
+    timestamp: Date.now()
+  }, {
+    persist: false
+  });
+  isAssistantPending.value = true;
+
   const userMessageCount = messages.value.filter((message) => message.role === 'user').length;
   if (userMessageCount === 1) {
     maybeGenerateTitleForChat(currentChatId, userMessage.content);
@@ -886,17 +1137,17 @@ const handleSend = async () => {
     attachments.value = [];
   }
 
+  if (shouldCompactHistoryBeforePrompt) {
+    await compactActiveChatContext(currentChatId, true, historyBeforeSend);
+  }
+
   if (!isReady.value) {
-    const ready = await createSessionFromMessages(historyBeforeSend, switchVersion, true);
+    const ready = await createSessionFromMessages(historyBeforeSend, switchVersion, true, currentChatId);
     if (!ready || !isReady.value) {
-      addMessage({
-        id: generateMessageId(),
-        role: 'assistant',
-        content: props.notReadyMessage,
-        timestamp: Date.now()
-      }, {
+      updateMessageContent(assistantMessageId, props.notReadyMessage, {
         persist: false
       });
+      isAssistantPending.value = false;
       return;
     }
   }
@@ -910,17 +1161,8 @@ const handleSend = async () => {
 
   try {
     if (props.streaming) {
-      const assistantMessageId = generateMessageId();
-      addMessage({
-        id: assistantMessageId,
-        role: 'assistant',
-        content: '',
-        timestamp: Date.now()
-      }, {
-        chatId: currentChatId
-      });
-
       const stream = promptStreaming(input, options);
+      isAssistantPending.value = false;
       const reader = stream.getReader();
       let accumulated = '';
 
@@ -953,18 +1195,18 @@ const handleSend = async () => {
         response,
         streaming: true
       });
+
+      if (contextOverflowPending.value) {
+        await compactActiveChatContext(currentChatId, true);
+      }
       return;
     }
 
     const response = await prompt(input, options);
+    isAssistantPending.value = false;
     const output = response || props.emptyResponseMessage;
 
-    addMessage({
-      id: generateMessageId(),
-      role: 'assistant',
-      content: output,
-      timestamp: Date.now()
-    }, {
+    updateMessageContent(assistantMessageId, output, {
       chatId: currentChatId,
       immediatePersist: true
     });
@@ -973,22 +1215,27 @@ const handleSend = async () => {
       response: output,
       streaming: false
     });
+
+    if (contextOverflowPending.value) {
+      await compactActiveChatContext(currentChatId, true);
+    }
   } catch (error) {
+    isAssistantPending.value = false;
+
     if (isAbortError(error)) {
       emit('interrupt');
       return;
     }
 
-    addMessage({
-      id: generateMessageId(),
-      role: 'assistant',
-      content: resolveErrorMessage(error),
-      timestamp: Date.now()
-    }, {
+    updateMessageContent(assistantMessageId, resolveErrorMessage(error), {
       persist: false
     });
 
     emit('error', error);
+
+    if (contextOverflowPending.value) {
+      await compactActiveChatContext(currentChatId, true);
+    }
   }
 };
 
@@ -1007,15 +1254,6 @@ const handleRenameChat = async (chatId: string) => {
   if (nextTitle === null) return;
 
   await chatStore.renameChat(chatId, nextTitle);
-};
-
-const continueAfterOverflow = () => {
-  showOverflowDialog.value = false;
-};
-
-const startNewChatAfterOverflow = async () => {
-  showOverflowDialog.value = false;
-  await createAndSwitchChat();
 };
 
 watch(draft, (value) => {
@@ -1043,15 +1281,26 @@ watch(downloadProgress, (value) => {
   emit('download-progress', value);
 }, { immediate: true });
 
-watch([contextUsage, contextWindow, contextWindowAvailable], ([usage, window, available]) => {
-  emit('usage-change', {
-    contextUsage: usage,
-    contextWindow: window,
-    contextWindowAvailable: available,
-    inputUsage: usage,
-    inputQuota: window
-  });
-}, { immediate: true });
+watch(
+  [contextUsage, contextWindow, contextWindowAvailable, isHydrating, isCompactingContext],
+  ([usage, window, available, hydrating, compacting]) => {
+    emit('usage-change', {
+      contextUsage: usage,
+      contextWindow: window,
+      contextWindowAvailable: available,
+    });
+
+    if (!hydrating && !compacting) {
+      if (usage !== null) {
+        lastContextUsage.value = usage;
+      }
+      if (available !== null) {
+        lastContextWindowAvailable.value = available;
+      }
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   emit('update:messages', messages.value);
@@ -1198,7 +1447,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.6rem;
+  gap: 0.65rem;
   flex-wrap: wrap;
   color: var(--color-secondary);
   font-size: 0.78rem;
@@ -1206,6 +1455,40 @@ defineExpose({
 
 .prompt-api__warning {
   color: rgba(253, 224, 71, 0.95);
+}
+
+.prompt-api__header-loader {
+  flex: 1 1 210px;
+  max-width: 360px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  color: rgba(147, 197, 253, 1);
+}
+
+.prompt-api__header-loader-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.prompt-api__header-loader-bar {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.prompt-api__header-loader-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(147, 197, 253, 0.88);
+  transition: width 0.2s ease;
 }
 
 .prompt-api__overlay {

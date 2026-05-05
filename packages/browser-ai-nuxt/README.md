@@ -20,7 +20,7 @@ Then use the client component:
 
 ```vue
 <template>
-  <PromptApi />
+  <PromptApi context-strategy="summarize" />
 </template>
 ```
 
@@ -37,4 +37,4 @@ export default defineNuxtConfig({
 });
 ```
 
-The module auto-imports `usePromptApi()` and `useAiChats()` and registers the package CSS by default.
+The module auto-imports `usePromptApi()` and `useAiChats()` and registers the package CSS by default. Prompt API restore helpers, including `restoreSession()` and `promptWithTemporarySession()`, are available through the auto-imported composable. Saved chats also keep cached restore summaries in IndexedDB so unchanged long histories do not need to be summarized again on every reload. Missing summaries are warmed in the background by default instead of blocking the restored chat input.
