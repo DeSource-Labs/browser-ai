@@ -180,6 +180,7 @@ const formatTime = (timestamp?: number) => {
   background: rgba(20, 20, 20, 0.35);
   border: 1px solid rgba(120, 120, 120, 0.2);
   backdrop-filter: blur(6px);
+  user-select: text;
 
   /* Custom scrollbar styles */
   scrollbar-width: thin;

@@ -1373,8 +1373,8 @@ defineExpose({
   gap: 0.75rem;
   overflow: hidden;
   height: 100%;
-  pointer-events: auto;
   position: relative;
+  pointer-events: auto;
 }
 
 .prompt-api__main {

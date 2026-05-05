@@ -448,7 +448,6 @@ onBeforeUnmount(() => {
 .summarizer__footer {
   border-top: 1px solid rgba(255, 255, 255, 0.09);
   border-bottom: none;
-  background: rgba(5, 7, 12, 0.42);
 }
 
 .summarizer__toolbar-main {
@@ -714,6 +713,7 @@ onBeforeUnmount(() => {
   min-height: 0;
   overflow: auto;
   padding: 0.85rem;
+  user-select: text;
 }
 
 .summarizer__output pre,

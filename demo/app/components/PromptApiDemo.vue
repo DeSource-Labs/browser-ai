@@ -18,6 +18,7 @@
 
 .prompt-demo__tool {
   height: 100%;
+  width: 100%;
   min-height: 0;
   padding: 0.5rem;
 }
