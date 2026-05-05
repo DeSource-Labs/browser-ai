@@ -1,6 +1,6 @@
 # browser-ai-kit
 
-Vue and Nuxt helpers for Chrome built-in AI APIs, starting with the Prompt API powered by Gemini Nano in the browser.
+Vue and Nuxt helpers for Chrome built-in AI APIs, starting with Prompt API and Summarizer API powered by Gemini Nano in the browser.
 
 ## Status
 
@@ -13,6 +13,15 @@ The Prompt API implementation targets the current `LanguageModel` API:
 - `session.contextUsage` and `session.contextWindow`
 - `contextoverflow` events
 - `responseConstraint` prompt options for structured output
+
+The Summarizer implementation targets the current `Summarizer` API:
+
+- `Summarizer.availability()`
+- `Summarizer.create()`
+- `summarizer.summarize()` and `summarizer.summarizeStreaming()`
+- `summarizer.measureInputUsage()`
+- `summarizer.inputQuota`
+- `type`, `format`, `length`, `preference`, language, shared context, and per-run context options
 
 ## Packages
 
@@ -37,10 +46,11 @@ npm install @desource/browser-ai-vue
 ```vue
 <template>
   <PromptApi context-strategy="summarize" />
+  <Summarizer />
 </template>
 
 <script setup lang="ts">
-import { PromptApi } from '@desource/browser-ai-vue';
+import { PromptApi, Summarizer } from '@desource/browser-ai-vue';
 import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 ```
@@ -63,6 +73,21 @@ const response = await ai.prompt('Reply with one short sentence.');
 
 For restored chats, `<PromptApi />` delegates to `usePromptApi().restoreSession()`, which creates one final `LanguageModel` session with `initialPrompts`; it does not append messages one by one. Large histories are measured against the browser-reported `contextWindow` with a binary-search fit. When the full chat does not fit, the default `contextStrategy="summarize"` summarizes only the omitted older prefix, splits that prefix into measured chunks, stores chunk and rollup summaries in IndexedDB, and reuses unchanged cached summaries on later reloads. The default `contextSummaryMode="cache-first"` restores immediately with recent messages when summaries are missing, then warms the cache in the background so the input is not blocked by local summarization. During an active session, `contextoverflow` triggers automatic compaction into a fresh summarized session instead of showing a blocking overflow dialog.
 
+Summarizer usage:
+
+```ts
+import { useSummarizer } from '@desource/browser-ai-vue';
+
+const summarizer = useSummarizer();
+
+const result = await summarizer.summarizeWithDetails(longText, {
+  createOptions: { type: 'key-points', format: 'markdown', length: 'medium' },
+  context: 'Audience: product engineers',
+});
+```
+
+`useSummarizer()` measures input against `inputQuota` before summarizing. When input is too large for one native request, it splits text on paragraph/sentence boundaries, summarizes measured chunks, and recursively summarizes combined chunk summaries until a final summary fits.
+
 ## Nuxt
 
 ```bash
@@ -75,7 +100,7 @@ export default defineNuxtConfig({
 });
 ```
 
-The module registers `<PromptApi />`, `<BrowserAiPromptApi />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports `usePromptApi()` and `useAiChats()`.
+The module registers `<PromptApi />`, `<Summarizer />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports `usePromptApi()`, `useSummarizer()`, and `useAiChats()`.
 
 ## Demo
 
@@ -98,6 +123,6 @@ pnpm lint
 
 ## Roadmap
 
-- Add the remaining Chrome built-in AI APIs: Summarizer, Translator, Language Detector, Writer, Rewriter, and Proofreader.
-- Add framework packages for React and plain TypeScript once the Prompt API surface is stable.
+- Add the remaining Chrome built-in AI APIs: Translator, Language Detector, Writer, Rewriter, and Proofreader.
+- Add framework packages for React and plain TypeScript once the current API surfaces are stable.
 - Add automated browser smoke tests that can attach to a Chrome profile with Gemini Nano enabled.

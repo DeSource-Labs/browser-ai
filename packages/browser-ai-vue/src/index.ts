@@ -6,10 +6,15 @@ export {
   usePromptApi,
 } from './composables/usePromptApi';
 
+export {
+  useSummarizer,
+} from './composables/useSummarizer';
+
 export { default as ChatHistory } from './components/ChatHistory.vue';
 export { default as ChatSidebar } from './components/ChatSidebar.vue';
 export { default as PromptApi } from './components/PromptApi.vue';
 export { default as PromptInput } from './components/PromptInput.vue';
+export { default as Summarizer } from './components/Summarizer.vue';
 
 export type {
   AiChatMessage,
@@ -36,6 +41,19 @@ export type {
   LLMTemporaryPromptOptions,
   UsePromptApiOptions,
 } from './composables/usePromptApi';
+
+export type {
+  SummarizerAvailability,
+  SummarizerChunkResult,
+  SummarizerCreate,
+  SummarizerCreateCore,
+  SummarizerProcessingState,
+  SummarizerProgressPhase,
+  SummarizerProgressState,
+  SummarizerResult,
+  SummarizerRunNativeOptions,
+  SummarizerRunOptions,
+} from './composables/useSummarizer';
 
 export type {
   ChatAttachment,

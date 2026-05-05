@@ -1,5 +1,6 @@
 import { defineNuxtModule, createResolver, addImports, addComponent } from '@nuxt/kit';
 import type { NuxtModule } from '@nuxt/schema';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'url';
 
 export interface ModuleOptions {
@@ -24,6 +25,15 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
     // Configure transpilation
     const { resolve } = createResolver(import.meta.url);
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url));
+    const resolveRuntime = (name: string) => {
+      const jsPath = resolve(runtimeDir, `${name}.js`);
+      if (existsSync(jsPath)) return jsPath;
+
+      const tsPath = resolve(runtimeDir, `${name}.ts`);
+      if (existsSync(tsPath)) return tsPath;
+
+      return resolve(runtimeDir, name);
+    };
     // Transpile runtime
     nuxt.options.build.transpile.push(runtimeDir);
 
@@ -33,10 +43,11 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
 
     // Add imports
     if (options.helpers) {
-      const shared = resolve(runtimeDir, 'shared');
+      const shared = resolveRuntime('shared');
       addImports([
         { name: 'useAiChats', from: shared },
         { name: 'usePromptApi', from: shared },
+        { name: 'useSummarizer', from: shared },
         { name: 'AiChatMessage', from: shared, type: true },
         { name: 'AiChatRecord', from: shared, type: true },
         { name: 'AiChatSummaryRecord', from: shared, type: true },
@@ -60,6 +71,16 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
         { name: 'LLMRestoreSessionResult', from: shared, type: true },
         { name: 'LLMTemporaryPromptOptions', from: shared, type: true },
         { name: 'PromptAttachment', from: shared, type: true },
+        { name: 'SummarizerAvailability', from: shared, type: true },
+        { name: 'SummarizerChunkResult', from: shared, type: true },
+        { name: 'SummarizerCreate', from: shared, type: true },
+        { name: 'SummarizerCreateCore', from: shared, type: true },
+        { name: 'SummarizerProcessingState', from: shared, type: true },
+        { name: 'SummarizerProgressPhase', from: shared, type: true },
+        { name: 'SummarizerProgressState', from: shared, type: true },
+        { name: 'SummarizerResult', from: shared, type: true },
+        { name: 'SummarizerRunNativeOptions', from: shared, type: true },
+        { name: 'SummarizerRunOptions', from: shared, type: true },
         { name: 'UsePromptApiOptions', from: shared, type: true }
       ]);
     }
@@ -67,7 +88,9 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
     if (options.component) {
       [
         ['PromptApi', 'PromptApi'],
+        ['Summarizer', 'Summarizer'],
         ['BrowserAiPromptApi', 'PromptApi'],
+        ['BrowserAiSummarizer', 'Summarizer'],
         ['BrowserAiChatHistory', 'ChatHistory'],
         ['BrowserAiChatSidebar', 'ChatSidebar'],
         ['BrowserAiPromptInput', 'PromptInput'],

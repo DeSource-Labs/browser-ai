@@ -6,8 +6,8 @@
           <div>
             <h2>Browser AI APIs</h2>
             <p>
-              Framework helpers for Chrome's built-in AI APIs. Prompt API is implemented now;
-              the remaining APIs are listed as roadmap targets.
+              Framework helpers for Chrome's built-in AI APIs. Prompt API and Summarizer
+              are implemented now; the remaining APIs are listed as roadmap targets.
             </p>
           </div>
           <span class="tools__count">{{ availableCount }} available</span>
@@ -64,10 +64,11 @@ type ApiRow = ToolItem & {
 };
 
 const promptApiAvailability = ref<DemoAvailability>('checking');
-const { checkAvailability } = usePromptApi();
+const summarizerAvailability = ref<DemoAvailability>('checking');
+const { checkAvailability: checkPromptApiAvailability } = usePromptApi();
+const { checkAvailability: checkSummarizerAvailability } = useSummarizer();
 
-const mockedAvailability: Record<Exclude<Tool, 'prompt-api'>, Availability> = {
-  summarizer: 'unavailable',
+const mockedAvailability: Record<Exclude<Tool, 'prompt-api' | 'summarizer'>, Availability> = {
   writer: 'unavailable',
   rewriter: 'unavailable',
   translator: 'unavailable',
@@ -98,6 +99,15 @@ const apiRows = computed<ApiRow[]>(() => {
       };
     }
 
+    if (item.id === 'summarizer') {
+      return {
+        ...item,
+        availability: summarizerAvailability.value,
+        href: canOpenDemo(summarizerAvailability.value) ? '/summarizer' : '',
+        kitStatus: 'Vue / Nuxt ready'
+      };
+    }
+
     return {
       ...item,
       availability: mockedAvailability[item.id],
@@ -112,11 +122,18 @@ const availableCount = computed(() => {
 });
 
 onMounted(async () => {
-  try {
-    promptApiAvailability.value = await checkAvailability();
-  } catch {
-    promptApiAvailability.value = 'unavailable';
-  }
+  const [promptStatus, summarizerStatus] = await Promise.allSettled([
+    checkPromptApiAvailability(),
+    checkSummarizerAvailability()
+  ]);
+
+  promptApiAvailability.value = promptStatus.status === 'fulfilled'
+    ? promptStatus.value
+    : 'unavailable';
+
+  summarizerAvailability.value = summarizerStatus.status === 'fulfilled'
+    ? summarizerStatus.value
+    : 'unavailable';
 });
 </script>
 

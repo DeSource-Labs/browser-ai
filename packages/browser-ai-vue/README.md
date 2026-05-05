@@ -67,13 +67,62 @@ for await (const chunk of stream) {
 
 Advanced restore helpers live in the composable too: `restoreSession()` performs measured chat hydration, and `promptWithTemporarySession()` is available for isolated one-off model tasks that should not consume the active chat session context.
 
+## Summarizer Component
+
+```vue
+<template>
+  <Summarizer
+    type="key-points"
+    format="markdown"
+    length="medium"
+  />
+</template>
+
+<script setup lang="ts">
+import { Summarizer } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
+</script>
+```
+
+`Summarizer` provides a complete local summarization UI backed by Chrome's `Summarizer` API. It checks availability for the selected configuration, exposes download progress, measures input usage against `inputQuota`, supports context and shared context, and shows progress while large inputs are chunked and rolled up.
+
+## Summarizer Composable
+
+```ts
+import { useSummarizer } from '@desource/browser-ai-vue';
+
+const summarizer = useSummarizer();
+
+await summarizer.requestAvailability({
+  type: 'key-points',
+  format: 'markdown',
+  length: 'medium',
+});
+
+const result = await summarizer.summarizeWithDetails(articleText, {
+  createOptions: {
+    type: 'key-points',
+    format: 'markdown',
+    length: 'medium',
+  },
+  context: 'Audience: product engineers',
+  stripHtml: true,
+});
+
+console.log(result.summary);
+```
+
+The composable keeps native API details in one place: availability, creation, abort handling, download monitoring, measuring, batch summarization, streaming summarization, cleanup, and long-input summarization. When a text is larger than the configured budget, it splits on paragraph and sentence boundaries, measures chunks with `measureInputUsage()`, summarizes each chunk, and recursively summarizes the chunk summaries until the final request fits.
+
 ## Exports
 
 - `PromptApi`
 - `PromptInput`
+- `Summarizer`
 - `ChatHistory`
 - `ChatSidebar`
 - `usePromptApi`
+- `useSummarizer`
 - `useAiChats`
 
 The package uses `@types/dom-chromium-ai` for the current Chrome AI API types.

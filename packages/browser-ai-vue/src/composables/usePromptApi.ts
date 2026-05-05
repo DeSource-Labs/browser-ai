@@ -1,4 +1,5 @@
 import { computed, ref, shallowRef, watch } from 'vue';
+import { createDownloadMonitor, safeCheckAvailability } from '../utils/browserAi';
 
 export type LLMAvailability = Availability;
 export type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
@@ -232,16 +233,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   };
 
   const checkAvailability = async (model: LanguageModelCreateCoreOptions = {}) => {
-    const LanguageModel = getLanguageModel();
-    if (typeof LanguageModel?.availability !== 'function') {
-      return 'unavailable' as Availability;
-    }
-
-    try {
-      return await LanguageModel.availability(model);
-    } catch {
-      return 'unavailable' as Availability;
-    }
+    return safeCheckAvailability(getLanguageModel(), model);
   };
 
   const requestAvailability = async (model: LanguageModelCreateCoreOptions = {}) => {
@@ -291,11 +283,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     const signal = beginOperation();
     destroy();
 
-    const monitor: CreateMonitorCallback = (monitorTarget) => {
-      monitorTarget.addEventListener('downloadprogress', (event) => {
-        downloadProgress.value = Math.round(event.loaded * 100);
-      });
-    };
+    const monitor = createDownloadMonitor((progress) => {
+      downloadProgress.value = progress;
+    });
 
     try {
       session.value = await LanguageModel.create({
