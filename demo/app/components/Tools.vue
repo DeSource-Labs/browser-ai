@@ -6,8 +6,8 @@
           <div>
             <h2>Browser AI APIs</h2>
             <p>
-              Framework helpers for Chrome's built-in AI APIs. Prompt API and Summarizer
-              are implemented now; the remaining APIs are listed as roadmap targets.
+              Framework helpers for Chrome's built-in AI APIs. Prompt API, Summarizer, Writer,
+              and Rewriter are implemented now; the remaining APIs are listed as roadmap targets.
             </p>
           </div>
           <span class="tools__count">{{ availableCount }} available</span>
@@ -65,12 +65,14 @@ type ApiRow = ToolItem & {
 
 const promptApiAvailability = ref<DemoAvailability>('checking');
 const summarizerAvailability = ref<DemoAvailability>('checking');
+const writerAvailability = ref<DemoAvailability>('checking');
+const rewriterAvailability = ref<DemoAvailability>('checking');
 const { checkAvailability: checkPromptApiAvailability } = usePromptApi();
 const { checkAvailability: checkSummarizerAvailability } = useSummarizer();
+const { checkAvailability: checkWriterAvailability } = useWriter();
+const { checkAvailability: checkRewriterAvailability } = useRewriter();
 
-const mockedAvailability: Record<Exclude<Tool, 'prompt-api' | 'summarizer'>, Availability> = {
-  writer: 'unavailable',
-  rewriter: 'unavailable',
+const mockedAvailability: Record<Exclude<Tool, 'prompt-api' | 'summarizer' | 'writer' | 'rewriter'>, Availability> = {
   translator: 'unavailable',
   'language-detector': 'unavailable',
   proofreader: 'unavailable'
@@ -108,6 +110,24 @@ const apiRows = computed<ApiRow[]>(() => {
       };
     }
 
+    if (item.id === 'writer') {
+      return {
+        ...item,
+        availability: writerAvailability.value,
+        href: canOpenDemo(writerAvailability.value) ? '/writer' : '',
+        kitStatus: 'Vue / Nuxt ready'
+      };
+    }
+
+    if (item.id === 'rewriter') {
+      return {
+        ...item,
+        availability: rewriterAvailability.value,
+        href: canOpenDemo(rewriterAvailability.value) ? '/rewriter' : '',
+        kitStatus: 'Vue / Nuxt ready'
+      };
+    }
+
     return {
       ...item,
       availability: mockedAvailability[item.id],
@@ -122,9 +142,11 @@ const availableCount = computed(() => {
 });
 
 onMounted(async () => {
-  const [promptStatus, summarizerStatus] = await Promise.allSettled([
+  const [promptStatus, summarizerStatus, writerStatus, rewriterStatus] = await Promise.allSettled([
     checkPromptApiAvailability(),
-    checkSummarizerAvailability()
+    checkSummarizerAvailability(),
+    checkWriterAvailability(),
+    checkRewriterAvailability()
   ]);
 
   promptApiAvailability.value = promptStatus.status === 'fulfilled'
@@ -133,6 +155,14 @@ onMounted(async () => {
 
   summarizerAvailability.value = summarizerStatus.status === 'fulfilled'
     ? summarizerStatus.value
+    : 'unavailable';
+
+  writerAvailability.value = writerStatus.status === 'fulfilled'
+    ? writerStatus.value
+    : 'unavailable';
+
+  rewriterAvailability.value = rewriterStatus.status === 'fulfilled'
+    ? rewriterStatus.value
     : 'unavailable';
 });
 </script>

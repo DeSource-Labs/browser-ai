@@ -1,6 +1,6 @@
 # browser-ai-kit
 
-Vue and Nuxt helpers for Chrome built-in AI APIs, starting with Prompt API and Summarizer API powered by Gemini Nano in the browser.
+Vue and Nuxt helpers for Chrome built-in AI APIs, starting with Prompt API, Summarizer API, Writer API, and Rewriter API powered by Gemini Nano in the browser.
 
 ## Status
 
@@ -23,6 +23,24 @@ The Summarizer implementation targets the current `Summarizer` API:
 - `summarizer.inputQuota`
 - `type`, `format`, `length`, `preference`, language, shared context, and per-run context options
 
+The Writer implementation targets the current `Writer` API:
+
+- `Writer.availability()`
+- `Writer.create()`
+- `writer.write()` and `writer.writeStreaming()`
+- `writer.measureInputUsage()`
+- `writer.inputQuota`
+- `tone`, `format`, `length`, language, shared context, and per-run context options
+
+The Rewriter implementation targets the current `Rewriter` API:
+
+- `Rewriter.availability()`
+- `Rewriter.create()`
+- `rewriter.rewrite()` and `rewriter.rewriteStreaming()`
+- `rewriter.measureInputUsage()`
+- `rewriter.inputQuota`
+- `tone`, `format`, `length`, language, shared context, and per-run context options
+
 ## Packages
 
 - `@desource/browser-ai-vue`: Vue components and composables.
@@ -34,6 +52,8 @@ Use a desktop Chrome build with the built-in AI flags enabled. For localhost dev
 
 - `chrome://flags/#optimization-guide-on-device-model`
 - `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`
+- `chrome://flags/#writer-api-for-gemini-nano`
+- `chrome://flags/#rewriter-api-for-gemini-nano`
 
 The API is available only in supported Chrome desktop environments and only when Gemini Nano is available for the current profile/device.
 
@@ -47,10 +67,12 @@ npm install @desource/browser-ai-vue
 <template>
   <PromptApi context-strategy="summarize" />
   <Summarizer />
+  <Writer />
+  <Rewriter />
 </template>
 
 <script setup lang="ts">
-import { PromptApi, Summarizer } from '@desource/browser-ai-vue';
+import { PromptApi, Rewriter, Summarizer, Writer } from '@desource/browser-ai-vue';
 import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 ```
@@ -88,6 +110,38 @@ const result = await summarizer.summarizeWithDetails(longText, {
 
 `useSummarizer()` measures input against `inputQuota` before summarizing. When input is too large for one native request, it splits text on paragraph/sentence boundaries, summarizes measured chunks, and recursively summarizes combined chunk summaries until a final summary fits.
 
+Writer usage:
+
+```ts
+import { useWriter } from '@desource/browser-ai-vue';
+
+const writer = useWriter();
+
+const draft = await writer.writeStreamingToText('Write a concise launch email.', {
+  createOptions: { tone: 'formal', format: 'markdown', length: 'medium' },
+  context: 'Audience: existing customers who value privacy and local AI.',
+  fitStrategy: 'truncate-context',
+});
+```
+
+`useWriter()` preflights tasks with `measureInputUsage()`, streams drafts, supports reusable writer sessions, and can explicitly fit long context while preserving the user task.
+
+Rewriter usage:
+
+```ts
+import { useRewriter } from '@desource/browser-ai-vue';
+
+const rewriter = useRewriter();
+
+const rewrite = await rewriter.rewriteStreamingToText('This update is kind of confusing but should work.', {
+  createOptions: { tone: 'more-formal', format: 'plain-text', length: 'shorter' },
+  context: 'Make the text clear for a customer success email.',
+  fitStrategy: 'truncate-context',
+});
+```
+
+`useWriter()` and `useRewriter()` share the same production path for availability, download monitoring, abort handling, input quota preflight, streaming, batch runs, and optional-context fitting.
+
 ## Nuxt
 
 ```bash
@@ -100,7 +154,7 @@ export default defineNuxtConfig({
 });
 ```
 
-The module registers `<PromptApi />`, `<Summarizer />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports `usePromptApi()`, `useSummarizer()`, and `useAiChats()`.
+The module registers `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiWriter />`, `<BrowserAiRewriter />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports `usePromptApi()`, `useSummarizer()`, `useWriter()`, `useRewriter()`, and `useAiChats()`.
 
 ## Demo
 
@@ -123,6 +177,6 @@ pnpm lint
 
 ## Roadmap
 
-- Add the remaining Chrome built-in AI APIs: Translator, Language Detector, Writer, Rewriter, and Proofreader.
+- Add the remaining Chrome built-in AI APIs: Translator, Language Detector, and Proofreader.
 - Add framework packages for React and plain TypeScript once the current API surfaces are stable.
 - Add automated browser smoke tests that can attach to a Chrome profile with Gemini Nano enabled.

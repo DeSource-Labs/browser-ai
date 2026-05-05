@@ -10,7 +10,7 @@ export interface TextChunk extends TextSegment {
 
 const SENTENCE_BOUNDARY = /(?<=[.!?。！？])\s+/u;
 
-export const normalizeSummaryInput = (value: string) => {
+export const normalizeTextInput = (value: string) => {
   return value
     .replace(/\r\n/g, '\n')
     .replace(/\u00a0/g, ' ')
@@ -19,22 +19,25 @@ export const normalizeSummaryInput = (value: string) => {
     .trim();
 };
 
-export const stripHtmlForSummary = (value: string) => {
+export const stripHtmlForText = (value: string) => {
   if (!/<[a-z][\s\S]*>/i.test(value)) {
-    return normalizeSummaryInput(value);
+    return normalizeTextInput(value);
   }
 
   if (typeof document === 'undefined') {
-    return normalizeSummaryInput(value.replace(/<[^>]+>/g, ' '));
+    return normalizeTextInput(value.replace(/<[^>]+>/g, ' '));
   }
 
   const container = document.createElement('div');
   container.innerHTML = value;
-  return normalizeSummaryInput(container.innerText || container.textContent || '');
+  return normalizeTextInput(container.innerText || container.textContent || '');
 };
 
+export const normalizeSummaryInput = normalizeTextInput;
+export const stripHtmlForSummary = stripHtmlForText;
+
 export const splitTextIntoSegments = (value: string): TextSegment[] => {
-  const input = normalizeSummaryInput(value);
+  const input = normalizeTextInput(value);
   if (!input) return [];
 
   const segments: TextSegment[] = [];

@@ -114,15 +114,113 @@ console.log(result.summary);
 
 The composable keeps native API details in one place: availability, creation, abort handling, download monitoring, measuring, batch summarization, streaming summarization, cleanup, and long-input summarization. When a text is larger than the configured budget, it splits on paragraph and sentence boundaries, measures chunks with `measureInputUsage()`, summarizes each chunk, and recursively summarizes the chunk summaries until the final request fits.
 
+## Writer Component
+
+```vue
+<template>
+  <Writer
+    tone="formal"
+    format="markdown"
+    length="medium"
+  />
+</template>
+
+<script setup lang="ts">
+import { Writer } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
+</script>
+```
+
+`Writer` provides a local writing surface backed by Chrome's `Writer` API. It keeps task input and draft output visible, moves tone/length/format/context controls into settings, streams output by default, exposes download and token preflight state, and can fit long additional context without changing the user's writing task.
+
+## Writer Composable
+
+```ts
+import { useWriter } from '@desource/browser-ai-vue';
+
+const writer = useWriter();
+
+await writer.requestAvailability({
+  tone: 'formal',
+  format: 'markdown',
+  length: 'medium',
+});
+
+const draft = await writer.writeStreamingToText('Write a short product launch email.', {
+  createOptions: {
+    tone: 'formal',
+    format: 'markdown',
+    length: 'medium',
+  },
+  context: 'Audience: existing customers who care about privacy and local AI.',
+  fitStrategy: 'truncate-context',
+});
+
+console.log(draft);
+```
+
+The composable wraps availability, creation, abort handling, download monitoring, input quota measurement, streaming and non-streaming writing, batch writing, cleanup, and explicit context fitting. By default it errors when a task plus context exceeds the configured budget; use `fitStrategy: 'truncate-context'` to preserve the task and fit only optional context.
+
+## Rewriter Component
+
+```vue
+<template>
+  <Rewriter
+    tone="more-formal"
+    format="plain-text"
+    length="shorter"
+  />
+</template>
+
+<script setup lang="ts">
+import { Rewriter } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
+</script>
+```
+
+`Rewriter` provides a local revision surface backed by Chrome's `Rewriter` API. It keeps original and rewritten text side by side, moves tone/length/format/context controls into settings, streams output by default, exposes availability/download/token state, and can fit long rewrite guidance while preserving the source text.
+
+## Rewriter Composable
+
+```ts
+import { useRewriter } from '@desource/browser-ai-vue';
+
+const rewriter = useRewriter();
+
+await rewriter.requestAvailability({
+  tone: 'more-formal',
+  format: 'plain-text',
+  length: 'shorter',
+});
+
+const rewrite = await rewriter.rewriteStreamingToText('This message is too informal for the release note.', {
+  createOptions: {
+    tone: 'more-formal',
+    format: 'plain-text',
+    length: 'shorter',
+  },
+  context: 'Audience: enterprise administrators.',
+  fitStrategy: 'truncate-context',
+});
+
+console.log(rewrite);
+```
+
+`useRewriter()` shares the same writing-assistant engine as `useWriter()`: availability, creation, abort handling, download monitoring, input quota measurement, streaming and non-streaming runs, batch rewriting, cleanup, and explicit optional-context fitting are implemented once.
+
 ## Exports
 
 - `PromptApi`
 - `PromptInput`
+- `Rewriter`
 - `Summarizer`
+- `Writer`
 - `ChatHistory`
 - `ChatSidebar`
 - `usePromptApi`
+- `useRewriter`
 - `useSummarizer`
+- `useWriter`
 - `useAiChats`
 
 The package uses `@types/dom-chromium-ai` for the current Chrome AI API types.
