@@ -113,7 +113,7 @@
 
         <div class="summarizer__footer">
           <div class="summarizer__meta">
-            <span>Input {{ inputUsageLabel }} / {{ inputQuotaLabel }}</span>
+            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="downloadProgress > 0 && downloadProgress < 100">
               Downloading {{ downloadProgress }}%
