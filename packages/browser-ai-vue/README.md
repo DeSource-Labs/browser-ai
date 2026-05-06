@@ -10,11 +10,11 @@ npm install @desource/browser-ai-vue
 
 ## Chrome Model Management
 
-Chrome stores built-in AI resources inside the current Chrome profile and manages downloads, updates, and deletion itself. The package can observe `availability()`, call `create()`, and display `downloadprogress`; it cannot list installed models, read model file paths, uninstall models, or force Chrome to keep a model installed.
+Chrome stores built-in AI resources inside the current Chrome profile and manages downloads, updates, and deletion itself. The package can observe `availability()`, call `create()`, and display `downloadprogress`; it cannot list installed models, read model file paths, uninstall models, reset crash counts, toggle Chrome internals, or force Chrome to keep a model installed from JavaScript. Users can inspect and manage some Chrome-owned state manually in Chrome's internal pages.
 
 | API | Local resource | Chrome page | Download trigger | Manual management |
 | --- | --- | --- | --- | --- |
-| Prompt API | Shared Gemini Nano model | `chrome://on-device-internals` | `LanguageModel.create()` | No documented per-API uninstall. Chrome purges automatically under storage pressure, policy changes, or eligibility changes. |
+| Prompt API | Shared Gemini Nano model | `chrome://on-device-internals` | `LanguageModel.create()` | No documented per-API uninstall. Users can uninstall the shared foundational model and reset its crash count from Chrome internals; Chrome can also purge automatically under storage pressure, policy changes, or eligibility changes. |
 | Summarizer | Shared Gemini Nano model | `chrome://on-device-internals` | `Summarizer.create()` | No separate Summarizer uninstall; it uses the shared Gemini Nano lifecycle. |
 | Writer | Shared Gemini Nano model | `chrome://on-device-internals` | `Writer.create()` | No separate Writer uninstall; it uses the shared Gemini Nano lifecycle. |
 | Rewriter | Shared Gemini Nano model | `chrome://on-device-internals` | `Rewriter.create()` | No separate Rewriter uninstall; it uses the shared Gemini Nano lifecycle. |
@@ -26,7 +26,8 @@ Notes:
 
 - Availability states are Chrome-owned and reported as `available`, `downloadable`, `downloading`, or `unavailable`.
 - Downloading resources requires a real user gesture when `availability()` returns `downloadable` or `downloading`.
-- `chrome://on-device-internals` is for Gemini Nano debugging and event logs; it does not show Translator language packs.
+- `chrome://on-device-internals` is for Gemini Nano debugging and event logs; it shows foundational model state, model name/version, backend type, file path, folder size, device criteria, feature adaptations, supplementary model status, shared model uninstall, and crash-count reset. It does not show Translator language packs.
+- The Feature Adaptations `Recently Used` controls in `chrome://on-device-internals` are Chrome-internal debug/retention controls, not application-facing API enable/disable switches.
 - Translator pair availability is privacy-masked by Chrome, so `availability()` may report `downloadable` until `create()` is called for a pair.
 - Language Detector returns ranked candidates with confidence scores. Treat low-confidence results and `und` as unknown in product UI.
 - Proofreader has no `inputQuota`, `measureInputUsage()`, or streaming method in `@types/dom-chromium-ai@0.0.16`; the package chunks long proofreader input by character boundaries.
@@ -237,10 +238,7 @@ console.log(rewrite);
 
 ```vue
 <template>
-  <Translator
-    source-language="en"
-    target-language="fr"
-  />
+  <Translator />
 </template>
 
 <script setup lang="ts">
@@ -249,7 +247,7 @@ import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 ```
 
-`Translator` provides a local translation surface backed by Chrome's `Translator` API. It keeps source and translated text side by side, exposes source/target language selectors, streams translations by default, reports language-pack download and token state, bypasses same-language requests, and can chunk long input instead of failing once a native request is too large.
+`Translator` provides a local translation surface backed by Chrome's `Translator` API. It starts without a default language pair, keeps source and translated text side by side, exposes source/target language selectors, automatically translates debounced input once a pair is available, shows an explicit download button when Chrome needs a language-pack user gesture, streams translations by default, reports language-pack download and token state, bypasses same-language requests, and can chunk long input instead of failing once a native request is too large.
 
 ## Translator Composable
 
