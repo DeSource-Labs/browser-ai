@@ -1,54 +1,34 @@
 <template>
   <div class="tools">
-    <LiquidGlass width="100%" height="clamp(460px, 58svh, 650px)">
-      <div class="tools__content">
-        <div class="tools__summary">
-          <div>
-            <h2>Browser AI APIs</h2>
-            <p>
-              Framework helpers for Chrome's built-in AI APIs. Prompt API, Summarizer, Writer,
-              Rewriter, Translator, Language Detector, and Proofreader are implemented now.
-            </p>
-          </div>
-          <span class="tools__count">{{ availableCount }} available</span>
-        </div>
-
-        <div class="tools__table-wrap">
-          <table class="tools__table" aria-label="Browser AI Kit API statuses">
-            <thead>
-              <tr>
-                <th scope="col">API</th>
-                <th scope="col">Browser</th>
-                <th scope="col">Kit</th>
-                <th scope="col">Demo</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in apiRows" :key="item.id">
-                <td>
-                  <div class="tools__api">
-                    <strong>{{ item.name }}</strong>
-                    <span>{{ item.description }}</span>
-                  </div>
-                </td>
-                <td>
-                  <span class="tools__badge" :class="`tools__badge--${item.availability}`">
-                    {{ getAvailabilityLabel(item.availability) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="tools__kit-status">{{ item.kitStatus }}</span>
-                </td>
-                <td>
-                  <NuxtLink v-if="item.href" class="tools__action" :to="item.href">
-                    Open
-                  </NuxtLink>
-                  <span v-else class="tools__muted">Soon</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <LiquidGlass width="100%" height="clamp(500px, 58svh, 650px)">
+      <div class="tools__table-wrap">
+        <table class="tools__table" aria-label="Browser AI Kit API statuses">
+          <thead>
+            <tr>
+              <th scope="col">API</th>
+              <th scope="col">Browser</th>
+              <th scope="col">Demo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in apiRows" :key="item.id">
+              <td>
+                <div class="tools__api">
+                  <strong>{{ item.name }}</strong>
+                  <span>{{ item.description }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="tools__badge" :class="`tools__badge--${item.availability}`">
+                  {{ getAvailabilityLabel(item.availability) }}
+                </span>
+              </td>
+              <td>
+                <NuxtLink v-if="item.openable" class="tools__action" :to="item.href">Open</NuxtLink>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </LiquidGlass>
   </div>
@@ -59,8 +39,6 @@ type DemoAvailability = Availability | 'checking';
 
 type ApiRow = ToolItem & {
   availability: DemoAvailability;
-  href: string;
-  kitStatus: string;
 };
 
 const promptApiAvailability = ref<DemoAvailability>('checking');
@@ -78,94 +56,63 @@ const { checkAvailability: checkTranslatorAvailability } = useTranslator();
 const { checkAvailability: checkLanguageDetectorAvailability } = useLanguageDetector();
 const { checkAvailability: checkProofreaderAvailability } = useProofreader();
 
+const AvailableStatuses: DemoAvailability[] = ['available', 'downloadable', 'downloading'];
+
 const getAvailabilityLabel = (status: DemoAvailability) => {
-  if (status === 'checking') return 'Checking';
-  if (status === 'available') return 'Available';
-  if (status === 'downloadable') return 'Downloadable';
-  if (status === 'downloading') return 'Downloading';
-  return 'Not available';
+  switch (status) {
+    case 'checking':
+    case 'downloading':
+    case 'available':
+      return status;
+    case 'downloadable':
+      return 'Needs download';
+    default:
+      return 'Not available';
+  }
 };
 
-const canOpenDemo = (availability: DemoAvailability) => {
-  return availability === 'available' || availability === 'downloadable';
-};
+const canOpenDemo = (availability: DemoAvailability) => AvailableStatuses.includes(availability);
 
 const apiRows = computed<ApiRow[]>(() => {
   return ToolItems.map((item) => {
-    if (item.id === 'prompt-api') {
-      return {
-        ...item,
-        availability: promptApiAvailability.value,
-        href: canOpenDemo(promptApiAvailability.value) ? '/promptapi' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
+    let availability: DemoAvailability = 'unavailable';
+    let openable = false;
+    switch (item.id) {
+      case 'prompt-api':
+        availability = promptApiAvailability.value;
+        openable = canOpenDemo(promptApiAvailability.value);
+        break;
+      case 'summarizer':
+        availability = summarizerAvailability.value;
+        openable = canOpenDemo(summarizerAvailability.value);
+        break;
+      case 'writer':
+        availability = writerAvailability.value;
+        openable = canOpenDemo(writerAvailability.value);
+        break;
+      case 'rewriter':
+        availability = rewriterAvailability.value;
+        openable = canOpenDemo(rewriterAvailability.value);
+        break;
+      case 'translator':
+        availability = translatorAvailability.value;
+        openable = canOpenDemo(translatorAvailability.value);
+        break;
+      case 'language-detector':
+        availability = languageDetectorAvailability.value;
+        openable = canOpenDemo(languageDetectorAvailability.value);
+        break;
+      case 'proofreader':
+        availability = proofreaderAvailability.value;
+        openable = canOpenDemo(proofreaderAvailability.value);
+        break;
     }
-
-    if (item.id === 'summarizer') {
-      return {
-        ...item,
-        availability: summarizerAvailability.value,
-        href: canOpenDemo(summarizerAvailability.value) ? '/summarizer' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
-    }
-
-    if (item.id === 'writer') {
-      return {
-        ...item,
-        availability: writerAvailability.value,
-        href: canOpenDemo(writerAvailability.value) ? '/writer' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
-    }
-
-    if (item.id === 'rewriter') {
-      return {
-        ...item,
-        availability: rewriterAvailability.value,
-        href: canOpenDemo(rewriterAvailability.value) ? '/rewriter' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
-    }
-
-    if (item.id === 'translator') {
-      return {
-        ...item,
-        availability: translatorAvailability.value,
-        href: canOpenDemo(translatorAvailability.value) ? '/translator' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
-    }
-
-    if (item.id === 'language-detector') {
-      return {
-        ...item,
-        availability: languageDetectorAvailability.value,
-        href: canOpenDemo(languageDetectorAvailability.value) ? '/language-detector' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
-    }
-
-    if (item.id === 'proofreader') {
-      return {
-        ...item,
-        availability: proofreaderAvailability.value,
-        href: canOpenDemo(proofreaderAvailability.value) ? '/proofreader' : '',
-        kitStatus: 'Vue / Nuxt ready'
-      };
-    }
-
     return {
       ...item,
-      availability: 'unavailable',
-      href: '',
-      kitStatus: 'Planned'
+      availability,
+      openable,
     };
   });
-});
-
-const availableCount = computed(() => {
-  return apiRows.value.filter(item => item.availability === 'available').length;
 });
 
 onMounted(async () => {
@@ -223,57 +170,11 @@ onMounted(async () => {
   pointer-events: all;
 }
 
-.tools__content {
+.tools__table-wrap {
   height: 100%;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.tools__summary {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.25rem;
-}
-
-.tools__summary h2 {
-  margin: 0;
-  color: var(--color-primary);
-  font-size: 1.25rem;
-  line-height: 1.2;
-}
-
-.tools__summary p {
-  max-width: 760px;
-  margin: 0.35rem 0 0;
-  color: var(--color-secondary);
-  font-size: 0.94rem;
-  line-height: 1.45;
-}
-
-.tools__count {
-  flex-shrink: 0;
-  min-height: 2rem;
-  display: inline-flex;
-  align-items: center;
-  padding: 0.36rem 0.62rem;
-  border-radius: 0.55rem;
-  color: rgba(134, 239, 172, 1);
-  background: rgba(34, 197, 94, 0.13);
-  border: 1px solid rgba(34, 197, 94, 0.26);
-  font-size: 0.82rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.tools__table-wrap {
-  min-height: 0;
   overflow: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0.8rem;
+  border-radius: 20px;
   background: rgba(7, 10, 18, 0.5);
 }
 
@@ -360,6 +261,7 @@ onMounted(async () => {
 
 .tools__badge {
   border: 1px solid rgba(120, 120, 120, 0.3);
+  text-transform: capitalize;
 }
 
 .tools__badge--available {
@@ -403,15 +305,6 @@ onMounted(async () => {
 @media (max-width: 760px) {
   .tools {
     width: min(100%, calc(100vw - 2rem));
-  }
-
-  .tools__content {
-    padding: 0.75rem;
-  }
-
-  .tools__summary {
-    flex-direction: column;
-    gap: 0.7rem;
   }
 
   .tools__table {

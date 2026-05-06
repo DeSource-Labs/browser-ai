@@ -20,4 +20,6 @@ export type ToolItem = {
   id: Tool;
   name: string;
   description: string;
+  href: string;
+  openable?: boolean;
 };

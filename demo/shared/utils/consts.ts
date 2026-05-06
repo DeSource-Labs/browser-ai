@@ -74,36 +74,43 @@ export const ToolItems: ToolItem[] = [
   {
     id: 'prompt-api',
     name: 'Prompt API',
-    description: 'Easily integrate AI capabilities into your applications with our robust Prompt API.'
+    description: 'Easily integrate AI capabilities into your applications with our robust Prompt API.',
+    href: '/promptapi'
   },
   {
     id: 'summarizer',
     name: 'Summarizer',
-    description: 'Condense lengthy texts into concise summaries while retaining key information.'
+    description: 'Condense lengthy texts into concise summaries while retaining key information.',
+    href: '/summarizer'
   },
   {
     id: 'writer',
     name: 'Writer',
-    description: 'Generate high-quality written content for various purposes and styles.'
+    description: 'Generate high-quality written content for various purposes and styles.',
+    href: '/writer'
   },
   {
     id: 'rewriter',
     name: 'Rewriter',
-    description: 'Transform existing text into new versions while preserving the original meaning.'
+    description: 'Transform existing text into new versions while preserving the original meaning.',
+    href: '/rewriter'
   },
   {
     id: 'translator',
     name: 'Translator',
-    description: 'Translate text between multiple languages with accuracy and fluency.'
+    description: 'Translate text between multiple languages with accuracy and fluency.',
+    href: '/translator'
   },
   {
     id: 'language-detector',
     name: 'Language Detector',
-    description: 'Identify the language of a given text quickly and reliably.'
+    description: 'Identify the language of a given text quickly and reliably.',
+    href: '/language-detector'
   },
   {
     id: 'proofreader',
     name: 'Proofreader',
-    description: 'Enhance your text by correcting grammar, spelling, and punctuation errors.'
+    description: 'Enhance your text by correcting grammar, spelling, and punctuation errors.',
+    href: '/proofreader'
   }
 ];
