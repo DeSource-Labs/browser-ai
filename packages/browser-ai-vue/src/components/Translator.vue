@@ -41,6 +41,11 @@
                     <input v-model="streamOutput" type="checkbox" :disabled="isBusy" />
                     <span>Stream output</span>
                   </label>
+
+                  <label class="translator__toggle">
+                    <input v-model="autoTranslateInput" type="checkbox" :disabled="isBusy" />
+                    <span>Auto translate</span>
+                  </label>
                 </div>
               </div>
             </details>
@@ -50,7 +55,8 @@
         <div class="translator__language-bar">
           <label>
             <span>From</span>
-            <select v-model="selectedSourceLanguage" :disabled="isBusy">
+            <select v-model="selectedSourceLanguage" :disabled="isBusy" @change="handleLanguageSelection">
+              <option value="" disabled>Choose source</option>
               <option
                 v-for="language in normalizedLanguageOptions"
                 :key="language.code"
@@ -61,13 +67,14 @@
             </select>
           </label>
 
-          <button type="button" :disabled="isBusy" @click="swapLanguages">
+          <button type="button" :disabled="isBusy || !canSwapLanguages" @click="swapLanguages">
             Swap
           </button>
 
           <label>
             <span>To</span>
-            <select v-model="selectedTargetLanguage" :disabled="isBusy">
+            <select v-model="selectedTargetLanguage" :disabled="isBusy" @change="handleLanguageSelection">
+              <option value="" disabled>Choose target</option>
               <option
                 v-for="language in normalizedLanguageOptions"
                 :key="language.code"
@@ -82,13 +89,13 @@
         <div class="translator__editor">
           <textarea
             v-model="sourceText"
-            :disabled="disabled || isBusy"
+            :disabled="disabled"
             :placeholder="placeholder"
           ></textarea>
         </div>
 
         <div
-          v-if="isBusy"
+          v-if="isProcessing"
           class="translator__progress"
           role="status"
           aria-live="polite"
@@ -106,13 +113,16 @@
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="lastResult?.chunked">Chunked</span>
             <span v-if="lastResult?.bypassed">Same language</span>
+            <span v-if="autoTranslateInput && hasLanguagePair">Auto</span>
+            <span v-if="!hasLanguagePair">Select languages first</span>
+            <span v-if="pendingAutoTranslate">Queued</span>
             <span v-if="downloadProgress > 0 && downloadProgress < 100">
               Downloading {{ downloadProgress }}%
             </span>
           </div>
 
-          <button type="button" :disabled="!canTranslate" @click="handleTranslate">
-            {{ isBusy ? 'Translating' : 'Translate' }}
+          <button v-if="showPrepareButton" type="button" :disabled="!canPreparePair" @click="handlePreparePair">
+            {{ prepareButtonLabel }}
           </button>
         </div>
       </section>
@@ -164,6 +174,8 @@ interface Props {
   languageOptions?: TranslatorLanguageOption[];
   autoInit?: boolean;
   autoCreate?: boolean;
+  autoTranslate?: boolean;
+  debounceMs?: number;
   stripHtml?: boolean;
   chunking?: 'auto' | 'never';
   stream?: boolean;
@@ -174,11 +186,13 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   placeholder: 'Paste text to translate locally...',
   emptyOutputMessage: 'Translation will appear here.',
-  sourceLanguage: 'en',
-  targetLanguage: 'es',
+  sourceLanguage: '',
+  targetLanguage: '',
   languageOptions: undefined,
   autoInit: true,
   autoCreate: true,
+  autoTranslate: true,
+  debounceMs: 650,
   stripHtml: true,
   chunking: 'auto',
   stream: true,
@@ -202,6 +216,8 @@ const {
   lastResult,
   isProcessing,
   requestAvailability,
+  create,
+  interrupt,
   translateWithDetails,
   translateStreamingToText,
   dispose
@@ -218,13 +234,30 @@ const selectedTargetLanguage = ref(props.targetLanguage);
 const stripHtmlInput = ref(props.stripHtml);
 const streamOutput = ref(props.stream);
 const chunkLargeInput = ref(props.chunking === 'auto');
+const autoTranslateInput = ref(props.autoTranslate);
+const pendingAutoTranslate = ref(false);
+const translationVersion = ref(0);
+let autoTranslateTimer: ReturnType<typeof setTimeout> | undefined;
+let availabilityRequestId = 0;
 
 const normalizedLanguageOptions = computed(() => {
   return props.languageOptions?.length ? props.languageOptions : TRANSLATOR_LANGUAGE_OPTIONS;
 });
 
-const sourceLanguageLabel = computed(() => getTranslatorLanguageName(selectedSourceLanguage.value));
-const targetLanguageLabel = computed(() => getTranslatorLanguageName(selectedTargetLanguage.value));
+const sourceLanguageLabel = computed(() => selectedSourceLanguage.value
+  ? getTranslatorLanguageName(selectedSourceLanguage.value)
+  : 'Choose source');
+const targetLanguageLabel = computed(() => selectedTargetLanguage.value
+  ? getTranslatorLanguageName(selectedTargetLanguage.value)
+  : 'Choose target');
+
+const hasLanguagePair = computed(() => {
+  return Boolean(selectedSourceLanguage.value && selectedTargetLanguage.value);
+});
+
+const canSwapLanguages = computed(() => {
+  return Boolean(selectedSourceLanguage.value || selectedTargetLanguage.value);
+});
 
 const createOptions = computed<TranslatorCreate>(() => ({
   sourceLanguage: selectedSourceLanguage.value,
@@ -232,18 +265,23 @@ const createOptions = computed<TranslatorCreate>(() => ({
 }));
 
 const operationalStatusLabel = computed(() => {
+  if (!hasLanguagePair.value) return 'Choose languages';
   if (downloadProgress.value > 0 && downloadProgress.value < 100) {
     return `${downloadProgress.value}%`;
   }
   if (availability.value === 'available') return 'Local AI ready';
-  if (availability.value === 'downloadable') return 'Language pack';
+  if (availability.value === 'downloadable') return 'Download required';
   if (availability.value === 'downloading') return 'Downloading';
   if (availability.value === 'unavailable') return 'Unavailable';
   return 'Checking';
 });
 
 const outputMetaLabel = computed(() => {
-  if (!translatedText.value) return `${sourceLanguageLabel.value} to ${targetLanguageLabel.value}`;
+  if (!translatedText.value) {
+    return hasLanguagePair.value
+      ? `${sourceLanguageLabel.value} to ${targetLanguageLabel.value}`
+      : 'Select a language pair';
+  }
   return `${translatedText.value.length.toLocaleString()} chars`;
 });
 
@@ -252,8 +290,31 @@ const isBusy = computed(() => props.disabled || isProcessing.value);
 const canTranslate = computed(() => {
   return !props.disabled
     && !isProcessing.value
+    && hasLanguagePair.value
     && availability.value !== 'unavailable'
+    && availability.value !== 'downloadable'
+    && availability.value !== 'downloading'
     && sourceText.value.trim().length > 0;
+});
+
+const canPreparePair = computed(() => {
+  return !props.disabled
+    && !isProcessing.value
+    && hasLanguagePair.value
+    && availability.value !== 'unavailable';
+});
+
+const showPrepareButton = computed(() => {
+  if (!hasLanguagePair.value) return false;
+  if (availability.value === 'downloadable' || availability.value === 'downloading') return true;
+  return !autoTranslateInput.value;
+});
+
+const prepareButtonLabel = computed(() => {
+  if (isProcessing.value && progressState.value.phase === 'creating') return 'Downloading';
+  if (availability.value === 'downloadable' || availability.value === 'downloading') return 'Download pack';
+  if (autoTranslateInput.value) return 'Prepare';
+  return isProcessing.value ? 'Translating' : 'Translate';
 });
 
 const inputUsageLabel = computed(() => inputUsage.value ?? '-');
@@ -283,12 +344,59 @@ const progressPercent = computed(() => {
   return state.phase === 'ready' ? 100 : 8;
 });
 
+const clearAutoTranslateTimer = () => {
+  if (autoTranslateTimer) {
+    clearTimeout(autoTranslateTimer);
+    autoTranslateTimer = undefined;
+  }
+};
+
+const isAbortError = (error: unknown) => {
+  return error instanceof DOMException && error.name === 'AbortError'
+    || error instanceof Error && error.name === 'AbortError';
+};
+
+const scheduleAutoTranslate = () => {
+  clearAutoTranslateTimer();
+
+  if (!autoTranslateInput.value || props.disabled) {
+    pendingAutoTranslate.value = false;
+    return;
+  }
+
+  if (!sourceText.value.trim()) {
+    translatedText.value = '';
+    errorMessage.value = '';
+    pendingAutoTranslate.value = false;
+    return;
+  }
+
+  if (!hasLanguagePair.value || availability.value !== 'available') {
+    pendingAutoTranslate.value = false;
+    return;
+  }
+
+  if (isProcessing.value) {
+    pendingAutoTranslate.value = true;
+    return;
+  }
+
+  pendingAutoTranslate.value = true;
+  autoTranslateTimer = setTimeout(() => {
+    void handleTranslate();
+  }, Math.max(0, props.debounceMs));
+};
+
 const handleTranslate = async () => {
   if (!canTranslate.value) return;
+
+  const requestVersion = translationVersion.value;
+  const input = sourceText.value;
 
   try {
     translatedText.value = '';
     errorMessage.value = '';
+    pendingAutoTranslate.value = false;
 
     const options = {
       createOptions: createOptions.value,
@@ -300,12 +408,14 @@ const handleTranslate = async () => {
 
     if (streamOutput.value) {
       await translateStreamingToText(
-        sourceText.value,
+        input,
         options,
         (_chunk, accumulated) => {
+          if (requestVersion !== translationVersion.value) return;
           translatedText.value = accumulated;
         }
       );
+      if (requestVersion !== translationVersion.value) return;
       translatedText.value = lastResult.value?.translation || translatedText.value;
       if (lastResult.value) {
         emit('translate', lastResult.value);
@@ -313,13 +423,55 @@ const handleTranslate = async () => {
       return;
     }
 
-    const result = await translateWithDetails(sourceText.value, options);
+    const result = await translateWithDetails(input, options);
+    if (requestVersion !== translationVersion.value) return;
     translatedText.value = result.translation;
     emit('translate', result);
   } catch (error) {
+    if (requestVersion !== translationVersion.value || isAbortError(error)) {
+      return;
+    }
+
     errorMessage.value = error instanceof Error
       ? error.message
       : 'Unable to translate this input.';
+    emit('error', error);
+  }
+};
+
+const requestCurrentAvailability = async (options: TranslatorCreate) => {
+  const requestId = ++availabilityRequestId;
+  const status = await requestAvailability(options);
+
+  if (requestId !== availabilityRequestId && hasLanguagePair.value) {
+    return requestCurrentAvailability(createOptions.value);
+  }
+
+  return status;
+};
+
+const handlePreparePair = async () => {
+  if (!canPreparePair.value) return;
+
+  if (availability.value === 'available' && !autoTranslateInput.value) {
+    await handleTranslate();
+    return;
+  }
+
+  try {
+    errorMessage.value = '';
+
+    if (availability.value === 'downloadable' || availability.value === 'downloading') {
+      await create(createOptions.value);
+    } else {
+      await requestCurrentAvailability(createOptions.value);
+    }
+
+    scheduleAutoTranslate();
+  } catch (error) {
+    errorMessage.value = error instanceof Error
+      ? error.message
+      : 'Unable to prepare this language pair.';
     emit('error', error);
   }
 };
@@ -340,8 +492,24 @@ const swapLanguages = () => {
   }
 };
 
+const handleLanguageSelection = () => {
+  availabilityRequestId += 1;
+  translationVersion.value += 1;
+  translatedText.value = '';
+  errorMessage.value = '';
+  pendingAutoTranslate.value = false;
+};
+
 watch(sourceText, (value) => {
+  translationVersion.value += 1;
   emit('update:modelValue', value);
+  if (
+    isProcessing.value
+    && ['measuring', 'chunking', 'translating'].includes(progressState.value.phase)
+  ) {
+    interrupt();
+  }
+  scheduleAutoTranslate();
 });
 
 watch(() => props.modelValue, (value) => {
@@ -358,23 +526,41 @@ watch(() => props.targetLanguage, (value) => {
   selectedTargetLanguage.value = value;
 });
 
+watch(() => props.autoTranslate, (value) => {
+  autoTranslateInput.value = value;
+});
+
 watch(availability, (value) => {
   if (value) {
     emit('availability-change', value);
   }
+  scheduleAutoTranslate();
 }, { immediate: true });
 
 watch(createOptions, async (options) => {
-  if (!props.autoInit) return;
-  await requestAvailability(options);
+  handleLanguageSelection();
+  if (!props.autoInit || !hasLanguagePair.value) return;
+  await requestCurrentAvailability(options);
 }, { deep: true });
 
+watch([stripHtmlInput, chunkLargeInput, autoTranslateInput], () => {
+  translationVersion.value += 1;
+  scheduleAutoTranslate();
+});
+
+watch(isProcessing, (processingNow) => {
+  if (!processingNow && pendingAutoTranslate.value) {
+    scheduleAutoTranslate();
+  }
+});
+
 onMounted(async () => {
-  if (!props.autoInit) return;
-  await requestAvailability(createOptions.value);
+  if (!props.autoInit || !hasLanguagePair.value) return;
+  await requestCurrentAvailability(createOptions.value);
 });
 
 onBeforeUnmount(() => {
+  clearAutoTranslateTimer();
   dispose();
 });
 </script>
@@ -692,6 +878,7 @@ onBeforeUnmount(() => {
   min-height: 0;
   overflow: auto;
   padding: 0.85rem;
+  user-select: text;
 }
 
 .translator__output pre,
