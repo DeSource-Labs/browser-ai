@@ -739,6 +739,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 0.85rem;
   padding: 0.85rem;
+  user-select: text;
 }
 
 .proofreader__output p {
