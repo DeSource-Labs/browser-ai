@@ -7,17 +7,17 @@ import {
   type WritingAssistantProgressPhase,
   type WritingAssistantProgressState,
   type WritingAssistantResult,
-  type WritingAssistantRunOptions
-} from './useWritingAssistant';
+  type WritingAssistantRunOptions,
+} from "./useWritingAssistant";
 
 export type WriterAvailability = Availability;
-export type WriterProcessingState = WritingAssistantProcessingState<'write'>;
+export type WriterProcessingState = WritingAssistantProcessingState<"write">;
 export type WriterCreateCore = WriterCreateCoreOptions;
-export type WriterCreate = Omit<WriterCreateOptions, 'signal' | 'monitor'>;
-export type WriterRunNativeOptions = Omit<WriterWriteOptions, 'signal'>;
+export type WriterCreate = Omit<WriterCreateOptions, "signal" | "monitor">;
+export type WriterRunNativeOptions = Omit<WriterWriteOptions, "signal">;
 export type WriterFitStrategy = WritingAssistantFitStrategy;
-export type WriterProgressPhase = WritingAssistantProgressPhase<'writing'>;
-export type WriterProgressState = WritingAssistantProgressState<'writing'>;
+export type WriterProgressPhase = WritingAssistantProgressPhase<"writing">;
+export type WriterProgressState = WritingAssistantProgressState<"writing">;
 export type WriterResult = WritingAssistantResult;
 export type WriterRunOptions = WritingAssistantRunOptions<
   WriterCreate,
@@ -39,7 +39,9 @@ const getWriter = () => {
   return (globalThis as GlobalWithWriter).Writer;
 };
 
-const getCreateCoreOptions = (options: WriterCreate = {}): WriterCreateCoreOptions => {
+const getCreateCoreOptions = (
+  options: WriterCreate = {},
+): WriterCreateCoreOptions => {
   const { sharedContext: _sharedContext, ...coreOptions } = options;
   return coreOptions;
 };
@@ -50,23 +52,24 @@ export function useWriter() {
     WriterCreate,
     WriterCreateCoreOptions,
     WriterRunNativeOptions,
-    'writing',
-    'write',
+    "writing",
+    "write",
     WriterProgressState
   >({
     getConstructor: getWriter,
     getCreateCoreOptions,
     getDefaultCreateOptions: () => ({}),
-    activePhase: 'writing',
-    operationState: 'write',
-    unavailableMessage: 'Writer is unavailable with the provided options.',
-    uninitializedMessage: 'Writer is not initialized. Call create() first or enable autoCreate.',
-    unsupportedMessage: 'Writer is not available in this browser context.',
-    budgetExceededMessage: (usage, budget) => (
-      `Writer input uses ${usage} tokens, which exceeds the configured budget of ${budget}. Shorten the task/context or enable context fitting.`
-    ),
+    activePhase: "writing",
+    operationState: "write",
+    unavailableMessage: "Writer is unavailable with the provided options.",
+    uninitializedMessage:
+      "Writer is not initialized. Call create() first or enable autoCreate.",
+    unsupportedMessage: "Writer is not available in this browser context.",
+    budgetExceededMessage: (usage, budget) =>
+      `Writer input uses ${usage} tokens, which exceeds the configured budget of ${budget}. Shorten the task/context or enable context fitting.`,
     run: (writer, input, options) => writer.write(input, options),
-    runStreaming: (writer, input, options) => writer.writeStreaming(input, options)
+    runStreaming: (writer, input, options) =>
+      writer.writeStreaming(input, options),
   });
 
   return {
@@ -95,6 +98,6 @@ export function useWriter() {
     writeStreaming: assistant.runStreaming,
     writeStreamingToText: assistant.runStreamingToText,
     writeMany: assistant.runMany,
-    interrupt: assistant.interrupt
+    interrupt: assistant.interrupt,
   };
 }

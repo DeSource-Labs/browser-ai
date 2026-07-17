@@ -1,11 +1,16 @@
 <template>
   <div class="proofreader">
     <div class="proofreader__workspace">
-      <section class="proofreader__pane proofreader__pane--input" aria-label="Proofreader input">
+      <section
+        class="proofreader__pane proofreader__pane--input"
+        aria-label="Proofreader input"
+      >
         <div class="proofreader__toolbar">
           <div class="proofreader__toolbar-main">
             <span class="proofreader__label">Draft</span>
-            <span class="proofreader__config">{{ expectedLanguagesLabel }}</span>
+            <span class="proofreader__config">{{
+              expectedLanguagesLabel
+            }}</span>
           </div>
 
           <div class="proofreader__toolbar-actions">
@@ -13,9 +18,12 @@
               class="proofreader__status"
               :class="{
                 'proofreader__status--available': availability === 'available',
-                'proofreader__status--downloadable': availability === 'downloadable',
-                'proofreader__status--downloading': availability === 'downloading',
-                'proofreader__status--unavailable': availability === 'unavailable'
+                'proofreader__status--downloadable':
+                  availability === 'downloadable',
+                'proofreader__status--downloading':
+                  availability === 'downloading',
+                'proofreader__status--unavailable':
+                  availability === 'unavailable',
               }"
             >
               <span class="proofreader__status-dot"></span>
@@ -45,7 +53,10 @@
 
                 <label class="proofreader__field">
                   <span>Chunk size</span>
-                  <select v-model.number="chunkCharacterLimit" :disabled="isBusy">
+                  <select
+                    v-model.number="chunkCharacterLimit"
+                    :disabled="isBusy"
+                  >
                     <option :value="4000">4k chars</option>
                     <option :value="8000">8k chars</option>
                     <option :value="12000">12k chars</option>
@@ -64,17 +75,29 @@
 
                 <div class="proofreader__toggles">
                   <label class="proofreader__toggle">
-                    <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="stripHtmlInput"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Strip HTML</span>
                   </label>
 
                   <label class="proofreader__toggle">
-                    <input v-model="includeTypes" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="includeTypes"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Correction types</span>
                   </label>
 
                   <label class="proofreader__toggle">
-                    <input v-model="includeExplanations" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="includeExplanations"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Explanations</span>
                   </label>
                 </div>
@@ -115,13 +138,20 @@
             </span>
           </div>
 
-          <button type="button" :disabled="!canProofread" @click="handleProofread">
-            {{ isBusy ? 'Checking' : 'Proofread' }}
+          <button
+            type="button"
+            :disabled="!canProofread"
+            @click="handleProofread"
+          >
+            {{ isBusy ? "Checking" : "Proofread" }}
           </button>
         </div>
       </section>
 
-      <section class="proofreader__pane proofreader__pane--output" aria-live="polite">
+      <section
+        class="proofreader__pane proofreader__pane--output"
+        aria-live="polite"
+      >
         <div class="proofreader__toolbar">
           <div class="proofreader__toolbar-main">
             <span class="proofreader__label">Corrected text</span>
@@ -140,7 +170,10 @@
 
         <div class="proofreader__output">
           <div v-if="lastResult" class="proofreader__corrected">
-            <template v-for="(segment, index) in correctedSegments" :key="index">
+            <template
+              v-for="(segment, index) in correctedSegments"
+              :key="index"
+            >
               <span
                 v-if="segment.correction"
                 class="proofreader__segment proofreader__segment--correction"
@@ -166,9 +199,11 @@
 
               <div class="proofreader__correction-meta">
                 <span v-if="correction.types.length">
-                  {{ correction.types.join(', ') }}
+                  {{ correction.types.join(", ") }}
                 </span>
-                <span>{{ correction.startIndex }}-{{ correction.endIndex }}</span>
+                <span
+                  >{{ correction.startIndex }}-{{ correction.endIndex }}</span
+                >
               </div>
 
               <p v-if="correction.explanation">
@@ -183,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   getProofreaderLanguageName,
   useProofreader,
@@ -191,8 +226,8 @@ import {
   type ProofreaderCreate,
   type ProofreaderLargeInputStrategy,
   type ProofreaderProgressState,
-  type ProofreaderResult
-} from '../composables/useProofreader';
+  type ProofreaderResult,
+} from "../composables/useProofreader";
 
 interface Props {
   modelValue?: string;
@@ -211,27 +246,28 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
-  placeholder: 'Paste text to check grammar, spelling, and punctuation locally...',
-  emptyOutputMessage: 'Corrected output will appear here.',
+  modelValue: "",
+  placeholder:
+    "Paste text to check grammar, spelling, and punctuation locally...",
+  emptyOutputMessage: "Corrected output will appear here.",
   expectedInputLanguages: undefined,
   includeCorrectionTypes: false,
   includeCorrectionExplanations: false,
-  correctionExplanationLanguage: 'en',
+  correctionExplanationLanguage: "en",
   autoInit: true,
   autoCreate: true,
   stripHtml: true,
-  largeInputStrategy: 'auto',
+  largeInputStrategy: "auto",
   maxChunkCharacters: 8000,
-  disabled: false
+  disabled: false,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
-  'availability-change': [availability: Availability];
-  'progress': [state: ProofreaderProgressState];
-  'proofread': [result: ProofreaderResult];
-  'error': [error: unknown];
+  "update:modelValue": [value: string];
+  "availability-change": [availability: Availability];
+  progress: [state: ProofreaderProgressState];
+  proofread: [result: ProofreaderResult];
+  error: [error: unknown];
 }>();
 
 const {
@@ -244,27 +280,31 @@ const {
   requestAvailability,
   proofreadWithDetails,
   createProofreadTextSegments,
-  dispose
+  dispose,
 } = useProofreader({
   expectedInputLanguages: props.expectedInputLanguages ?? [],
   includeCorrectionTypes: props.includeCorrectionTypes,
   includeCorrectionExplanations: props.includeCorrectionExplanations,
-  correctionExplanationLanguage: props.correctionExplanationLanguage
+  correctionExplanationLanguage: props.correctionExplanationLanguage,
 });
 
 const sourceText = ref(props.modelValue);
-const errorMessage = ref('');
-const expectedLanguagesText = ref((props.expectedInputLanguages ?? []).join(', '));
+const errorMessage = ref("");
+const expectedLanguagesText = ref(
+  (props.expectedInputLanguages ?? []).join(", "),
+);
 const includeTypes = ref(props.includeCorrectionTypes);
 const includeExplanations = ref(props.includeCorrectionExplanations);
 const explanationLanguage = ref(props.correctionExplanationLanguage);
 const stripHtmlInput = ref(props.stripHtml);
-const largeInputMode = ref<ProofreaderLargeInputStrategy>(props.largeInputStrategy);
+const largeInputMode = ref<ProofreaderLargeInputStrategy>(
+  props.largeInputStrategy,
+);
 const chunkCharacterLimit = ref(props.maxChunkCharacters);
 
 const parsedExpectedInputLanguages = computed(() => {
   return expectedLanguagesText.value
-    .split(',')
+    .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
 });
@@ -275,93 +315,104 @@ const createOptions = computed<ProofreaderCreate>(() => ({
   includeCorrectionExplanations: includeExplanations.value,
   correctionExplanationLanguage: includeExplanations.value
     ? explanationLanguage.value
-    : undefined
+    : undefined,
 }));
 
 const expectedLanguagesLabel = computed(() => {
   if (parsedExpectedInputLanguages.value.length === 0) {
-    return 'Any supported language';
+    return "Any supported language";
   }
 
   return parsedExpectedInputLanguages.value
     .map((language) => getProofreaderLanguageName(language))
-    .join(', ');
+    .join(", ");
 });
 
 const operationalStatusLabel = computed(() => {
   if (downloadProgress.value > 0 && downloadProgress.value < 100) {
     return `${downloadProgress.value}%`;
   }
-  if (availability.value === 'available') return 'Local proofreader ready';
-  if (availability.value === 'downloadable') return 'Proofreader model';
-  if (availability.value === 'downloading') return 'Downloading';
-  if (availability.value === 'unavailable') return 'Unavailable';
-  return 'Checking';
+  if (availability.value === "available") return "Local proofreader ready";
+  if (availability.value === "downloadable") return "Proofreader model";
+  if (availability.value === "downloading") return "Downloading";
+  if (availability.value === "unavailable") return "Unavailable";
+  return "Checking";
 });
 
 const isBusy = computed(() => props.disabled || isProcessing.value);
 
 const canProofread = computed(() => {
-  return !props.disabled
-    && !isProcessing.value
-    && availability.value !== 'unavailable'
-    && sourceText.value.trim().length > 0;
+  return (
+    !props.disabled &&
+    !isProcessing.value &&
+    availability.value !== "unavailable" &&
+    sourceText.value.trim().length > 0
+  );
 });
 
 const correctionCountLabel = computed(() => {
   const count = corrections.value.length;
-  if (count === 1) return '1 correction';
+  if (count === 1) return "1 correction";
   return `${count} corrections`;
 });
 
 const resultMetaLabel = computed(() => {
-  if (!lastResult.value) return 'Corrections and final text';
-  if (!lastResult.value.hasCorrections) return 'No changes suggested';
-  if (lastResult.value.chunked) return `${lastResult.value.chunks.length} chunks checked`;
+  if (!lastResult.value) return "Corrections and final text";
+  if (!lastResult.value.hasCorrections) return "No changes suggested";
+  if (lastResult.value.chunked)
+    return `${lastResult.value.chunks.length} chunks checked`;
   return correctionCountLabel.value;
 });
 
 const progressLabel = computed(() => {
   const state = progressState.value;
-  if (state.phase === 'measuring') return 'Preparing input';
-  if (state.phase === 'chunking') return 'Splitting long text';
-  if (state.phase === 'proofreading') {
+  if (state.phase === "measuring") return "Preparing input";
+  if (state.phase === "chunking") return "Splitting long text";
+  if (state.phase === "proofreading") {
     if (state.totalChunks > 1) {
       return `Checking ${state.currentChunk} / ${state.totalChunks}`;
     }
-    return 'Checking text';
+    return "Checking text";
   }
-  return '';
+  return "";
 });
 
 const progressPercent = computed(() => {
   const state = progressState.value;
-  if (state.phase === 'measuring') return 18;
-  if (state.phase === 'chunking') return 35;
-  if (state.phase === 'proofreading' && state.totalChunks > 0) {
-    return Math.max(48, Math.round((state.processedChunks / state.totalChunks) * 92));
+  if (state.phase === "measuring") return 18;
+  if (state.phase === "chunking") return 35;
+  if (state.phase === "proofreading" && state.totalChunks > 0) {
+    return Math.max(
+      48,
+      Math.round((state.processedChunks / state.totalChunks) * 92),
+    );
   }
-  if (state.phase === 'proofreading') return 68;
-  return state.phase === 'ready' ? 100 : 8;
+  if (state.phase === "proofreading") return 68;
+  return state.phase === "ready" ? 100 : 8;
 });
 
 const correctedSegments = computed(() => {
   if (!lastResult.value) return [];
-  return createProofreadTextSegments(lastResult.value.input, lastResult.value.corrections);
+  return createProofreadTextSegments(
+    lastResult.value.input,
+    lastResult.value.corrections,
+  );
 });
 
 const getCorrectionTitle = (correction: NormalizedProofreadCorrection) => {
-  const parts = [`Replace "${correction.original}" with "${correction.correction}"`];
-  if (correction.types.length) parts.push(correction.types.join(', '));
+  const parts = [
+    `Replace "${correction.original}" with "${correction.correction}"`,
+  ];
+  if (correction.types.length) parts.push(correction.types.join(", "));
   if (correction.explanation) parts.push(correction.explanation);
-  return parts.join('\n');
+  return parts.join("\n");
 };
 
 const handleProofread = async () => {
   if (!canProofread.value) return;
 
   try {
-    errorMessage.value = '';
+    errorMessage.value = "";
 
     const result = await proofreadWithDetails(sourceText.value, {
       createOptions: createOptions.value,
@@ -369,48 +420,63 @@ const handleProofread = async () => {
       stripHtml: stripHtmlInput.value,
       largeInputStrategy: largeInputMode.value,
       maxChunkCharacters: chunkCharacterLimit.value,
-      onProgress: (state) => emit('progress', state)
+      onProgress: (state) => emit("progress", state),
     });
 
-    emit('proofread', result);
+    emit("proofread", result);
   } catch (error) {
-    errorMessage.value = error instanceof Error
-      ? error.message
-      : 'Unable to proofread this input.';
-    emit('error', error);
+    errorMessage.value =
+      error instanceof Error
+        ? error.message
+        : "Unable to proofread this input.";
+    emit("error", error);
   }
 };
 
 const copyCorrectedText = async () => {
   const corrected = lastResult.value?.correctedInput;
-  if (!corrected || typeof navigator === 'undefined') return;
+  if (!corrected || typeof navigator === "undefined") return;
   await navigator.clipboard?.writeText(corrected);
 };
 
 watch(sourceText, (value) => {
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
 });
 
-watch(() => props.modelValue, (value) => {
-  if (value !== sourceText.value) {
-    sourceText.value = value;
-  }
-});
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value !== sourceText.value) {
+      sourceText.value = value;
+    }
+  },
+);
 
-watch(() => props.expectedInputLanguages, (value) => {
-  expectedLanguagesText.value = (value ?? []).join(', ');
-});
+watch(
+  () => props.expectedInputLanguages,
+  (value) => {
+    expectedLanguagesText.value = (value ?? []).join(", ");
+  },
+);
 
-watch(availability, (value) => {
-  if (value) {
-    emit('availability-change', value);
-  }
-}, { immediate: true });
+watch(
+  availability,
+  (value) => {
+    if (value) {
+      emit("availability-change", value);
+    }
+  },
+  { immediate: true },
+);
 
-watch(createOptions, async (options) => {
-  if (!props.autoInit) return;
-  await requestAvailability(options);
-}, { deep: true });
+watch(
+  createOptions,
+  async (options) => {
+    if (!props.autoInit) return;
+    await requestAvailability(options);
+  },
+  { deep: true },
+);
 
 onMounted(async () => {
   if (!props.autoInit) return;
@@ -716,7 +782,11 @@ onBeforeUnmount(() => {
 .proofreader__footer button {
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.09)
+  );
   color: var(--color-primary, #fff);
   font-weight: 800;
   cursor: pointer;

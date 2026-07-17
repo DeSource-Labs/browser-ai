@@ -1,7 +1,10 @@
 <template>
   <div class="rewriter">
     <div class="rewriter__workspace">
-      <section class="rewriter__pane rewriter__pane--input" aria-label="Rewriter input">
+      <section
+        class="rewriter__pane rewriter__pane--input"
+        aria-label="Rewriter input"
+      >
         <div class="rewriter__toolbar">
           <div class="rewriter__toolbar-main">
             <span class="rewriter__label">Original</span>
@@ -13,9 +16,10 @@
               class="rewriter__status"
               :class="{
                 'rewriter__status--available': availability === 'available',
-                'rewriter__status--downloadable': availability === 'downloadable',
+                'rewriter__status--downloadable':
+                  availability === 'downloadable',
                 'rewriter__status--downloading': availability === 'downloading',
-                'rewriter__status--unavailable': availability === 'unavailable'
+                'rewriter__status--unavailable': availability === 'unavailable',
               }"
             >
               <span class="rewriter__status-dot"></span>
@@ -65,17 +69,29 @@
 
                 <div class="rewriter__toggles">
                   <label class="rewriter__toggle">
-                    <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="stripHtmlInput"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Strip HTML</span>
                   </label>
 
                   <label class="rewriter__toggle">
-                    <input v-model="showContext" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="showContext"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Rewrite guidance</span>
                   </label>
 
                   <label class="rewriter__toggle">
-                    <input v-model="streamOutput" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="streamOutput"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Stream output</span>
                   </label>
                 </div>
@@ -117,7 +133,10 @@
 
         <div class="rewriter__footer">
           <div class="rewriter__meta">
-            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
+            <span
+              >{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens |
+              {{ sourceText.length }} chars</span
+            >
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="lastResult?.fitted">Context fitted</span>
             <span v-if="downloadProgress > 0 && downloadProgress < 100">
@@ -126,7 +145,7 @@
           </div>
 
           <button type="button" :disabled="!canRewrite" @click="handleRewrite">
-            {{ isBusy ? 'Rewriting' : 'Rewrite' }}
+            {{ isBusy ? "Rewriting" : "Rewrite" }}
           </button>
         </div>
       </section>
@@ -158,14 +177,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   useRewriter,
   type RewriterCreate,
   type RewriterFitStrategy,
   type RewriterProgressState,
-  type RewriterResult
-} from '../composables/useRewriter';
+  type RewriterResult,
+} from "../composables/useRewriter";
 
 interface Props {
   modelValue?: string;
@@ -189,32 +208,33 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
-  placeholder: 'Paste or write the text you want to rewrite...',
-  contextPlaceholder: 'Optional audience, constraints, tone notes, or rewrite rules',
-  emptyOutputMessage: 'Rewritten text will appear here.',
-  tone: 'as-is',
-  format: 'as-is',
-  length: 'as-is',
-  sharedContext: '',
-  context: '',
-  outputLanguage: '',
+  modelValue: "",
+  placeholder: "Paste or write the text you want to rewrite...",
+  contextPlaceholder:
+    "Optional audience, constraints, tone notes, or rewrite rules",
+  emptyOutputMessage: "Rewritten text will appear here.",
+  tone: "as-is",
+  format: "as-is",
+  length: "as-is",
+  sharedContext: "",
+  context: "",
+  outputLanguage: "",
   expectedInputLanguages: undefined,
   expectedContextLanguages: undefined,
   autoInit: true,
   autoCreate: true,
   stripHtml: true,
-  fitStrategy: 'truncate-context',
+  fitStrategy: "truncate-context",
   stream: true,
-  disabled: false
+  disabled: false,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
-  'availability-change': [availability: Availability];
-  'progress': [state: RewriterProgressState];
-  'rewrite': [result: RewriterResult];
-  'error': [error: unknown];
+  "update:modelValue": [value: string];
+  "availability-change": [availability: Availability];
+  progress: [state: RewriterProgressState];
+  rewrite: [result: RewriterResult];
+  error: [error: unknown];
 }>();
 
 const {
@@ -228,12 +248,12 @@ const {
   requestAvailability,
   rewriteWithDetails,
   rewriteStreamingToText,
-  dispose
+  dispose,
 } = useRewriter();
 
 const sourceText = ref(props.modelValue);
-const rewrittenText = ref('');
-const errorMessage = ref('');
+const rewrittenText = ref("");
+const errorMessage = ref("");
 const rewriteContext = ref(props.context);
 const showContext = ref(Boolean(props.context));
 const stripHtmlInput = ref(props.stripHtml);
@@ -244,26 +264,26 @@ const selectedLength = ref<RewriterLength>(props.length);
 const selectedFitStrategy = ref<RewriterFitStrategy>(props.fitStrategy);
 
 const toneLabels: Record<RewriterTone, string> = {
-  'as-is': 'Keep tone',
-  'more-formal': 'More formal',
-  'more-casual': 'More casual'
+  "as-is": "Keep tone",
+  "more-formal": "More formal",
+  "more-casual": "More casual",
 };
 
 const lengthLabels: Record<RewriterLength, string> = {
-  'as-is': 'Keep length',
-  shorter: 'Shorter',
-  longer: 'Longer'
+  "as-is": "Keep length",
+  shorter: "Shorter",
+  longer: "Longer",
 };
 
 const formatLabels: Record<RewriterFormat, string> = {
-  'as-is': 'Keep format',
-  markdown: 'Markdown',
-  'plain-text': 'Plain text'
+  "as-is": "Keep format",
+  markdown: "Markdown",
+  "plain-text": "Plain text",
 };
 
 const fitStrategyLabels: Record<RewriterFitStrategy, string> = {
-  'truncate-context': 'Fit context',
-  error: 'Full context'
+  "truncate-context": "Fit context",
+  error: "Full context",
 };
 
 const createOptions = computed<RewriterCreate>(() => ({
@@ -273,14 +293,11 @@ const createOptions = computed<RewriterCreate>(() => ({
   sharedContext: props.sharedContext || undefined,
   outputLanguage: props.outputLanguage || undefined,
   expectedInputLanguages: props.expectedInputLanguages,
-  expectedContextLanguages: props.expectedContextLanguages
+  expectedContextLanguages: props.expectedContextLanguages,
 }));
 
 const coreOptions = computed<RewriterCreateCoreOptions>(() => {
-  const {
-    sharedContext: _sharedContext,
-    ...core
-  } = createOptions.value;
+  const { sharedContext: _sharedContext, ...core } = createOptions.value;
   return core;
 });
 
@@ -288,11 +305,11 @@ const operationalStatusLabel = computed(() => {
   if (downloadProgress.value > 0 && downloadProgress.value < 100) {
     return `${downloadProgress.value}%`;
   }
-  if (availability.value === 'available') return 'Local AI ready';
-  if (availability.value === 'downloadable') return 'Model download';
-  if (availability.value === 'downloading') return 'Downloading';
-  if (availability.value === 'unavailable') return 'Unavailable';
-  return 'Checking';
+  if (availability.value === "available") return "Local AI ready";
+  if (availability.value === "downloadable") return "Model download";
+  if (availability.value === "downloading") return "Downloading";
+  if (availability.value === "unavailable") return "Unavailable";
+  return "Checking";
 });
 
 const settingsSummary = computed(() => {
@@ -300,8 +317,8 @@ const settingsSummary = computed(() => {
     toneLabels[selectedTone.value],
     lengthLabels[selectedLength.value],
     formatLabels[selectedFormat.value],
-    fitStrategyLabels[selectedFitStrategy.value]
-  ].join(' / ');
+    fitStrategyLabels[selectedFitStrategy.value],
+  ].join(" / ");
 });
 
 const outputMetaLabel = computed(() => {
@@ -312,45 +329,50 @@ const outputMetaLabel = computed(() => {
 const isBusy = computed(() => props.disabled || isProcessing.value);
 
 const canRewrite = computed(() => {
-  return !props.disabled
-    && !isProcessing.value
-    && availability.value !== 'unavailable'
-    && sourceText.value.trim().length > 0;
+  return (
+    !props.disabled &&
+    !isProcessing.value &&
+    availability.value !== "unavailable" &&
+    sourceText.value.trim().length > 0
+  );
 });
 
-const inputUsageLabel = computed(() => inputUsage.value ?? '-');
-const inputQuotaLabel = computed(() => inputQuota.value ?? '-');
+const inputUsageLabel = computed(() => inputUsage.value ?? "-");
+const inputQuotaLabel = computed(() => inputQuota.value ?? "-");
 
 const progressLabel = computed(() => {
   const state = progressState.value;
-  if (state.phase === 'measuring') return 'Measuring input';
-  if (state.phase === 'fitting-context') return 'Fitting context';
-  if (state.phase === 'rewriting') return streamOutput.value ? 'Streaming rewrite' : 'Rewriting text';
-  return '';
+  if (state.phase === "measuring") return "Measuring input";
+  if (state.phase === "fitting-context") return "Fitting context";
+  if (state.phase === "rewriting")
+    return streamOutput.value ? "Streaming rewrite" : "Rewriting text";
+  return "";
 });
 
 const progressPercent = computed(() => {
   const state = progressState.value;
-  if (state.phase === 'measuring') return 18;
-  if (state.phase === 'fitting-context') return 38;
-  if (state.phase === 'rewriting') return 68;
-  return state.phase === 'ready' ? 100 : 8;
+  if (state.phase === "measuring") return 18;
+  if (state.phase === "fitting-context") return 38;
+  if (state.phase === "rewriting") return 68;
+  return state.phase === "ready" ? 100 : 8;
 });
 
 const handleRewrite = async () => {
   if (!canRewrite.value) return;
 
   try {
-    rewrittenText.value = '';
-    errorMessage.value = '';
+    rewrittenText.value = "";
+    errorMessage.value = "";
 
     const options = {
       createOptions: createOptions.value,
       autoCreate: props.autoCreate,
-      context: showContext.value ? rewriteContext.value || undefined : undefined,
+      context: showContext.value
+        ? rewriteContext.value || undefined
+        : undefined,
       stripHtml: stripHtmlInput.value,
       fitStrategy: selectedFitStrategy.value,
-      onProgress: (state: RewriterProgressState) => emit('progress', state)
+      onProgress: (state: RewriterProgressState) => emit("progress", state),
     };
 
     if (streamOutput.value) {
@@ -359,58 +381,71 @@ const handleRewrite = async () => {
         options,
         (_chunk, accumulated) => {
           rewrittenText.value = accumulated;
-        }
+        },
       );
       rewrittenText.value = lastResult.value?.text || rewrittenText.value;
       if (lastResult.value) {
-        emit('rewrite', lastResult.value);
+        emit("rewrite", lastResult.value);
       }
       return;
     }
 
     const result = await rewriteWithDetails(sourceText.value, options);
     rewrittenText.value = result.text;
-    emit('rewrite', result);
+    emit("rewrite", result);
   } catch (error) {
-    errorMessage.value = error instanceof Error
-      ? error.message
-      : 'Unable to rewrite this input.';
-    emit('error', error);
+    errorMessage.value =
+      error instanceof Error ? error.message : "Unable to rewrite this input.";
+    emit("error", error);
   }
 };
 
 const copyRewrite = async () => {
-  if (!rewrittenText.value || typeof navigator === 'undefined') return;
+  if (!rewrittenText.value || typeof navigator === "undefined") return;
   await navigator.clipboard?.writeText(rewrittenText.value);
 };
 
 watch(sourceText, (value) => {
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
 });
 
-watch(() => props.modelValue, (value) => {
-  if (value !== sourceText.value) {
-    sourceText.value = value;
-  }
-});
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value !== sourceText.value) {
+      sourceText.value = value;
+    }
+  },
+);
 
-watch(() => props.context, (value) => {
-  rewriteContext.value = value;
-  if (value) {
-    showContext.value = true;
-  }
-});
+watch(
+  () => props.context,
+  (value) => {
+    rewriteContext.value = value;
+    if (value) {
+      showContext.value = true;
+    }
+  },
+);
 
-watch(availability, (value) => {
-  if (value) {
-    emit('availability-change', value);
-  }
-}, { immediate: true });
+watch(
+  availability,
+  (value) => {
+    if (value) {
+      emit("availability-change", value);
+    }
+  },
+  { immediate: true },
+);
 
-watch(coreOptions, async (options) => {
-  if (!props.autoInit) return;
-  await requestAvailability(options);
-}, { deep: true });
+watch(
+  coreOptions,
+  async (options) => {
+    if (!props.autoInit) return;
+    await requestAvailability(options);
+  },
+  { deep: true },
+);
 
 onMounted(async () => {
   if (!props.autoInit) return;
@@ -721,7 +756,11 @@ onBeforeUnmount(() => {
 .rewriter__footer button {
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.09)
+  );
   color: var(--color-primary, #fff);
   font-weight: 800;
   cursor: pointer;

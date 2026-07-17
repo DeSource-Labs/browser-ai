@@ -1,28 +1,28 @@
-import { defineConfig } from 'vite';
-import { fileURLToPath } from 'node:url';
-import vue from '@vitejs/plugin-vue';
+import { defineConfig } from "vite";
+import { fileURLToPath } from "node:url";
+import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   plugins: [vue()],
   build: {
     lib: {
-      name: 'BrowserAiVue',
-      entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
-      formats: ['es', 'cjs'],
-      fileName: (format, entryName = 'index') => {
-        if (format === 'es') return `${entryName}.mjs`;
+      name: "BrowserAiVue",
+      entry: fileURLToPath(new URL("./src/index.ts", import.meta.url)),
+      formats: ["es", "cjs"],
+      fileName: (format, entryName = "index") => {
+        if (format === "es") return `${entryName}.mjs`;
         return `${entryName}.cjs`;
-      }
+      },
     },
     rolldownOptions: {
-      external: ['vue'],
+      external: ["vue"],
       output: {
-        exports: 'named',
+        exports: "named",
         globals: {
-          vue: 'Vue'
+          vue: "Vue",
         },
-        minify: true
-      }
-    }
-  }
+        minify: true,
+      },
+    },
+  },
 });

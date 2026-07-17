@@ -1,7 +1,10 @@
 <template>
   <div class="summarizer">
     <div class="summarizer__workspace">
-      <section class="summarizer__pane summarizer__pane--input" aria-label="Summarizer source input">
+      <section
+        class="summarizer__pane summarizer__pane--input"
+        aria-label="Summarizer source input"
+      >
         <div class="summarizer__toolbar">
           <div class="summarizer__toolbar-main">
             <span class="summarizer__label">Source</span>
@@ -13,9 +16,12 @@
               class="summarizer__status"
               :class="{
                 'summarizer__status--available': availability === 'available',
-                'summarizer__status--downloadable': availability === 'downloadable',
-                'summarizer__status--downloading': availability === 'downloading',
-                'summarizer__status--unavailable': availability === 'unavailable'
+                'summarizer__status--downloadable':
+                  availability === 'downloadable',
+                'summarizer__status--downloading':
+                  availability === 'downloading',
+                'summarizer__status--unavailable':
+                  availability === 'unavailable',
               }"
             >
               <span class="summarizer__status-dot"></span>
@@ -66,12 +72,20 @@
 
                 <div class="summarizer__toggles">
                   <label class="summarizer__toggle">
-                    <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="stripHtmlInput"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Strip HTML</span>
                   </label>
 
                   <label class="summarizer__toggle">
-                    <input v-model="showContext" type="checkbox" :disabled="isBusy" />
+                    <input
+                      v-model="showContext"
+                      type="checkbox"
+                      :disabled="isBusy"
+                    />
                     <span>Additional context</span>
                   </label>
                 </div>
@@ -113,27 +127,39 @@
 
         <div class="summarizer__footer">
           <div class="summarizer__meta">
-            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
+            <span
+              >{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens |
+              {{ sourceText.length }} chars</span
+            >
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="downloadProgress > 0 && downloadProgress < 100">
               Downloading {{ downloadProgress }}%
             </span>
           </div>
 
-          <button type="button" :disabled="!canSummarize" @click="handleSummarize">
-            {{ isBusy ? 'Summarizing' : 'Summarize' }}
+          <button
+            type="button"
+            :disabled="!canSummarize"
+            @click="handleSummarize"
+          >
+            {{ isBusy ? "Summarizing" : "Summarize" }}
           </button>
         </div>
       </section>
 
-      <section class="summarizer__pane summarizer__pane--output" aria-live="polite">
+      <section
+        class="summarizer__pane summarizer__pane--output"
+        aria-live="polite"
+      >
         <div class="summarizer__toolbar">
           <div class="summarizer__toolbar-main">
             <span class="summarizer__label">Summary</span>
             <span class="summarizer__config">{{ outputMetaLabel }}</span>
           </div>
 
-          <span v-if="lastResult?.chunked" class="summarizer__badge">Chunked</span>
+          <span v-if="lastResult?.chunked" class="summarizer__badge"
+            >Chunked</span
+          >
         </div>
 
         <div class="summarizer__output">
@@ -146,13 +172,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
   useSummarizer,
   type SummarizerCreate,
   type SummarizerProgressState,
-  type SummarizerResult
-} from '../composables/useSummarizer';
+  type SummarizerResult,
+} from "../composables/useSummarizer";
 
 interface Props {
   modelValue?: string;
@@ -175,31 +201,31 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
-  placeholder: 'Paste a long article, notes, or conversation to summarize...',
-  contextPlaceholder: 'Optional context for the summary',
-  emptyOutputMessage: 'Summary output will appear here.',
-  type: 'key-points',
-  format: 'markdown',
-  length: 'medium',
-  preference: 'auto',
-  sharedContext: '',
-  context: '',
-  outputLanguage: '',
+  modelValue: "",
+  placeholder: "Paste a long article, notes, or conversation to summarize...",
+  contextPlaceholder: "Optional context for the summary",
+  emptyOutputMessage: "Summary output will appear here.",
+  type: "key-points",
+  format: "markdown",
+  length: "medium",
+  preference: "auto",
+  sharedContext: "",
+  context: "",
+  outputLanguage: "",
   expectedInputLanguages: undefined,
   expectedContextLanguages: undefined,
   autoInit: true,
   autoCreate: true,
   stripHtml: true,
-  disabled: false
+  disabled: false,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
-  'availability-change': [availability: Availability];
-  'progress': [state: SummarizerProgressState];
-  'summary': [result: SummarizerResult];
-  'error': [error: unknown];
+  "update:modelValue": [value: string];
+  "availability-change": [availability: Availability];
+  progress: [state: SummarizerProgressState];
+  summary: [result: SummarizerResult];
+  error: [error: unknown];
 }>();
 
 const {
@@ -212,12 +238,12 @@ const {
   isProcessing,
   requestAvailability,
   summarizeWithDetails,
-  dispose
+  dispose,
 } = useSummarizer();
 
 const sourceText = ref(props.modelValue);
-const summary = ref('');
-const errorMessage = ref('');
+const summary = ref("");
+const errorMessage = ref("");
 const summaryContext = ref(props.context);
 const showContext = ref(Boolean(props.context));
 const stripHtmlInput = ref(props.stripHtml);
@@ -227,27 +253,27 @@ const selectedLength = ref<SummarizerLength>(props.length);
 const selectedPreference = ref<PerformancePreference>(props.preference);
 
 const typeLabels: Record<SummarizerType, string> = {
-  'key-points': 'Key points',
-  tldr: 'TL;DR',
-  teaser: 'Teaser',
-  headline: 'Headline'
+  "key-points": "Key points",
+  tldr: "TL;DR",
+  teaser: "Teaser",
+  headline: "Headline",
 };
 
 const lengthLabels: Record<SummarizerLength, string> = {
-  short: 'Short',
-  medium: 'Medium',
-  long: 'Long'
+  short: "Short",
+  medium: "Medium",
+  long: "Long",
 };
 
 const formatLabels: Record<SummarizerFormat, string> = {
-  markdown: 'Markdown',
-  'plain-text': 'Plain text'
+  markdown: "Markdown",
+  "plain-text": "Plain text",
 };
 
 const preferenceLabels: Record<PerformancePreference, string> = {
-  auto: 'Auto',
-  speed: 'Speed',
-  capability: 'Capability'
+  auto: "Auto",
+  speed: "Speed",
+  capability: "Capability",
 };
 
 const createOptions = computed<SummarizerCreate>(() => ({
@@ -258,14 +284,11 @@ const createOptions = computed<SummarizerCreate>(() => ({
   sharedContext: props.sharedContext || undefined,
   outputLanguage: props.outputLanguage || undefined,
   expectedInputLanguages: props.expectedInputLanguages,
-  expectedContextLanguages: props.expectedContextLanguages
+  expectedContextLanguages: props.expectedContextLanguages,
 }));
 
 const coreOptions = computed<SummarizerCreateCoreOptions>(() => {
-  const {
-    sharedContext: _sharedContext,
-    ...core
-  } = createOptions.value;
+  const { sharedContext: _sharedContext, ...core } = createOptions.value;
   return core;
 });
 
@@ -273,11 +296,11 @@ const operationalStatusLabel = computed(() => {
   if (downloadProgress.value > 0 && downloadProgress.value < 100) {
     return `${downloadProgress.value}%`;
   }
-  if (availability.value === 'available') return 'Local AI ready';
-  if (availability.value === 'downloadable') return 'Model download';
-  if (availability.value === 'downloading') return 'Downloading';
-  if (availability.value === 'unavailable') return 'Unavailable';
-  return 'Checking';
+  if (availability.value === "available") return "Local AI ready";
+  if (availability.value === "downloadable") return "Model download";
+  if (availability.value === "downloading") return "Downloading";
+  if (availability.value === "unavailable") return "Unavailable";
+  return "Checking";
 });
 
 const settingsSummary = computed(() => {
@@ -285,8 +308,8 @@ const settingsSummary = computed(() => {
     typeLabels[selectedType.value],
     lengthLabels[selectedLength.value],
     formatLabels[selectedFormat.value],
-    preferenceLabels[selectedPreference.value]
-  ].join(' / ');
+    preferenceLabels[selectedPreference.value],
+  ].join(" / ");
 });
 
 const outputMetaLabel = computed(() => {
@@ -297,88 +320,110 @@ const outputMetaLabel = computed(() => {
 const isBusy = computed(() => props.disabled || isProcessing.value);
 
 const canSummarize = computed(() => {
-  return !props.disabled
-    && !isProcessing.value
-    && availability.value !== 'unavailable'
-    && sourceText.value.trim().length > 0;
+  return (
+    !props.disabled &&
+    !isProcessing.value &&
+    availability.value !== "unavailable" &&
+    sourceText.value.trim().length > 0
+  );
 });
 
-const inputUsageLabel = computed(() => inputUsage.value ?? '—');
-const inputQuotaLabel = computed(() => inputQuota.value ?? '—');
+const inputUsageLabel = computed(() => inputUsage.value ?? "—");
+const inputQuotaLabel = computed(() => inputQuota.value ?? "—");
 
 const progressLabel = computed(() => {
   const state = progressState.value;
-  if (state.phase === 'chunking') return 'Preparing chunks';
-  if (state.phase === 'summarizing' && state.totalChunks > 1) {
+  if (state.phase === "chunking") return "Preparing chunks";
+  if (state.phase === "summarizing" && state.totalChunks > 1) {
     return `Summarizing ${state.currentChunk} / ${state.totalChunks}`;
   }
-  if (state.phase === 'rolling-up') return 'Combining chunk summaries';
-  if (state.phase === 'measuring') return 'Measuring input';
-  return '';
+  if (state.phase === "rolling-up") return "Combining chunk summaries";
+  if (state.phase === "measuring") return "Measuring input";
+  return "";
 });
 
 const progressPercent = computed(() => {
   const state = progressState.value;
-  if (state.phase === 'measuring') return 18;
-  if (state.phase === 'chunking') return 32;
-  if (state.phase === 'rolling-up') return 86;
-  if (state.phase === 'summarizing') {
+  if (state.phase === "measuring") return 18;
+  if (state.phase === "chunking") return 32;
+  if (state.phase === "rolling-up") return 86;
+  if (state.phase === "summarizing") {
     if (state.totalChunks <= 1) return 64;
-    return Math.min(82, 35 + Math.round((state.processedChunks / state.totalChunks) * 45));
+    return Math.min(
+      82,
+      35 + Math.round((state.processedChunks / state.totalChunks) * 45),
+    );
   }
-  return state.phase === 'ready' ? 100 : 8;
+  return state.phase === "ready" ? 100 : 8;
 });
 
 const handleSummarize = async () => {
   if (!canSummarize.value) return;
 
   try {
-    summary.value = '';
-    errorMessage.value = '';
+    summary.value = "";
+    errorMessage.value = "";
     const result = await summarizeWithDetails(sourceText.value, {
       createOptions: createOptions.value,
       autoCreate: props.autoCreate,
-      context: showContext.value ? summaryContext.value || undefined : undefined,
+      context: showContext.value
+        ? summaryContext.value || undefined
+        : undefined,
       stripHtml: stripHtmlInput.value,
-      onProgress: (state) => emit('progress', state)
+      onProgress: (state) => emit("progress", state),
     });
     summary.value = result.summary;
-    emit('summary', result);
+    emit("summary", result);
   } catch (error) {
-    errorMessage.value = error instanceof Error
-      ? error.message
-      : 'Unable to summarize this input.';
-    emit('error', error);
+    errorMessage.value =
+      error instanceof Error
+        ? error.message
+        : "Unable to summarize this input.";
+    emit("error", error);
   }
 };
 
 watch(sourceText, (value) => {
-  emit('update:modelValue', value);
+  emit("update:modelValue", value);
 });
 
-watch(() => props.modelValue, (value) => {
-  if (value !== sourceText.value) {
-    sourceText.value = value;
-  }
-});
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value !== sourceText.value) {
+      sourceText.value = value;
+    }
+  },
+);
 
-watch(() => props.context, (value) => {
-  summaryContext.value = value;
-  if (value) {
-    showContext.value = true;
-  }
-});
+watch(
+  () => props.context,
+  (value) => {
+    summaryContext.value = value;
+    if (value) {
+      showContext.value = true;
+    }
+  },
+);
 
-watch(availability, (value) => {
-  if (value) {
-    emit('availability-change', value);
-  }
-}, { immediate: true });
+watch(
+  availability,
+  (value) => {
+    if (value) {
+      emit("availability-change", value);
+    }
+  },
+  { immediate: true },
+);
 
-watch(coreOptions, async (options) => {
-  if (!props.autoInit) return;
-  await requestAvailability(options);
-}, { deep: true });
+watch(
+  coreOptions,
+  async (options) => {
+    if (!props.autoInit) return;
+    await requestAvailability(options);
+  },
+  { deep: true },
+);
 
 onMounted(async () => {
   if (!props.autoInit) return;
@@ -694,7 +739,11 @@ onBeforeUnmount(() => {
 .summarizer__footer button {
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.09)
+  );
   color: var(--color-primary, #fff);
   font-weight: 800;
   cursor: pointer;

@@ -12,7 +12,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
   meta: {
     name: "browserAi",
     compatibility: {
-      nuxt: ">=3.0.0",
+      nuxt: ">=3.17.0",
     },
   },
   defaults: {

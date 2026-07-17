@@ -1,6 +1,11 @@
 <template>
   <aside class="chat-sidebar">
-    <button type="button" class="chat-sidebar__new" :disabled="disabled" @click="emit('create')">
+    <button
+      type="button"
+      class="chat-sidebar__new"
+      :disabled="disabled"
+      @click="emit('create')"
+    >
       New Chat
     </button>
 
@@ -18,8 +23,12 @@
           @click="emit('select', chat.id)"
         >
           <span class="chat-sidebar__title">{{ chat.title }}</span>
-          <span class="chat-sidebar__meta">{{ formatTime(chat.updatedAt) }}</span>
-          <span v-if="chat.preview" class="chat-sidebar__preview">{{ chat.preview }}</span>
+          <span class="chat-sidebar__meta">{{
+            formatTime(chat.updatedAt)
+          }}</span>
+          <span v-if="chat.preview" class="chat-sidebar__preview">{{
+            chat.preview
+          }}</span>
         </button>
 
         <div class="chat-sidebar__actions">
@@ -60,7 +69,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  disabled: false
+  disabled: false,
 });
 
 const emit = defineEmits<{
@@ -76,13 +85,13 @@ const formatTime = (timestamp: number) => {
   const diff = now - timestamp;
 
   const minutes = Math.floor(diff / 1000 / 60);
-  if (minutes < 1) return 'just now';
+  if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m ago`;
 
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
 
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 </script>
 
