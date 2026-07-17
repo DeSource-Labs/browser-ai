@@ -15,10 +15,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          Star
-          <span v-if="typeof stars === 'number'" class="star">
-            <span class="emoji">⭐️</span> {{ stars }}
-          </span>
+          Star on GitHub
         </a>
       </LiquidGlass>
     </div>
@@ -38,13 +35,10 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   title: "Browser AI Kit",
-  subtitle:
-    "The ultimate toolkit for building AI-powered web applications with ease.",
-  leadingLabel: "Examples",
-  leadingIcon: "🔥",
+  subtitle: "Production-ready Chrome built-in AI for Vue and Nuxt.",
+  leadingLabel: "API directory",
+  leadingIcon: "",
   leadingTo: "/",
   compact: false,
 });
-
-const stars = useGhStars();
 </script>

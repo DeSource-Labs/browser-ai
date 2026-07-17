@@ -2,7 +2,9 @@
   <div class="translator-demo">
     <LiquidGlass width="100%" height="100%">
       <div class="translator-demo__tool">
-        <Translator placeholder="Paste text to translate between supported local Chrome language packs..." />
+        <Translator
+          placeholder="Paste text to translate between supported local Chrome language packs..."
+        />
       </div>
     </LiquidGlass>
   </div>

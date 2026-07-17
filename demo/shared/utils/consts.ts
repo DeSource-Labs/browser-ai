@@ -45,33 +45,65 @@ export const icons: Record<SocialMediaKey, { viewBox: string; path: string }> =
   };
 
 export const LibItems: LibItem[] = [
-  { id: "vue", name: "Vue" },
-  { id: "nuxt", name: "Nuxt" },
-  { id: "react", name: "React" },
-  { id: "typescript", name: "TS/JS" },
+  {
+    id: "vue",
+    name: "Vue",
+    status: "available",
+    description: "Components, composables, and complete TypeScript coverage.",
+  },
+  {
+    id: "nuxt",
+    name: "Nuxt",
+    status: "available",
+    description: "Auto-imports, client components, and SSR-safe defaults.",
+  },
+  {
+    id: "react",
+    name: "React",
+    status: "planned",
+    description: "Hooks and accessible headless or ready-made components.",
+  },
+  {
+    id: "angular",
+    name: "Angular",
+    status: "planned",
+    description: "Signals, injectable services, and standalone components.",
+  },
+  {
+    id: "svelte",
+    name: "Svelte",
+    status: "planned",
+    description: "Stores, actions, and native lifecycle integration.",
+  },
+  {
+    id: "typescript",
+    name: "TypeScript core",
+    status: "planned",
+    description: "Framework-neutral lifecycle and text-processing utilities.",
+  },
 ];
 
-export const NpmLinks: Record<Library, string> = {
+export const NpmLinks: Partial<Record<Library, string>> = {
   vue: "https://www.npmjs.com/package/@desource/browser-ai-vue",
   nuxt: "https://www.npmjs.com/package/@desource/browser-ai-nuxt",
-  react: "https://www.npmjs.com/package/@desource/browser-ai-react",
-  typescript: "https://www.npmjs.com/package/@desource/browser-ai",
 };
 
-export const NpmCommands: Record<Library, string> = {
+export const NpmCommands: Partial<Record<Library, string>> = {
   vue: "npm install @desource/browser-ai-vue",
   nuxt: "npm install @desource/browser-ai-nuxt",
-  react: "npm install @desource/browser-ai-react",
-  typescript: "npm install @desource/browser-ai",
 };
 
 export const DocLinks: Record<Library, string> = {
   vue: "https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-vue",
   nuxt: "https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-nuxt",
   react:
-    "https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-react",
+    "https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#react",
+  angular:
+    "https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#angular",
+  svelte:
+    "https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#svelte",
   typescript:
-    "https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai",
+    "https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#typescript-core",
 };
 
 export const Links = {
@@ -87,55 +119,56 @@ export const ToolItems: ToolItem[] = [
     id: "prompt-api",
     name: "Prompt API",
     description:
-      "Easily integrate AI capabilities into your applications with our robust Prompt API.",
+      "Stream private chats, return schema-constrained JSON, and keep long sessions useful.",
     href: "/promptapi",
   },
   {
     id: "summarizer",
     name: "Summarizer",
     description:
-      "Condense lengthy texts into concise summaries while retaining key information.",
+      "Turn long content into summaries, key points, headlines, or teasers on-device.",
     href: "/summarizer",
   },
   {
     id: "writer",
     name: "Writer",
     description:
-      "Generate high-quality written content for various purposes and styles.",
+      "Draft text in the tone, format, and length your interface needs.",
     href: "/writer",
   },
   {
     id: "rewriter",
     name: "Rewriter",
     description:
-      "Transform existing text into new versions while preserving the original meaning.",
+      "Make existing text clearer, shorter, longer, or more formal without a server.",
     href: "/rewriter",
   },
   {
     id: "translator",
     name: "Translator",
     description:
-      "Translate text between multiple languages with accuracy and fluency.",
+      "Translate supported language pairs with Chrome-managed local packs.",
     href: "/translator",
   },
   {
     id: "language-detector",
     name: "Language Detector",
-    description: "Identify the language of a given text quickly and reliably.",
+    description:
+      "Rank likely languages with confidence scores and long-text merging.",
     href: "/language-detector",
   },
   {
     id: "proofreader",
     name: "Proofreader",
     description:
-      "Enhance your text by correcting grammar, spelling, and punctuation errors.",
+      "Correct grammar, spelling, and punctuation with inspectable edit ranges.",
     href: "/proofreader",
   },
   {
     id: "webmcp",
     name: "WebMCP",
     description:
-      "Expose visible, lifecycle-safe browser tools to AI agents with imperative or declarative APIs.",
+      "Publish lifecycle-safe app tools for compatible browser agents to discover and call.",
     href: "/webmcp",
   },
 ];

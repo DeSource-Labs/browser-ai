@@ -2,7 +2,9 @@
   <div class="language-detector-demo">
     <LiquidGlass width="100%" height="100%">
       <div class="language-detector-demo__tool">
-        <LanguageDetector placeholder="Paste text to detect its language with Chrome's local model..." />
+        <LanguageDetector
+          placeholder="Paste text to detect its language with Chrome's local model..."
+        />
       </div>
     </LiquidGlass>
   </div>

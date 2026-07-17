@@ -2,7 +2,9 @@
   <div class="rewriter-demo">
     <LiquidGlass width="100%" height="100%">
       <div class="rewriter-demo__tool">
-        <Rewriter placeholder="Paste text that should become clearer, shorter, longer, more formal, or more casual..." />
+        <Rewriter
+          placeholder="Paste text that should become clearer, shorter, longer, more formal, or more casual..."
+        />
       </div>
     </LiquidGlass>
   </div>

@@ -2,7 +2,9 @@
   <div class="writer-demo">
     <LiquidGlass width="100%" height="100%">
       <div class="writer-demo__tool">
-        <Writer placeholder="Describe the email, review, blog intro, support request, or draft you need..." />
+        <Writer
+          placeholder="Describe the email, review, blog intro, support request, or draft you need..."
+        />
       </div>
     </LiquidGlass>
   </div>

@@ -14,7 +14,13 @@
         viewBox="0 0 16 16"
         fill="none"
       >
-        <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path
+          d="M4 6L8 10L12 6"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
     </button>
 
@@ -42,22 +48,22 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  label: 'Select...'
+  label: "Select...",
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
+  "update:modelValue": [value: string];
 }>();
 
 const isOpen = ref(false);
 
 const selectedLabel = computed(() => {
-  const item = props.items.find(item => item.id === props.modelValue);
+  const item = props.items.find((item) => item.id === props.modelValue);
   return item?.name || props.label;
 });
 
 const selectItem = (id: string) => {
-  emit('update:modelValue', id);
+  emit("update:modelValue", id);
   isOpen.value = false;
 };
 

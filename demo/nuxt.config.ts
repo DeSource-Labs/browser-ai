@@ -31,6 +31,7 @@ const config: NuxtConfig = {
     prerender: {
       routes: [
         "/",
+        "/docs",
         "/promptapi",
         "/summarizer",
         "/writer",
@@ -44,6 +45,12 @@ const config: NuxtConfig = {
   },
 
   routeRules: {
+    "/": {
+      noScripts: true,
+    },
+    "/docs": {
+      noScripts: true,
+    },
     "/**": {
       headers: {
         "origin-agent-cluster": "?1",

@@ -11,7 +11,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in apiRows" :key="item.id">
+            <tr v-for="item in apiRows" :key="item.id" :data-api="item.id">
               <td>
                 <div class="tools__api">
                   <strong>{{ item.name }}</strong>
@@ -79,27 +79,20 @@ const checkNativeAvailability = async (
   }
 };
 
-const AvailableStatuses: DemoAvailability[] = [
-  "available",
-  "downloadable",
-  "downloading",
-];
-
 const getAvailabilityLabel = (status: DemoAvailability) => {
   switch (status) {
     case "checking":
+      return "Checking…";
     case "downloading":
+      return "Downloading";
     case "available":
-      return status;
+      return "Available";
     case "downloadable":
       return "Needs download";
     default:
       return "Not available";
   }
 };
-
-const canOpenDemo = (availability: DemoAvailability) =>
-  AvailableStatuses.includes(availability);
 
 const apiRows = computed<ApiRow[]>(() => {
   return ToolItems.map((item) => {
@@ -108,35 +101,35 @@ const apiRows = computed<ApiRow[]>(() => {
     switch (item.id) {
       case "prompt-api":
         availability = promptApiAvailability.value;
-        openable = canOpenDemo(promptApiAvailability.value);
+        openable = true;
         break;
       case "summarizer":
         availability = summarizerAvailability.value;
-        openable = canOpenDemo(summarizerAvailability.value);
+        openable = true;
         break;
       case "writer":
         availability = writerAvailability.value;
-        openable = canOpenDemo(writerAvailability.value);
+        openable = true;
         break;
       case "rewriter":
         availability = rewriterAvailability.value;
-        openable = canOpenDemo(rewriterAvailability.value);
+        openable = true;
         break;
       case "translator":
         availability = translatorAvailability.value;
-        openable = canOpenDemo(translatorAvailability.value);
+        openable = true;
         break;
       case "language-detector":
         availability = languageDetectorAvailability.value;
-        openable = canOpenDemo(languageDetectorAvailability.value);
+        openable = true;
         break;
       case "proofreader":
         availability = proofreaderAvailability.value;
-        openable = canOpenDemo(proofreaderAvailability.value);
+        openable = true;
         break;
       case "webmcp":
         availability = webMcpAvailability.value;
-        openable = canOpenDemo(webMcpAvailability.value);
+        openable = true;
         break;
     }
     return {

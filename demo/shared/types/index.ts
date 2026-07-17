@@ -7,11 +7,14 @@ export type SocialMediaItem = {
 
 export type SocialMedia = Record<SocialMediaKey, string>;
 
-export type Library = "vue" | "nuxt" | "react" | "typescript";
+export type Library =
+  "vue" | "nuxt" | "react" | "angular" | "svelte" | "typescript";
 
 export type LibItem = {
   id: Library;
   name: string;
+  status: "available" | "planned";
+  description: string;
 };
 
 export type Tool =

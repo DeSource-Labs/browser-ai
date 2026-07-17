@@ -2,7 +2,7 @@ html {
   scroll-behavior: smooth;
   background-color: var(--color-background);
   font-size: 16px;
-  overflow: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -15,6 +15,7 @@ body {
   font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
   font-weight: 400;
   font-style: normal;
+  overflow-x: clip;
 }
 
 section {
@@ -101,8 +102,7 @@ a {
   pointer-events: all;
 }
 
-.stars,
-.star {
+.stars {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,12 +111,6 @@ a {
 .stars {
   gap: 0.5rem;
   font-weight: 500;
-}
-
-.star {
-  gap: 0.3rem;
-  color: var(--color-primary);
-  animation: reveal-star-count 0.45s ease-out both;
 }
 
 .glass-surface {
@@ -158,30 +152,6 @@ a {
   border-radius: inherit;
 }
 
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 2rem;
-}
-
-.footer > * {
-  pointer-events: all;
-}
-
-.footer__socials {
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  color: var(--color-secondary);
-}
-
-.footer .p4 {
-  color: var(--color-secondary);
-  letter-spacing: 0.03em;
-}
-
 .social {
   display: inline-flex;
   cursor: pointer;
@@ -198,13 +168,6 @@ a {
   transform: scale(1.1);
 }
 
-@keyframes reveal-star-count {
-  from {
-    transform: scale(0.75);
-    opacity: 0;
-  }
-}
-
 @media (prefers-reduced-transparency: reduce) {
   .glass-surface {
     background: rgb(10, 14, 27);
@@ -214,25 +177,8 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .star {
-    animation: none;
-  }
-
   .glass-surface--actionable {
     transition: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .legal {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer {
-    flex-direction: column-reverse;
-    gap: 0.75rem;
   }
 }
 

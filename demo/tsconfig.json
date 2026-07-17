@@ -3,6 +3,6 @@
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "declaration": true,
-    "declarationDir": "./node_modules/@types/dom-chromium-ai",
+    "declarationDir": "./node_modules/@types/dom-chromium-ai"
   }
 }

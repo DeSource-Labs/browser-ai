@@ -2,7 +2,9 @@
   <div class="proofreader-demo">
     <LiquidGlass width="100%" height="100%">
       <div class="proofreader-demo__tool">
-        <Proofreader placeholder="Paste text to correct grammar, spelling, and punctuation with Chrome's local model..." />
+        <Proofreader
+          placeholder="Paste text to correct grammar, spelling, and punctuation with Chrome's local model..."
+        />
       </div>
     </LiquidGlass>
   </div>
