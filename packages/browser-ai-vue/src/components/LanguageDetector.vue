@@ -757,6 +757,22 @@ onBeforeUnmount(() => {
   line-height: 1.5;
 }
 
+.language-detector__result p:only-child {
+  flex: 1;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  border: 1px dashed rgba(167, 139, 250, 0.16);
+  border-radius: 0.75rem;
+  background: radial-gradient(
+    circle at center,
+    rgba(124, 92, 228, 0.08),
+    transparent 62%
+  );
+  text-align: center;
+}
+
 .language-detector__hero {
   gap: 0.75rem;
   border: 1px solid rgba(147, 197, 253, 0.2);

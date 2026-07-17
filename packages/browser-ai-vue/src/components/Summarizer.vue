@@ -761,6 +761,8 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
   padding: 0.85rem;
   user-select: text;
 }
@@ -776,6 +778,22 @@ onBeforeUnmount(() => {
 
 .summarizer__output p {
   color: var(--color-secondary, rgba(255, 255, 255, 0.62));
+}
+
+.summarizer__output p:only-child {
+  flex: 1;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  border: 1px dashed rgba(167, 139, 250, 0.16);
+  border-radius: 0.75rem;
+  background: radial-gradient(
+    circle at center,
+    rgba(124, 92, 228, 0.08),
+    transparent 62%
+  );
+  text-align: center;
 }
 
 @media (max-width: 980px) {
