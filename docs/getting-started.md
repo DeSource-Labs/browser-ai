@@ -48,7 +48,7 @@ import "@desource/browser-ai-vue/assets/lib.css";
 </template>
 ```
 
-The starter components already handle supported, downloadable, downloading, ready, processing, cancelled, and failed states. Their CSS uses custom properties and ordinary selectors, so it can be overridden by an application theme.
+The starter components already handle supported, downloadable, downloading, ready, processing, cancelled, and failed states. Generated prose supports Markdown—including headings, lists, tables, links, and code blocks—with raw HTML disabled. Their CSS uses custom properties and ordinary selectors, so it can be overridden by an application theme.
 
 ## Start headless
 
@@ -128,7 +128,7 @@ Native sessions are never serialized into Nuxt payloads. If you use the Vue pack
 - Feature-detect the API and render a useful unsupported state.
 - Begin downloads only from a real user action.
 - Keep an `AbortController` path for long work.
-- Treat generated output as untrusted content; never render raw HTML without sanitizing it.
+- Treat generated output as untrusted content. The built-in Markdown renderer disables raw HTML; custom renderers must provide equivalent sanitization.
 - Avoid placing secrets in prompts or client-side tool definitions.
 - Test model-ready and first-download paths separately.
 - Test context limits and long content with representative data.

@@ -1,100 +1,102 @@
 <template>
   <div class="webmcp-demo">
-    <LiquidGlass width="100%" height="100%">
-      <div class="webmcp-demo__content">
-        <header class="webmcp-demo__header">
-          <div>
-            <p class="webmcp-demo__eyebrow">
-              Chrome 149+ origin trial / local flag
-            </p>
-            <h2>Agent-ready tools, visible in the page</h2>
-          </div>
-          <span
-            ref="statusElement"
-            class="webmcp-demo__status"
-            :class="isSupported ? 'webmcp-demo__status--ready' : ''"
-          >
-            {{ isSupported ? "Supported" : support.reason }}
-          </span>
-        </header>
-
-        <p class="webmcp-demo__intro">
-          This page registers two imperative tools and one declarative form.
-          Tool calls update the same UI the user sees.
-        </p>
-
-        <div v-if="!isSupported" class="webmcp-demo__notice" role="status">
-          Enable <code>#enable-webmcp-testing</code>, use a secure origin, and
-          allow the <code>tools</code> permissions policy.
+    <div class="webmcp-demo__content">
+      <header class="webmcp-demo__header">
+        <div>
+          <p class="webmcp-demo__eyebrow">
+            Chrome 149+ origin trial / local flag
+          </p>
+          <h2>Agent-ready tools, visible in the page</h2>
         </div>
-        <div v-if="demoError" class="webmcp-demo__notice" role="alert">
-          {{ demoError }}
-        </div>
+        <span
+          ref="statusElement"
+          class="webmcp-demo__status"
+          :class="browserSupported ? 'webmcp-demo__status--ready' : ''"
+        >
+          {{ supportLabel }}
+        </span>
+      </header>
 
-        <div class="webmcp-demo__grid">
-          <section class="webmcp-demo__panel">
-            <div class="webmcp-demo__panel-heading">
-              <div>
-                <span>Imperative API</span>
-                <strong>{{ visibleRegisteredTools.length }} registered</strong>
-              </div>
-              <button
-                type="button"
-                :disabled="!isSupported || isProcessing"
-                @click="toggleTools"
-              >
-                {{ visibleRegisteredTools.length ? "Unregister" : "Register" }}
-              </button>
-            </div>
+      <p class="webmcp-demo__intro">
+        This page registers two imperative tools and one declarative form. Tool
+        calls update the same UI the user sees.
+      </p>
 
-            <label for="webmcp-message">Shared demo state</label>
-            <input id="webmcp-message" v-model="message" type="text" />
-            <p class="webmcp-demo__result">{{ lastAction }}</p>
-
-            <ul>
-              <li v-for="tool in visibleRegisteredTools" :key="tool.name">
-                <code>{{ tool.name }}</code>
-                <span>{{ tool.description }}</span>
-              </li>
-            </ul>
-          </section>
-
-          <section class="webmcp-demo__panel">
-            <div class="webmcp-demo__panel-heading">
-              <div>
-                <span>Declarative API</span>
-                <strong>Annotated HTML form</strong>
-              </div>
-            </div>
-
-            <form v-bind="formAttributes" @submit="handleFormSubmit">
-              <label for="webmcp-note">Note for the page</label>
-              <input
-                id="webmcp-note"
-                v-model="formMessage"
-                v-bind="fieldAttributes"
-                name="note"
-                required
-                type="text"
-              />
-              <button type="submit">Apply note</button>
-            </form>
-            <p class="webmcp-demo__result">{{ agentEvent }}</p>
-          </section>
-        </div>
-
-        <footer class="webmcp-demo__footer">
-          <span>Discoverable tools: {{ discoveredTools.length }}</span>
-          <button
-            type="button"
-            :disabled="!isSupported || isProcessing"
-            @click="refreshDemoTools"
-          >
-            Refresh discovery
-          </button>
-        </footer>
+      <div
+        v-if="hasMounted && !isSupported"
+        class="webmcp-demo__notice"
+        role="status"
+      >
+        Enable <code>#enable-webmcp-testing</code>, use a secure origin, and
+        allow the <code>tools</code> permissions policy.
       </div>
-    </LiquidGlass>
+      <div v-if="demoError" class="webmcp-demo__notice" role="alert">
+        {{ demoError }}
+      </div>
+
+      <div class="webmcp-demo__grid">
+        <section class="webmcp-demo__panel">
+          <div class="webmcp-demo__panel-heading">
+            <div>
+              <span>Imperative API</span>
+              <strong>{{ visibleRegisteredTools.length }} registered</strong>
+            </div>
+            <button
+              type="button"
+              :disabled="!browserSupported || isProcessing"
+              @click="toggleTools"
+            >
+              {{ visibleRegisteredTools.length ? "Unregister" : "Register" }}
+            </button>
+          </div>
+
+          <label for="webmcp-message">Shared demo state</label>
+          <input id="webmcp-message" v-model="message" type="text" />
+          <p class="webmcp-demo__result">{{ lastAction }}</p>
+
+          <ul>
+            <li v-for="tool in visibleRegisteredTools" :key="tool.name">
+              <code>{{ tool.name }}</code>
+              <span>{{ tool.description }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="webmcp-demo__panel">
+          <div class="webmcp-demo__panel-heading">
+            <div>
+              <span>Declarative API</span>
+              <strong>Annotated HTML form</strong>
+            </div>
+          </div>
+
+          <form v-bind="formAttributes" @submit="handleFormSubmit">
+            <label for="webmcp-note">Note for the page</label>
+            <input
+              id="webmcp-note"
+              v-model="formMessage"
+              v-bind="fieldAttributes"
+              name="note"
+              required
+              type="text"
+            />
+            <button type="submit">Apply note</button>
+          </form>
+          <p class="webmcp-demo__result">{{ agentEvent }}</p>
+        </section>
+      </div>
+
+      <footer class="webmcp-demo__footer">
+        <span>Discoverable tools: {{ discoveredTools.length }}</span>
+        <button
+          type="button"
+          :disabled="!browserSupported || isProcessing"
+          @click="refreshDemoTools"
+        >
+          Refresh discovery
+        </button>
+      </footer>
+    </div>
   </div>
 </template>
 
@@ -134,6 +136,12 @@ const {
   refreshTools,
 } = useWebMcp();
 const statusElement = ref<HTMLElement | null>(null);
+const hasMounted = ref(false);
+const browserSupported = computed(() => hasMounted.value && isSupported.value);
+const supportLabel = computed(() => {
+  if (!hasMounted.value) return "Checking support";
+  return isSupported.value ? "Supported" : support.value.reason;
+});
 const visibleRegisteredTools = computed<WebMcpTool[]>(
   () => registeredTools.value,
 );
@@ -249,6 +257,7 @@ const handleToolCancel = (event: Event) => {
 };
 
 onMounted(async () => {
+  hasMounted.value = true;
   window.addEventListener("toolactivated", handleToolActivated);
   window.addEventListener("toolcancel", handleToolCancel);
   const currentSupport = refreshSupport();
@@ -267,7 +276,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .webmcp-demo {
-  width: min(1120px, calc(100vw - 2rem));
+  width: 100%;
   height: auto;
   min-height: 0;
 }

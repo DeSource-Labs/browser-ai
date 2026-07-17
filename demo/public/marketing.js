@@ -27,17 +27,22 @@ export default defineNuxtConfig({
   };
 
   const availabilityLabel = (status) => {
-    if (status === "available") return "Available";
-    if (status === "downloadable") return "Needs download";
+    if (status === "available") return "Ready now";
+    if (status === "downloadable") return "Download first";
     if (status === "downloading") return "Downloading";
-    return "Not available";
+    return "Not enabled";
   };
 
   const setAvailability = (id, status) => {
     const badge = document.querySelector(`[data-api="${id}"] .tools__badge`);
     if (!badge) return;
     badge.className = `tools__badge tools__badge--${status}`;
-    badge.textContent = availabilityLabel(status);
+    const dot = document.createElement("i");
+    dot.setAttribute("aria-hidden", "true");
+    badge.replaceChildren(
+      dot,
+      document.createTextNode(` ${availabilityLabel(status)}`),
+    );
     badge.dataset.nativeChecked = "true";
   };
 
@@ -56,9 +61,9 @@ export default defineNuxtConfig({
   };
 
   const checkNativeApis = () => {
-    const table = document.querySelector(".tools__table");
-    if (!table || table.dataset.nativeChecked === "true") return;
-    table.dataset.nativeChecked = "true";
+    const tools = document.querySelector(".tools");
+    if (!tools || tools.dataset.nativeChecked === "true") return;
+    tools.dataset.nativeChecked = "true";
 
     setAvailability(
       "webmcp",

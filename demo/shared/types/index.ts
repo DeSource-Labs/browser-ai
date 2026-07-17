@@ -34,3 +34,19 @@ export type ToolItem = {
   href: string;
   openable?: boolean;
 };
+
+export type ApiUsageExample = {
+  label: string;
+  title: string;
+  description: string;
+  code: string;
+};
+
+export type ApiGuide = {
+  title: string;
+  description: string;
+  eyebrow: string;
+  workspace: "chat" | "tool" | "webmcp";
+  mobileWorkspaceHeight?: number;
+  examples: ApiUsageExample[];
+};

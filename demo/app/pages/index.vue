@@ -830,8 +830,10 @@ const frameworkMarks: Record<Library, string> = {
 
 .content-section {
   padding-block: clamp(4.5rem, 8vw, 7rem);
-  content-visibility: auto;
-  contain-intrinsic-size: auto 1000px;
+}
+
+.content-section[id] {
+  scroll-margin-top: 6.25rem;
 }
 
 .section-heading {
@@ -1059,15 +1061,6 @@ const frameworkMarks: Record<Library, string> = {
 }
 
 .api-section :deep(.tools) {
-  width: 100%;
-}
-
-.api-section :deep(.glass-surface) {
-  height: auto !important;
-  min-height: 545px;
-}
-
-.api-section :deep(.tools__table-wrap) {
   width: 100%;
 }
 

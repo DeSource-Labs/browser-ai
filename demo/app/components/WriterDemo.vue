@@ -1,14 +1,10 @@
 <template>
   <div class="writer-demo">
-    <LiquidGlass width="100%" height="100%">
-      <div class="writer-demo__tool">
-        <Writer
-          v-model="task"
-          placeholder="Describe the email, review, blog intro, support request, or draft you need..."
-          empty-output-message="Your draft will stream here. Use Settings to choose tone, length, and output format."
-        />
-      </div>
-    </LiquidGlass>
+    <Writer
+      v-model="task"
+      placeholder="Describe the email, review, blog intro, support request, or draft you need..."
+      empty-output-message="Your draft will stream here. Use Settings to choose tone, length, and output format."
+    />
   </div>
 </template>
 
@@ -20,27 +16,9 @@ const task = ref(
 
 <style scoped>
 .writer-demo {
-  width: min(1920px, calc(100vw - 2rem));
-  height: 100%;
-  min-height: 0;
-  pointer-events: all;
-}
-
-.writer-demo__tool {
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 0.5rem;
-  box-sizing: border-box;
-}
-
-@media (max-width: 760px) {
-  .writer-demo {
-    width: min(100%, calc(100vw - 1rem));
-  }
-
-  .writer-demo__tool {
-    padding: 0.35rem;
-  }
+  pointer-events: all;
 }
 </style>
