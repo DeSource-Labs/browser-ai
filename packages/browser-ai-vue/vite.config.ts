@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
+import { fileURLToPath } from 'node:url';
 import vue from '@vitejs/plugin-vue';
-import { fileURLToPath } from 'url';
 
 export default defineConfig({
   plugins: [vue()],
@@ -14,14 +14,14 @@ export default defineConfig({
         return `${entryName}.cjs`;
       }
     },
-    minify: false,
-    rollupOptions: {
+    rolldownOptions: {
       external: ['vue'],
       output: {
         exports: 'named',
         globals: {
           vue: 'Vue'
-        }
+        },
+        minify: true
       }
     }
   }
