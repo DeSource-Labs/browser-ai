@@ -332,8 +332,8 @@ const operationalStatusLabel = computed(() => {
   if (downloadProgress.value > 0 && downloadProgress.value < 100) {
     return `${downloadProgress.value}%`;
   }
-  if (availability.value === "available") return "Local proofreader ready";
-  if (availability.value === "downloadable") return "Proofreader model";
+  if (availability.value === "available") return "Ready";
+  if (availability.value === "downloadable") return "Download";
   if (availability.value === "downloading") return "Downloading";
   if (availability.value === "unavailable") return "Unavailable";
   return "Checking";
