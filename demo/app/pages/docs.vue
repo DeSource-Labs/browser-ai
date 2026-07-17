@@ -3,6 +3,7 @@
     <MarketingNav />
 
     <header class="docs-hero">
+      <div class="docs-hero__orbit" aria-hidden="true"><i /><i /><i /></div>
       <p class="docs-kicker">Browser AI Kit documentation</p>
       <h1>Build the local AI feature<br />users expect.</h1>
       <p>
@@ -497,8 +498,58 @@ const faq = [
 }
 
 .docs-hero {
-  padding: clamp(5.5rem, 12vw, 10rem) 0 clamp(4rem, 8vw, 7rem);
+  position: relative;
+  padding: clamp(4.5rem, 8vw, 7rem) 0 clamp(3.25rem, 5vw, 4.75rem);
   text-align: center;
+}
+
+.docs-hero::before {
+  position: absolute;
+  inset: 1rem 4% 0;
+  content: "";
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.65;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.16) 1px,
+    transparent 1px
+  );
+  background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse at center, #000 0%, transparent 68%);
+}
+
+.docs-hero__orbit {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.docs-hero__orbit i {
+  position: absolute;
+  width: min(720px, 78vw);
+  aspect-ratio: 2.6;
+  border: 1px solid rgba(167, 139, 250, 0.11);
+  border-radius: 50%;
+  transform: rotate(-7deg);
+  animation: docs-orbit 14s ease-in-out infinite alternate;
+}
+
+.docs-hero__orbit i:nth-child(2) {
+  width: min(560px, 66vw);
+  border-color: rgba(94, 234, 212, 0.09);
+  animation-delay: -5s;
+  animation-duration: 18s;
+}
+
+.docs-hero__orbit i:nth-child(3) {
+  width: min(400px, 54vw);
+  border-color: rgba(255, 255, 255, 0.07);
+  animation-delay: -9s;
+  animation-duration: 22s;
 }
 
 .docs-kicker {
@@ -507,6 +558,15 @@ const faq = [
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.docs-hero .docs-kicker {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid rgba(167, 139, 250, 0.18);
+  border-radius: 999px;
+  background: rgba(124, 92, 228, 0.07);
 }
 
 .docs-hero h1 {
@@ -612,14 +672,14 @@ const faq = [
 }
 
 .doc-section {
-  padding: 0 0 clamp(6rem, 12vw, 9rem);
+  padding: 0 0 clamp(3.5rem, 6vw, 5rem);
   scroll-margin-top: 7rem;
   content-visibility: auto;
   contain-intrinsic-size: auto 1000px;
 }
 
 .doc-section + .doc-section {
-  padding-top: clamp(5rem, 10vw, 8rem);
+  padding-top: clamp(3.5rem, 6vw, 5rem);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -642,7 +702,7 @@ const faq = [
 }
 
 .doc-subheading {
-  margin-top: 3.5rem;
+  margin-top: 2.75rem;
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.4rem;
   letter-spacing: -0.025em;
@@ -706,13 +766,23 @@ const faq = [
 }
 
 .principle-grid > div {
-  min-height: 190px;
+  min-height: 165px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.8rem;
   background: rgba(255, 255, 255, 0.025);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.principle-grid > div:hover {
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.2);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .principle-grid > div > span {
@@ -1050,8 +1120,10 @@ const faq = [
 }
 
 .docs-next {
-  margin-bottom: clamp(6rem, 12vw, 10rem);
-  padding: clamp(2rem, 6vw, 4.5rem);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: clamp(4.5rem, 8vw, 7rem);
+  padding: clamp(2rem, 5vw, 3.75rem);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.2rem;
   background:
@@ -1061,6 +1133,56 @@ const faq = [
       transparent 45%
     ),
     rgba(7, 10, 22, 0.7);
+}
+
+.docs-next::after {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -100px;
+  bottom: -150px;
+  content: "";
+  pointer-events: none;
+  border: 1px solid rgba(167, 139, 250, 0.17);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 42px rgba(167, 139, 250, 0.025),
+    0 0 0 86px rgba(94, 234, 212, 0.018);
+  animation: docs-orbit 12s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes docs-orbit {
+  from {
+    transform: rotate(-7deg) scale(0.97);
+    opacity: 0.48;
+  }
+
+  to {
+    transform: rotate(7deg) scale(1.03);
+    opacity: 1;
+  }
+}
+
+@keyframes docs-reveal {
+  from {
+    translate: 0 22px;
+  }
+
+  to {
+    translate: 0 0;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .principle-grid > div,
+  .install-card,
+  .state-grid > div,
+  .api-doc-grid > a,
+  .docs-next {
+    animation: docs-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 22%;
+  }
 }
 
 .docs-next .docs-button {
@@ -1111,6 +1233,18 @@ const faq = [
   .option-table > div {
     grid-template-columns: 0.55fr 0.35fr 0.85fr;
     font-size: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-hero__orbit i,
+  .docs-next::after,
+  .principle-grid > div,
+  .install-card,
+  .state-grid > div,
+  .api-doc-grid > a,
+  .docs-next {
+    animation: none;
   }
 }
 </style>

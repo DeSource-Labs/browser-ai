@@ -7,6 +7,8 @@
 }
 
 .site-nav {
+  position: relative;
+  overflow: hidden;
   width: min(1180px, 100%);
   min-height: 4rem;
   margin: 0 auto;
@@ -23,6 +25,27 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.25);
   backdrop-filter: blur(18px) saturate(1.25);
   pointer-events: auto;
+}
+
+.site-nav::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 34%,
+    rgba(167, 139, 250, 0.09) 48%,
+    rgba(94, 234, 212, 0.06) 52%,
+    transparent 66%
+  );
+  transform: translate3d(-75%, 0, 0);
+  animation: nav-sheen 12s ease-in-out infinite;
+}
+
+.site-nav > * {
+  position: relative;
+  z-index: 1;
 }
 
 .site-nav__brand,
@@ -112,6 +135,18 @@
   width: 1.1rem;
   height: 1.1rem;
   fill: currentColor;
+}
+
+@keyframes nav-sheen {
+  0%,
+  72% {
+    transform: translate3d(-75%, 0, 0);
+  }
+
+  88%,
+  100% {
+    transform: translate3d(75%, 0, 0);
+  }
 }
 
 .code-block {
@@ -287,5 +322,11 @@
     background: #080b17;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav::before {
+    animation: none;
   }
 }

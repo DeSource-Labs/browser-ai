@@ -76,6 +76,51 @@ export default defineNuxtConfig({
     });
   };
 
+  const setupHeroMotion = () => {
+    const hero = document.querySelector(".hero");
+    if (!(hero instanceof HTMLElement) || hero.dataset.motionReady === "true")
+      return;
+    hero.dataset.motionReady = "true";
+
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    )
+      return;
+
+    let frame = 0;
+    let nextX = 0;
+    let nextY = 0;
+
+    const render = () => {
+      const bounds = hero.getBoundingClientRect();
+      const x = Math.max(0, Math.min(1, (nextX - bounds.left) / bounds.width));
+      const y = Math.max(0, Math.min(1, (nextY - bounds.top) / bounds.height));
+      hero.style.setProperty("--pointer-x", `${(x * 100).toFixed(1)}%`);
+      hero.style.setProperty("--pointer-y", `${(y * 100).toFixed(1)}%`);
+      hero.style.setProperty("--tilt-x", `${((0.5 - y) * 2.4).toFixed(2)}deg`);
+      hero.style.setProperty("--tilt-y", `${((x - 0.5) * 4.2).toFixed(2)}deg`);
+      frame = 0;
+    };
+
+    hero.addEventListener(
+      "pointermove",
+      (event) => {
+        nextX = event.clientX;
+        nextY = event.clientY;
+        if (!frame) frame = window.requestAnimationFrame(render);
+      },
+      { passive: true },
+    );
+
+    hero.addEventListener("pointerleave", () => {
+      hero.style.setProperty("--pointer-x", "72%");
+      hero.style.setProperty("--pointer-y", "28%");
+      hero.style.setProperty("--tilt-x", "1deg");
+      hero.style.setProperty("--tilt-y", "-3deg");
+    });
+  };
+
   document.addEventListener("click", async (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
@@ -118,7 +163,11 @@ export default defineNuxtConfig({
 
   const start = () => {
     checkNativeApis();
-    new MutationObserver(checkNativeApis).observe(document.body, {
+    setupHeroMotion();
+    new MutationObserver(() => {
+      checkNativeApis();
+      setupHeroMotion();
+    }).observe(document.body, {
       childList: true,
       subtree: true,
     });

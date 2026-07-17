@@ -1,13 +1,15 @@
 h1 {
-  font-size: 3rem;
-  font-weight: 200;
-  letter-spacing: 0.25em;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 720;
+  line-height: 1;
+  letter-spacing: -0.05em;
 }
 
 .h3 {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 400;
-  letter-spacing: 0.25em;
+  line-height: 1.5;
+  letter-spacing: 0;
 }
 
 .h4 {
@@ -37,13 +39,13 @@ h1 {
 
 @media screen and (max-width: 768px) {
   h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 }
 
 @media screen and (max-width: 640px) {
   h1 {
-    font-size: 1.75rem;
+    font-size: 1.65rem;
   }
 
   .h3 {

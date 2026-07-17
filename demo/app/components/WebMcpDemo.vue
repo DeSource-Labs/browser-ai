@@ -10,8 +10,9 @@
             <h2>Agent-ready tools, visible in the page</h2>
           </div>
           <span
+            ref="statusElement"
             class="webmcp-demo__status"
-            :class="{ 'webmcp-demo__status--ready': isSupported }"
+            :class="isSupported ? 'webmcp-demo__status--ready' : ''"
           >
             {{ isSupported ? "Supported" : support.reason }}
           </span>
@@ -114,7 +115,7 @@ type AgentSubmitEvent = SubmitEvent & {
 type ToolLifecycleEvent = Event & { toolName?: string };
 
 const message = ref("Browser AI Kit is ready.");
-const formMessage = ref("");
+const formMessage = ref("Ready for an agent-assisted workflow.");
 const lastAction = ref(
   "Change the field yourself or call set_demo_message from an agent.",
 );
@@ -127,10 +128,12 @@ const {
   isProcessing,
   registeredTools,
   discoveredTools,
+  refreshSupport,
   registerTools,
   unregisterAll,
   refreshTools,
 } = useWebMcp();
+const statusElement = ref<HTMLElement | null>(null);
 const visibleRegisteredTools = computed<WebMcpTool[]>(
   () => registeredTools.value,
 );
@@ -248,6 +251,11 @@ const handleToolCancel = (event: Event) => {
 onMounted(async () => {
   window.addEventListener("toolactivated", handleToolActivated);
   window.addEventListener("toolcancel", handleToolCancel);
+  const currentSupport = refreshSupport();
+  statusElement.value?.classList.toggle(
+    "webmcp-demo__status--ready",
+    currentSupport.supported,
+  );
   await registerDemoTools();
 });
 
@@ -260,7 +268,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .webmcp-demo {
   width: min(1120px, calc(100vw - 2rem));
-  height: min(720px, 100%);
+  height: auto;
   min-height: 0;
 }
 
@@ -268,7 +276,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  height: 100%;
+  height: auto;
   min-height: 0;
   padding: clamp(1rem, 2vw, 1.5rem);
   color: var(--color-primary);
@@ -400,8 +408,8 @@ onBeforeUnmount(() => {
 
 @media (max-width: 760px) {
   .webmcp-demo {
-    width: calc(100vw - 1rem);
-    overflow: auto;
+    width: 100%;
+    overflow: visible;
   }
 
   .webmcp-demo__grid {

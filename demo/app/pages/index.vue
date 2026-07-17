@@ -4,6 +4,7 @@
 
     <main>
       <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__beam-field" aria-hidden="true"><i /><i /><i /></div>
         <div class="hero__glow hero__glow--one" aria-hidden="true" />
         <div class="hero__glow hero__glow--two" aria-hidden="true" />
 
@@ -380,12 +381,84 @@ const frameworkMarks: Record<Library, string> = {
 
 .hero {
   position: relative;
-  min-height: clamp(680px, calc(100svh - 5rem), 850px);
-  padding: clamp(3.75rem, 6vw, 5.5rem) 0 clamp(4rem, 8vw, 7rem);
+  min-height: clamp(640px, calc(100svh - 5rem), 810px);
+  padding: clamp(3.25rem, 5vw, 4.75rem) 0 clamp(3.5rem, 6vw, 5.5rem);
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(390px, 0.8fr);
   align-items: center;
   gap: clamp(2.5rem, 7vw, 6.5rem);
+  --pointer-x: 72%;
+  --pointer-y: 28%;
+  --tilt-x: 1deg;
+  --tilt-y: -3deg;
+}
+
+.hero::before {
+  position: absolute;
+  inset: 2rem -8vw 0;
+  content: "";
+  pointer-events: none;
+  opacity: 0.7;
+  background:
+    radial-gradient(
+      circle 280px at var(--pointer-x) var(--pointer-y),
+      rgba(130, 107, 255, 0.16),
+      transparent 72%
+    ),
+    radial-gradient(circle, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size:
+    auto,
+    32px 32px;
+  mask-image: radial-gradient(ellipse at 70% 38%, #000 0%, transparent 67%);
+}
+
+.hero__beam-field {
+  position: absolute;
+  inset: -2rem -5vw 0 42%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 18%,
+    #000 70%,
+    transparent
+  );
+}
+
+.hero__beam-field i {
+  position: absolute;
+  top: -30%;
+  width: 1px;
+  height: 130%;
+  opacity: 0.34;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(163, 144, 255, 0.75),
+    rgba(94, 234, 212, 0.2),
+    transparent
+  );
+  box-shadow: 0 0 22px 2px rgba(130, 107, 255, 0.15);
+  transform: rotate(24deg) translate3d(0, -12%, 0);
+  animation: beam-scan 9s ease-in-out infinite alternate;
+}
+
+.hero__beam-field i:nth-child(1) {
+  left: 24%;
+}
+
+.hero__beam-field i:nth-child(2) {
+  left: 55%;
+  animation-delay: -4s;
+  animation-duration: 12s;
+}
+
+.hero__beam-field i:nth-child(3) {
+  left: 82%;
+  animation-delay: -7s;
+  animation-duration: 14s;
 }
 
 .hero__copy,
@@ -412,6 +485,7 @@ const frameworkMarks: Record<Library, string> = {
     rgba(124, 91, 255, 0.23),
     transparent 68%
   );
+  animation: glow-breathe 8s ease-in-out infinite alternate;
 }
 
 .hero__glow--two {
@@ -420,6 +494,7 @@ const frameworkMarks: Record<Library, string> = {
   left: -20%;
   bottom: -4%;
   background: radial-gradient(circle, rgba(52, 211, 183, 0.1), transparent 70%);
+  animation: glow-breathe 11s ease-in-out -4s infinite alternate-reverse;
 }
 
 .eyebrow,
@@ -449,6 +524,7 @@ const frameworkMarks: Record<Library, string> = {
   border-radius: 50%;
   background: #72e6c8;
   box-shadow: 0 0 0 4px rgba(114, 230, 200, 0.1);
+  animation: status-pulse 2.8s ease-in-out infinite;
 }
 
 .hero h1 {
@@ -482,6 +558,8 @@ const frameworkMarks: Record<Library, string> = {
 }
 
 .button {
+  position: relative;
+  overflow: hidden;
   min-height: 3.2rem;
   display: inline-flex;
   align-items: center;
@@ -496,6 +574,26 @@ const frameworkMarks: Record<Library, string> = {
     transform 160ms ease,
     border-color 160ms ease,
     background-color 160ms ease;
+}
+
+.button::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.18),
+    transparent 70%
+  );
+  transform: translate3d(-120%, 0, 0);
+  transition: transform 520ms ease;
+}
+
+.button:hover::after,
+.button:focus-visible::after {
+  transform: translate3d(120%, 0, 0);
 }
 
 .button:hover,
@@ -547,7 +645,19 @@ const frameworkMarks: Record<Library, string> = {
     0 45px 110px rgba(0, 0, 0, 0.48),
     0 0 0 1px rgba(112, 91, 230, 0.06),
     inset 0 1px rgba(255, 255, 255, 0.08);
-  transform: perspective(1200px) rotateY(-3deg) rotateX(1deg);
+  transform: perspective(1200px) rotateY(var(--tilt-y)) rotateX(var(--tilt-x));
+  transition:
+    transform 240ms ease-out,
+    border-color 240ms ease,
+    box-shadow 240ms ease;
+}
+
+.hero__product:hover {
+  border-color: rgba(196, 181, 253, 0.26);
+  box-shadow:
+    0 52px 120px rgba(0, 0, 0, 0.52),
+    0 0 56px rgba(112, 91, 230, 0.12),
+    inset 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .hero__product::after {
@@ -605,10 +715,11 @@ const frameworkMarks: Record<Library, string> = {
   display: inline-block;
   border-radius: 50%;
   background: #6ee7b7;
+  animation: status-pulse 2.8s ease-in-out infinite;
 }
 
 .hero__chat {
-  min-height: 340px;
+  min-height: 310px;
   padding: 1.3rem;
   display: flex;
   flex-direction: column;
@@ -718,14 +829,14 @@ const frameworkMarks: Record<Library, string> = {
 }
 
 .content-section {
-  padding-block: clamp(6rem, 12vw, 10rem);
+  padding-block: clamp(4.5rem, 8vw, 7rem);
   content-visibility: auto;
   contain-intrinsic-size: auto 1000px;
 }
 
 .section-heading {
   max-width: 930px;
-  margin-bottom: 3.5rem;
+  margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
 }
 
 .section-heading--split {
@@ -771,7 +882,7 @@ const frameworkMarks: Record<Library, string> = {
 
 .benefit-card {
   position: relative;
-  min-height: 320px;
+  min-height: 285px;
   padding: 1.4rem;
   display: flex;
   flex-direction: column;
@@ -781,6 +892,15 @@ const frameworkMarks: Record<Library, string> = {
     linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 70%),
     rgba(7, 10, 22, 0.62);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(167, 139, 250, 0.22);
 }
 
 .benefit-card--wide {
@@ -958,7 +1078,7 @@ const frameworkMarks: Record<Library, string> = {
 }
 
 .framework-card {
-  min-height: 270px;
+  min-height: 235px;
   padding: 1.3rem;
   display: flex;
   flex-direction: column;
@@ -1030,8 +1150,8 @@ const frameworkMarks: Record<Library, string> = {
 }
 
 .privacy-card {
-  min-height: 460px;
-  padding: clamp(2rem, 6vw, 5rem);
+  min-height: 390px;
+  padding: clamp(2rem, 5vw, 4rem);
   display: grid;
   grid-template-columns: 0.65fr 1fr;
   align-items: center;
@@ -1050,7 +1170,7 @@ const frameworkMarks: Record<Library, string> = {
 
 .privacy-card__visual {
   position: relative;
-  min-height: 280px;
+  min-height: 230px;
   display: grid;
   place-items: center;
 }
@@ -1061,12 +1181,14 @@ const frameworkMarks: Record<Library, string> = {
   height: 230px;
   border: 1px solid rgba(167, 139, 250, 0.2);
   border-radius: 50%;
+  animation: ring-breathe 7s ease-in-out infinite alternate;
 }
 
 .privacy-ring--two {
   width: 160px;
   height: 160px;
   border-color: rgba(94, 234, 212, 0.16);
+  animation-delay: -3.5s;
 }
 
 .privacy-lock {
@@ -1091,7 +1213,7 @@ const frameworkMarks: Record<Library, string> = {
 }
 
 .final-cta {
-  padding-bottom: clamp(7rem, 14vw, 12rem);
+  padding-bottom: clamp(5rem, 9vw, 8rem);
   text-align: center;
 }
 
@@ -1102,6 +1224,78 @@ const frameworkMarks: Record<Library, string> = {
 
 .final-cta__actions {
   justify-content: center;
+}
+
+@keyframes beam-scan {
+  from {
+    transform: rotate(24deg) translate3d(-18px, -12%, 0);
+    opacity: 0.16;
+  }
+
+  to {
+    transform: rotate(24deg) translate3d(24px, 12%, 0);
+    opacity: 0.42;
+  }
+}
+
+@keyframes glow-breathe {
+  from {
+    transform: translate3d(-2%, 1%, 0) scale(0.96);
+    opacity: 0.62;
+  }
+
+  to {
+    transform: translate3d(3%, -2%, 0) scale(1.06);
+    opacity: 1;
+  }
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes ring-breathe {
+  from {
+    transform: rotate(-7deg) scale(0.94);
+    opacity: 0.55;
+  }
+
+  to {
+    transform: rotate(7deg) scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes card-reveal {
+  from {
+    translate: 0 24px;
+    scale: 0.985;
+  }
+
+  to {
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .comparison-card,
+  .privacy-card,
+  .benefit-card,
+  .framework-card {
+    animation: card-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 24%;
+  }
 }
 
 @media (max-width: 980px) {
@@ -1145,8 +1339,18 @@ const frameworkMarks: Record<Library, string> = {
     padding-top: 4.25rem;
   }
 
+  .hero::before {
+    inset-inline: -2rem;
+    mask-image: radial-gradient(ellipse at 50% 30%, #000 0%, transparent 72%);
+  }
+
+  .hero__beam-field {
+    inset: 12% -3rem 28% 20%;
+    opacity: 0.55;
+  }
+
   .hero h1 {
-    font-size: clamp(2.9rem, 14vw, 4.8rem);
+    font-size: clamp(2.75rem, 11vw, 4rem);
   }
 
   .hero__product {
@@ -1223,6 +1427,27 @@ const frameworkMarks: Record<Library, string> = {
   .comparison-card__head,
   .comparison-card__row {
     grid-template-columns: 1fr 0.45fr 0.5fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__beam-field i,
+  .hero__glow,
+  .eyebrow__dot,
+  .live-pill i,
+  .privacy-ring,
+  .comparison-card,
+  .privacy-card,
+  .benefit-card,
+  .framework-card {
+    animation: none;
+  }
+
+  .hero__product,
+  .button,
+  .benefit-card,
+  .framework-card {
+    transform: none;
   }
 }
 </style>

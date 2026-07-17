@@ -18,7 +18,7 @@ body {
   overflow-x: clip;
 }
 
-section {
+.page {
   min-height: 100svh;
   width: 100%;
   padding: 1rem;
@@ -68,38 +68,61 @@ a {
 /* Shared demo chrome is global so Nuxt can inline it in the initial document. */
 .header {
   position: relative;
+  width: min(1180px, calc(100% - 2rem));
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
 .header--compact {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .header__title {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
 }
 
 .header__title h1 {
   min-width: 0;
   margin: 0;
+  font-size: clamp(1.45rem, 2.6vw, 2.1rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
 }
 
 .header__subtitle {
+  max-width: 720px;
   margin: 0;
+  margin-inline: auto;
   color: var(--color-secondary);
+  font-size: clamp(0.72rem, 1.3vw, 0.88rem);
+  line-height: 1.45;
 }
 
 .examples,
 .stars {
-  padding: 0.7rem;
+  min-height: 2.55rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
   pointer-events: all;
+  font-size: 0.76rem;
+  font-weight: 720;
+}
+
+.header__title > .glass-surface:first-child {
+  justify-self: start;
+}
+
+.header__title > .glass-surface:last-child {
+  justify-self: end;
 }
 
 .stars {
@@ -183,6 +206,10 @@ a {
 }
 
 @media (max-width: 460px) {
+  .header {
+    width: calc(100% - 1rem);
+  }
+
   .header__title {
     display: grid;
     grid-template-areas:
@@ -232,3 +259,44 @@ a {
   opacity: 1;
 }
 /* #endregion */
+
+/* Demo tools switch from side-by-side workspaces to stacked panes below 980px.
+   Keep the page in document flow at that breakpoint so every control remains
+   reachable instead of clipping a tall workspace to the viewport. */
+@media (max-width: 980px) {
+  .page {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100svh !important;
+    overflow: visible !important;
+  }
+
+  .page__main {
+    flex: none !important;
+    min-height: auto !important;
+    display: block !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .prompt-demo {
+    width: 100% !important;
+    height: max(620px, calc(100svh - 150px)) !important;
+  }
+
+  .summarizer-demo,
+  .writer-demo,
+  .rewriter-demo,
+  .translator-demo,
+  .language-detector-demo,
+  .proofreader-demo {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .webmcp-demo {
+    width: 100% !important;
+    height: auto !important;
+  }
+}

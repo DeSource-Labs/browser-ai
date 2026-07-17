@@ -39,6 +39,8 @@
     transparent 45px 74px
   );
   mask-image: radial-gradient(ellipse at center, #000 0%, transparent 68%);
+  will-change: transform;
+  animation: thread-drift 22s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
 }
 
 .background::after {
@@ -50,6 +52,28 @@
     rgba(237, 102, 238, 0.28) 61px,
     transparent 63px 102px
   );
+  animation-name: thread-drift-reverse;
+  animation-duration: 28s;
+}
+
+@keyframes thread-drift {
+  from {
+    transform: rotate(-11deg) translate3d(-2%, -1%, 0) scale(1);
+  }
+
+  to {
+    transform: rotate(-7deg) translate3d(3%, 2%, 0) scale(1.04);
+  }
+}
+
+@keyframes thread-drift-reverse {
+  from {
+    transform: rotate(17deg) translate3d(12%, 8%, 0) scale(1.03);
+  }
+
+  to {
+    transform: rotate(13deg) translate3d(6%, 2%, 0) scale(0.98);
+  }
 }
 
 @media (forced-colors: active) {
@@ -60,6 +84,14 @@
   .background::before,
   .background::after {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .background::before,
+  .background::after {
+    animation: none;
+    will-change: auto;
   }
 }
 </style>
