@@ -4,7 +4,7 @@
     "rootDir": "src",
     "declarationDir": "dist/types",
     "outDir": "dist",
-    "types": ["@types/dom-chromium-ai", "vite/client"]
+    "types": ["@types/dom-chromium-ai", "webmcp-types", "vite/client"]
   },
   "include": ["src/**/*"]
 }

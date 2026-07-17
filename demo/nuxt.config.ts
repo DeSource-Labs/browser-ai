@@ -1,27 +1,85 @@
-import { meta } from './shared/utils/meta';
-import { defineNuxtConfig } from 'nuxt/config';
-import type { NuxtConfig } from '@nuxt/schema';
+import { meta } from "./shared/utils/meta";
+import { defineNuxtConfig } from "nuxt/config";
+import type { NuxtConfig } from "@nuxt/schema";
 
 const config: NuxtConfig = {
-  compatibilityDate: '2024-11-01',
+  compatibilityDate: "2026-07-01",
   devtools: { enabled: false },
-  css: ['~/assets/styles/index.css'],
-  modules: ['@nuxt/image', '@nuxtjs/sitemap', '@desource/browser-ai-nuxt'],
+  features: { inlineStyles: true },
+  css: ["~/assets/styles/index.css"],
+  modules: ["@nuxtjs/sitemap", "@desource/browser-ai-nuxt"],
+
+  browserAi: {
+    // The directory page does not render library components. Each API route
+    // imports the component stylesheet lazily with its own route chunk.
+    css: false,
+  },
+
+  sitemap: {
+    zeroRuntime: true,
+  },
+
+  site: {
+    url: meta.url,
+  },
+
+  nitro: {
+    compressPublicAssets: {
+      brotli: true,
+      gzip: true,
+    },
+    prerender: {
+      routes: [
+        "/",
+        "/promptapi",
+        "/summarizer",
+        "/writer",
+        "/rewriter",
+        "/translator",
+        "/language-detector",
+        "/proofreader",
+        "/webmcp",
+      ],
+    },
+  },
+
+  routeRules: {
+    "/**": {
+      headers: {
+        "origin-agent-cluster": "?1",
+        "permissions-policy": "tools=(self)",
+      },
+    },
+  },
 
   app: {
     head: {
       htmlAttrs: {
-        lang: 'en'
+        lang: "en",
       },
-      charset: 'utf-8',
-      viewport: 'width=device-width, initial-scale=1',
+      charset: "utf-8",
+      viewport: "width=device-width, initial-scale=1",
       title: meta.title,
       link: [
-        { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
-        { rel: 'icon', href: '/logo/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
-        { rel: 'icon', href: '/logo/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
-        { rel: 'apple-touch-icon', href: '/logo/apple-touch-icon.png', sizes: '180x180' },
-        { rel: 'manifest', href: '/site.webmanifest' }
+        { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+        {
+          rel: "icon",
+          href: "/logo/favicon-16x16.png",
+          type: "image/png",
+          sizes: "16x16",
+        },
+        {
+          rel: "icon",
+          href: "/logo/favicon-32x32.png",
+          type: "image/png",
+          sizes: "32x32",
+        },
+        {
+          rel: "apple-touch-icon",
+          href: "/logo/apple-touch-icon.png",
+          sizes: "180x180",
+        },
+        { rel: "manifest", href: "/site.webmanifest" },
       ],
       // TODO: Add analytics later
       // script: [
@@ -35,80 +93,76 @@ const config: NuxtConfig = {
       meta: [
         // TODO: Uncomment fields below when ready
         {
-          name: 'description',
-          content: meta.description
+          name: "description",
+          content: meta.description,
         },
         {
-          name: 'keywords',
-          content: meta.keywords
+          name: "keywords",
+          content: meta.keywords,
         },
         {
-          name: 'twitter:title',
-          content: meta.title
+          name: "twitter:title",
+          content: meta.title,
         },
         {
-          name: 'twitter:description',
-          content: meta.description
+          name: "twitter:description",
+          content: meta.description,
         },
         {
-          name: 'twitter:image',
-          content: meta.ogImage
+          name: "twitter:image",
+          content: meta.ogImage,
         },
         {
-          name: 'twitter:image:alt',
-          content: meta.title
+          name: "twitter:image:alt",
+          content: meta.title,
         },
         {
-          name: 'twitter:card',
-          content: 'summary_large_image'
+          name: "twitter:card",
+          content: "summary_large_image",
         },
         // {
         //   name: 'twitter:site',
         //   content: meta.x,
         // },
         {
-          property: 'og:title',
-          content: meta.title
+          property: "og:title",
+          content: meta.title,
         },
         {
-          property: 'og:description',
-          content: meta.description
+          property: "og:description",
+          content: meta.description,
         },
         {
-          property: 'og:url',
-          content: meta.url
+          property: "og:url",
+          content: meta.url,
         },
         {
-          property: 'og:image',
-          content: meta.ogImage
+          property: "og:image",
+          content: meta.ogImage,
         },
         {
-          property: 'og:image:secure_url',
-          content: meta.ogImage
+          property: "og:image:secure_url",
+          content: meta.ogImage,
         },
         {
-          property: 'og:image:alt',
-          content: meta.title
+          property: "og:image:alt",
+          content: meta.title,
         },
         {
-          property: 'og:image:width',
-          content: meta.ogImageWidth
+          property: "og:image:width",
+          content: meta.ogImageWidth,
         },
         {
-          property: 'og:image:height',
-          content: meta.ogImageHeight
+          property: "og:image:height",
+          content: meta.ogImageHeight,
         },
         {
-          property: 'og:url',
-          content: meta.url
+          property: "og:type",
+          content: "website",
         },
-        {
-          property: 'og:type',
-          content: 'website'
-        }
-      ]
-    }
-  }
+      ],
+    },
+  },
 };
 
 // https://nuxt.com/docs/api/configuration/nuxt-config

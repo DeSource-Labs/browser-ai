@@ -1,34 +1,27 @@
-import { computed, ref, watch } from 'vue';
-import type { BrowserAiConstructor } from '../utils/browserAi';
+import { computed, ref, shallowRef } from "vue";
+import type { BrowserAiConstructor } from "../utils/browserAi";
 import {
   collectTextStream,
   createDownloadMonitor,
   safeCheckAvailability,
-  useAbortableOperation
-} from '../utils/browserAi';
-import {
-  normalizeTextInput,
-  stripHtmlForText
-} from '../utils/text';
+  useAbortableOperation,
+} from "../utils/browserAi";
+import { normalizeTextInput, stripHtmlForText } from "../utils/text";
 
 export type WritingAssistantProcessingState<OperationState extends string> =
-  | 'availability'
-  | 'create'
-  | 'measure'
-  | OperationState
-  | '';
+  "availability" | "create" | "measure" | OperationState | "";
 
-export type WritingAssistantFitStrategy = 'error' | 'truncate-context';
+export type WritingAssistantFitStrategy = "error" | "truncate-context";
 
 export type WritingAssistantProgressPhase<ActivePhase extends string> =
-  | 'idle'
-  | 'checking'
-  | 'creating'
-  | 'measuring'
-  | 'fitting-context'
+  | "idle"
+  | "checking"
+  | "creating"
+  | "measuring"
+  | "fitting-context"
   | ActivePhase
-  | 'ready'
-  | 'error';
+  | "ready"
+  | "error";
 
 export interface WritingAssistantProgressState<ActivePhase extends string> {
   phase: WritingAssistantProgressPhase<ActivePhase>;
@@ -53,7 +46,7 @@ export interface WritingAssistantResult {
 export type WritingAssistantRunOptions<
   TCreateOptions,
   TNativeOptions extends { context?: string },
-  TProgressState
+  TProgressState,
 > = TNativeOptions & {
   createOptions?: TCreateOptions;
   autoCreate?: boolean;
@@ -63,17 +56,21 @@ export type WritingAssistantRunOptions<
   onProgress?: (state: TProgressState) => void;
 };
 
-export type WritingAssistantBatchItem<TNativeOptions extends { context?: string }> =
-  TNativeOptions & {
-    input: string;
-    stripHtml?: boolean;
-  };
+export type WritingAssistantBatchItem<
+  TNativeOptions extends { context?: string },
+> = TNativeOptions & {
+  input: string;
+  stripHtml?: boolean;
+};
 
 export type WritingAssistantBatchOptions<
   TCreateOptions,
   TNativeOptions extends { context?: string },
-  TProgressState
-> = Omit<WritingAssistantRunOptions<TCreateOptions, TNativeOptions, TProgressState>, 'context' | 'stripHtml'> & {
+  TProgressState,
+> = Omit<
+  WritingAssistantRunOptions<TCreateOptions, TNativeOptions, TProgressState>,
+  "context" | "stripHtml"
+> & {
   continueOnError?: boolean;
 };
 
@@ -82,7 +79,10 @@ type AbortableNativeOptions<TNativeOptions> = TNativeOptions & {
 };
 
 type WritingAssistantInstance<TNativeOptions> = DestroyableModel & {
-  measureInputUsage(input: string, options?: AbortableNativeOptions<TNativeOptions>): Promise<number>;
+  measureInputUsage(
+    input: string,
+    options?: AbortableNativeOptions<TNativeOptions>,
+  ): Promise<number>;
   inputQuota: number;
 };
 
@@ -97,13 +97,15 @@ export interface UseWritingAssistantConfig<
   TCreateCoreOptions,
   TNativeOptions extends { context?: string },
   TActivePhase extends string,
-  TOperationState extends string
+  TOperationState extends string,
 > {
-  getConstructor: () => BrowserAiConstructor<
-    TCreateCoreOptions,
-    WritingAssistantCreateOptions<TCreateOptions>,
-    TInstance
-  > | undefined;
+  getConstructor: () =>
+    | BrowserAiConstructor<
+        TCreateCoreOptions,
+        WritingAssistantCreateOptions<TCreateOptions>,
+        TInstance
+      >
+    | undefined;
   getCreateCoreOptions: (options?: TCreateOptions) => TCreateCoreOptions;
   getDefaultCreateOptions: () => TCreateOptions;
   activePhase: TActivePhase;
@@ -115,12 +117,12 @@ export interface UseWritingAssistantConfig<
   run: (
     instance: TInstance,
     input: string,
-    options: AbortableNativeOptions<TNativeOptions>
+    options: AbortableNativeOptions<TNativeOptions>,
   ) => Promise<string>;
   runStreaming: (
     instance: TInstance,
     input: string,
-    options: AbortableNativeOptions<TNativeOptions>
+    options: AbortableNativeOptions<TNativeOptions>,
   ) => ReadableStream<string>;
 }
 
@@ -135,15 +137,16 @@ const normalizeAssistantInput = (value: string, stripHtml?: boolean) => {
   return stripHtml ? stripHtmlForText(value) : normalizeTextInput(value);
 };
 
-const createEmptyProgressState = <TActivePhase extends string>() => ({
-  phase: 'idle',
-  inputUsage: null,
-  inputQuota: null,
-  outputLength: 0,
-  currentItem: 0,
-  totalItems: 0,
-  fitted: false
-}) as WritingAssistantProgressState<TActivePhase>;
+const createEmptyProgressState = <TActivePhase extends string>() =>
+  ({
+    phase: "idle",
+    inputUsage: null,
+    inputQuota: null,
+    outputLength: 0,
+    currentItem: 0,
+    totalItems: 0,
+    fitted: false,
+  }) as WritingAssistantProgressState<TActivePhase>;
 
 export function useWritingAssistant<
   TInstance extends WritingAssistantInstance<TNativeOptions>,
@@ -152,7 +155,7 @@ export function useWritingAssistant<
   TNativeOptions extends { context?: string },
   TActivePhase extends string,
   TOperationState extends string,
-  TProgressState extends WritingAssistantProgressState<TActivePhase>
+  TProgressState extends WritingAssistantProgressState<TActivePhase>,
 >(
   config: UseWritingAssistantConfig<
     TInstance,
@@ -161,32 +164,42 @@ export function useWritingAssistant<
     TNativeOptions,
     TActivePhase,
     TOperationState
-  >
+  >,
 ) {
-  type RunOptions = WritingAssistantRunOptions<TCreateOptions, TNativeOptions, TProgressState>;
-  type BatchOptions = WritingAssistantBatchOptions<TCreateOptions, TNativeOptions, TProgressState>;
+  type RunOptions = WritingAssistantRunOptions<
+    TCreateOptions,
+    TNativeOptions,
+    TProgressState
+  >;
+  type BatchOptions = WritingAssistantBatchOptions<
+    TCreateOptions,
+    TNativeOptions,
+    TProgressState
+  >;
   type BatchItem = WritingAssistantBatchItem<TNativeOptions>;
   type ProgressCallback = ((state: TProgressState) => void) | undefined;
 
-  const model = ref<TInstance | null>(null);
+  const model = shallowRef<TInstance | null>(null);
   const availability = ref<Availability | null>(null);
   const createOptions = ref<TCreateOptions | null>(null);
-  const processing = ref<WritingAssistantProcessingState<TOperationState>>('');
+  const processing = ref<WritingAssistantProcessingState<TOperationState>>("");
   const downloadProgress = ref(0);
   const inputUsage = ref<number | null>(null);
   const inputQuota = ref<number | null>(null);
-  const output = ref('');
+  const output = ref("");
   const error = ref<unknown>(null);
-  const progressState = ref<TProgressState>(createEmptyProgressState<TActivePhase>() as TProgressState);
+  const progressState = ref<TProgressState>(
+    createEmptyProgressState<TActivePhase>() as TProgressState,
+  );
   const lastResult = ref<WritingAssistantResult | null>(null);
 
   const operation = useAbortableOperation();
 
   const isReady = computed(() => {
-    return model.value !== null && availability.value === 'available';
+    return model.value !== null && availability.value === "available";
   });
 
-  const isProcessing = computed(() => processing.value !== '');
+  const isProcessing = computed(() => processing.value !== "");
 
   const inputQuotaAvailable = computed(() => {
     if (inputQuota.value == null || inputUsage.value == null) {
@@ -202,33 +215,27 @@ export function useWritingAssistant<
 
   const setProgressState = (
     patch: Partial<TProgressState>,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
   ) => {
     progressState.value = {
       ...progressState.value,
-      ...patch
+      ...patch,
     };
     onProgress?.({ ...progressState.value });
   };
-
-  watch(
-    model,
-    (next) => updateModelProps(next),
-    { deep: true }
-  );
 
   const checkAvailability = async (options?: TCreateCoreOptions) => {
     return safeCheckAvailability(config.getConstructor(), options);
   };
 
   const requestAvailability = async (options?: TCreateCoreOptions) => {
-    processing.value = 'availability';
-    setProgressState({ phase: 'checking' } as Partial<TProgressState>);
+    processing.value = "availability";
+    setProgressState({ phase: "checking" } as Partial<TProgressState>);
     try {
       availability.value = await checkAvailability(options);
       return availability.value;
     } finally {
-      processing.value = '';
+      processing.value = "";
     }
   };
 
@@ -237,7 +244,7 @@ export function useWritingAssistant<
     createOptions.value = config.getDefaultCreateOptions();
     const status = await requestAvailability(options);
 
-    if (status === 'unavailable') {
+    if (status === "unavailable") {
       throw new Error(config.unavailableMessage);
     }
 
@@ -246,7 +253,7 @@ export function useWritingAssistant<
 
   const create = async (options = config.getDefaultCreateOptions()) => {
     const Constructor = config.getConstructor();
-    if (typeof Constructor?.create !== 'function') {
+    if (typeof Constructor?.create !== "function") {
       throw new Error(config.unsupportedMessage);
     }
 
@@ -254,12 +261,12 @@ export function useWritingAssistant<
     createOptions.value = options;
 
     availability.value = await checkAvailability(coreOptions);
-    if (availability.value === 'unavailable') {
+    if (availability.value === "unavailable") {
       throw new Error(config.unavailableMessage);
     }
 
-    processing.value = 'create';
-    setProgressState({ phase: 'creating' } as Partial<TProgressState>);
+    processing.value = "create";
+    setProgressState({ phase: "creating" } as Partial<TProgressState>);
     const signal = operation.begin();
     destroy();
     downloadProgress.value = 0;
@@ -272,15 +279,15 @@ export function useWritingAssistant<
       model.value = await Constructor.create({
         ...options,
         signal,
-        monitor
+        monitor,
       });
-      availability.value = 'available';
+      availability.value = "available";
       downloadProgress.value = 100;
       updateModelProps(model.value);
       return model.value;
     } finally {
       operation.end(signal);
-      processing.value = '';
+      processing.value = "";
     }
   };
 
@@ -297,11 +304,12 @@ export function useWritingAssistant<
     createOptions.value = null;
     downloadProgress.value = 0;
     inputUsage.value = null;
-    output.value = '';
+    output.value = "";
     error.value = null;
     lastResult.value = null;
-    progressState.value = createEmptyProgressState<TActivePhase>() as TProgressState;
-    processing.value = '';
+    progressState.value =
+      createEmptyProgressState<TActivePhase>() as TProgressState;
+    processing.value = "";
   };
 
   const interrupt = () => {
@@ -324,7 +332,9 @@ export function useWritingAssistant<
     return create(createOptions.value ?? config.getDefaultCreateOptions());
   };
 
-  const getNativeOptions = (options: RunOptions | BatchOptions = {} as RunOptions): TNativeOptions => {
+  const getNativeOptions = (
+    options: RunOptions | BatchOptions = {} as RunOptions,
+  ): TNativeOptions => {
     const {
       createOptions: _createOptions,
       autoCreate: _autoCreate,
@@ -343,11 +353,11 @@ export function useWritingAssistant<
     instance: TInstance,
     input: string,
     options: TNativeOptions | undefined,
-    signal: AbortSignal
+    signal: AbortSignal,
   ) => {
     const usage = await instance.measureInputUsage(input, {
       ...options,
-      signal
+      signal,
     } as AbortableNativeOptions<TNativeOptions>);
     inputUsage.value = usage;
     return usage;
@@ -355,29 +365,43 @@ export function useWritingAssistant<
 
   const measureInputUsage = async (
     input: string,
-    options: RunOptions = {} as RunOptions
+    options: RunOptions = {} as RunOptions,
   ) => {
-    const instance = await ensureModel(options.createOptions, options.autoCreate !== false);
+    const instance = await ensureModel(
+      options.createOptions,
+      options.autoCreate !== false,
+    );
     const normalized = normalizeAssistantInput(input, options.stripHtml);
     const nativeOptions = getNativeOptions(options);
 
-    processing.value = 'measure';
-    setProgressState({
-      phase: 'measuring',
-      inputQuota: instance.inputQuota
-    } as Partial<TProgressState>, options.onProgress);
+    processing.value = "measure";
+    setProgressState(
+      {
+        phase: "measuring",
+        inputQuota: instance.inputQuota,
+      } as Partial<TProgressState>,
+      options.onProgress,
+    );
     const signal = operation.begin();
 
     try {
-      const usage = await measureInputUsageInternal(instance, normalized, nativeOptions, signal);
-      setProgressState({
-        inputUsage: usage,
-        inputQuota: instance.inputQuota
-      } as Partial<TProgressState>, options.onProgress);
+      const usage = await measureInputUsageInternal(
+        instance,
+        normalized,
+        nativeOptions,
+        signal,
+      );
+      setProgressState(
+        {
+          inputUsage: usage,
+          inputQuota: instance.inputQuota,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
       return usage;
     } finally {
       operation.end(signal);
-      processing.value = '';
+      processing.value = "";
     }
   };
 
@@ -388,30 +412,46 @@ export function useWritingAssistant<
     nativeOptions: TNativeOptions,
     budget: number,
     signal: AbortSignal,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
   ) => {
     const normalizedContext = normalizeTextInput(context);
     if (!normalizedContext) {
-      return { context: '', usage: await measureInputUsageInternal(instance, input, nativeOptions, signal) };
+      return {
+        context: "",
+        usage: await measureInputUsageInternal(
+          instance,
+          input,
+          nativeOptions,
+          signal,
+        ),
+      };
     }
 
     let low = 0;
     let high = normalizedContext.length;
-    let bestContext = '';
+    let bestContext = "";
     let bestUsage = Number.POSITIVE_INFINITY;
 
-    setProgressState({
-      phase: 'fitting-context',
-      fitted: true
-    } as Partial<TProgressState>, onProgress);
+    setProgressState(
+      {
+        phase: "fitting-context",
+        fitted: true,
+      } as Partial<TProgressState>,
+      onProgress,
+    );
 
     while (low <= high) {
       const middle = Math.floor((low + high) / 2);
       const candidate = normalizedContext.slice(0, middle).trim();
-      const usage = await measureInputUsageInternal(instance, input, {
-        ...nativeOptions,
-        context: candidate || undefined
-      }, signal);
+      const usage = await measureInputUsageInternal(
+        instance,
+        input,
+        {
+          ...nativeOptions,
+          context: candidate || undefined,
+        },
+        signal,
+      );
 
       if (usage <= budget) {
         bestContext = candidate;
@@ -423,22 +463,27 @@ export function useWritingAssistant<
     }
 
     const lastBreak = Math.max(
-      bestContext.lastIndexOf('\n\n'),
-      bestContext.lastIndexOf('. '),
-      bestContext.lastIndexOf('! '),
-      bestContext.lastIndexOf('? ')
+      bestContext.lastIndexOf("\n\n"),
+      bestContext.lastIndexOf(". "),
+      bestContext.lastIndexOf("! "),
+      bestContext.lastIndexOf("? "),
     );
     if (lastBreak > 240) {
       bestContext = bestContext.slice(0, lastBreak + 1).trim();
-      bestUsage = await measureInputUsageInternal(instance, input, {
-        ...nativeOptions,
-        context: bestContext || undefined
-      }, signal);
+      bestUsage = await measureInputUsageInternal(
+        instance,
+        input,
+        {
+          ...nativeOptions,
+          context: bestContext || undefined,
+        },
+        signal,
+      );
     }
 
     return {
       context: bestContext,
-      usage: Number.isFinite(bestUsage) ? bestUsage : null
+      usage: Number.isFinite(bestUsage) ? bestUsage : null,
     };
   };
 
@@ -446,7 +491,7 @@ export function useWritingAssistant<
     instance: TInstance,
     input: string,
     options: RunOptions,
-    signal: AbortSignal
+    signal: AbortSignal,
   ) => {
     const normalizedInput = normalizeAssistantInput(input, options.stripHtml);
     const nativeOptions = getNativeOptions(options);
@@ -455,14 +500,19 @@ export function useWritingAssistant<
       : undefined;
     const runOptions = {
       ...nativeOptions,
-      context: normalizedContext || undefined
+      context: normalizedContext || undefined,
     } as TNativeOptions;
-    const budget = Math.floor(instance.inputQuota * clampRatio(
-      options.inputBudgetRatio,
-      DEFAULT_INPUT_BUDGET_RATIO
-    ));
+    const budget = Math.floor(
+      instance.inputQuota *
+        clampRatio(options.inputBudgetRatio, DEFAULT_INPUT_BUDGET_RATIO),
+    );
 
-    const usage = await measureInputUsageInternal(instance, normalizedInput, runOptions, signal);
+    const usage = await measureInputUsageInternal(
+      instance,
+      normalizedInput,
+      runOptions,
+      signal,
+    );
     inputQuota.value = instance.inputQuota;
 
     if (usage <= budget || !runOptions.context) {
@@ -471,11 +521,11 @@ export function useWritingAssistant<
         options: runOptions,
         usage,
         originalContext: runOptions.context,
-        fitted: false
+        fitted: false,
       };
     }
 
-    if (options.fitStrategy !== 'truncate-context') {
+    if (options.fitStrategy !== "truncate-context") {
       throw new Error(config.budgetExceededMessage(usage, budget));
     }
 
@@ -486,58 +536,72 @@ export function useWritingAssistant<
       runOptions,
       budget,
       signal,
-      options.onProgress
+      options.onProgress,
     );
 
     return {
       input: normalizedInput,
       options: {
         ...runOptions,
-        context: fitted.context || undefined
+        context: fitted.context || undefined,
       } as TNativeOptions,
       usage: fitted.usage,
       originalContext: runOptions.context,
-      fitted: true
+      fitted: true,
     };
   };
 
   const runWithDetails = async (
     input: string,
-    options: RunOptions = {} as RunOptions
+    options: RunOptions = {} as RunOptions,
   ): Promise<WritingAssistantResult> => {
     error.value = null;
-    output.value = '';
+    output.value = "";
     lastResult.value = null;
 
-    const instance = await ensureModel(options.createOptions, options.autoCreate !== false);
+    const instance = await ensureModel(
+      options.createOptions,
+      options.autoCreate !== false,
+    );
     const signal = operation.begin();
     processing.value = config.operationState;
 
     try {
-      setProgressState({
-        phase: 'measuring',
-        inputUsage: null,
-        inputQuota: instance.inputQuota,
-        outputLength: 0,
-        currentItem: 1,
-        totalItems: 1,
-        fitted: false
-      } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        {
+          phase: "measuring",
+          inputUsage: null,
+          inputQuota: instance.inputQuota,
+          outputLength: 0,
+          currentItem: 1,
+          totalItems: 1,
+          fitted: false,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
 
-      const prepared = await prepareRunRequest(instance, input, options, signal);
+      const prepared = await prepareRunRequest(
+        instance,
+        input,
+        options,
+        signal,
+      );
       inputUsage.value = prepared.usage;
       inputQuota.value = instance.inputQuota;
 
-      setProgressState({
-        phase: config.activePhase,
-        inputUsage: prepared.usage,
-        inputQuota: instance.inputQuota,
-        fitted: prepared.fitted
-      } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        {
+          phase: config.activePhase,
+          inputUsage: prepared.usage,
+          inputQuota: instance.inputQuota,
+          fitted: prepared.fitted,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
 
       const text = await config.run(instance, prepared.input, {
         ...prepared.options,
-        signal
+        signal,
       } as AbortableNativeOptions<TNativeOptions>);
 
       output.value = text;
@@ -548,21 +612,27 @@ export function useWritingAssistant<
         originalContext: prepared.originalContext,
         inputUsage: prepared.usage,
         inputQuota: instance.inputQuota,
-        fitted: prepared.fitted
+        fitted: prepared.fitted,
       };
       lastResult.value = result;
-      setProgressState({
-        phase: 'ready',
-        outputLength: text.length
-      } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        {
+          phase: "ready",
+          outputLength: text.length,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
       return result;
     } catch (caughtError) {
       error.value = caughtError;
-      setProgressState({ phase: 'error' } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        { phase: "error" } as Partial<TProgressState>,
+        options.onProgress,
+      );
       throw caughtError;
     } finally {
       operation.end(signal);
-      processing.value = '';
+      processing.value = "";
     }
   };
 
@@ -573,36 +643,50 @@ export function useWritingAssistant<
 
   const runStreaming = async (
     input: string,
-    options: RunOptions = {} as RunOptions
+    options: RunOptions = {} as RunOptions,
   ): Promise<ReadableStream<string>> => {
-    const instance = await ensureModel(options.createOptions, options.autoCreate !== false);
+    const instance = await ensureModel(
+      options.createOptions,
+      options.autoCreate !== false,
+    );
     const signal = operation.begin();
     processing.value = config.operationState;
-    output.value = '';
+    output.value = "";
 
     try {
-      setProgressState({
-        phase: 'measuring',
-        inputUsage: null,
-        inputQuota: instance.inputQuota,
-        outputLength: 0,
-        currentItem: 1,
-        totalItems: 1,
-        fitted: false
-      } as Partial<TProgressState>, options.onProgress);
-      const prepared = await prepareRunRequest(instance, input, options, signal);
+      setProgressState(
+        {
+          phase: "measuring",
+          inputUsage: null,
+          inputQuota: instance.inputQuota,
+          outputLength: 0,
+          currentItem: 1,
+          totalItems: 1,
+          fitted: false,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
+      const prepared = await prepareRunRequest(
+        instance,
+        input,
+        options,
+        signal,
+      );
       inputUsage.value = prepared.usage;
       inputQuota.value = instance.inputQuota;
-      setProgressState({
-        phase: config.activePhase,
-        inputUsage: prepared.usage,
-        inputQuota: instance.inputQuota,
-        fitted: prepared.fitted
-      } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        {
+          phase: config.activePhase,
+          inputUsage: prepared.usage,
+          inputQuota: instance.inputQuota,
+          fitted: prepared.fitted,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
 
       const stream = config.runStreaming(instance, prepared.input, {
         ...prepared.options,
-        signal
+        signal,
       } as AbortableNativeOptions<TNativeOptions>);
       const reader = stream.getReader();
 
@@ -618,42 +702,54 @@ export function useWritingAssistant<
                 originalContext: prepared.originalContext,
                 inputUsage: prepared.usage,
                 inputQuota: instance.inputQuota,
-                fitted: prepared.fitted
+                fitted: prepared.fitted,
               };
               controller.close();
               operation.end(signal);
-              processing.value = '';
-              setProgressState({
-                phase: 'ready',
-                outputLength: output.value.length
-              } as Partial<TProgressState>, options.onProgress);
+              processing.value = "";
+              setProgressState(
+                {
+                  phase: "ready",
+                  outputLength: output.value.length,
+                } as Partial<TProgressState>,
+                options.onProgress,
+              );
               return;
             }
 
             output.value += value;
-            setProgressState({
-              outputLength: output.value.length
-            } as Partial<TProgressState>, options.onProgress);
+            setProgressState(
+              {
+                outputLength: output.value.length,
+              } as Partial<TProgressState>,
+              options.onProgress,
+            );
             controller.enqueue(value);
           } catch (streamError) {
             error.value = streamError;
             operation.end(signal);
-            processing.value = '';
-            setProgressState({ phase: 'error' } as Partial<TProgressState>, options.onProgress);
+            processing.value = "";
+            setProgressState(
+              { phase: "error" } as Partial<TProgressState>,
+              options.onProgress,
+            );
             controller.error(streamError);
           }
         },
         cancel(reason) {
           operation.end(signal);
-          processing.value = '';
+          processing.value = "";
           return reader.cancel(reason);
-        }
+        },
       });
     } catch (caughtError) {
       operation.end(signal);
-      processing.value = '';
+      processing.value = "";
       error.value = caughtError;
-      setProgressState({ phase: 'error' } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        { phase: "error" } as Partial<TProgressState>,
+        options.onProgress,
+      );
       throw caughtError;
     }
   };
@@ -661,9 +757,9 @@ export function useWritingAssistant<
   const runStreamingToText = async (
     input: string,
     options: RunOptions = {} as RunOptions,
-    onChunk?: (chunk: string, accumulated: string) => void
+    onChunk?: (chunk: string, accumulated: string) => void,
   ) => {
-    output.value = '';
+    output.value = "";
     const stream = await runStreaming(input, options);
     const result = await collectTextStream(stream, onChunk);
     output.value = result;
@@ -672,25 +768,30 @@ export function useWritingAssistant<
 
   const runMany = async (
     items: BatchItem[],
-    options: BatchOptions = {} as BatchOptions
+    options: BatchOptions = {} as BatchOptions,
   ) => {
     const results: Array<WritingAssistantResult | null> = [];
     const failures: unknown[] = [];
 
     for (let index = 0; index < items.length; index += 1) {
       const item = items[index];
-      setProgressState({
-        phase: config.activePhase,
-        currentItem: index + 1,
-        totalItems: items.length
-      } as Partial<TProgressState>, options.onProgress);
+      setProgressState(
+        {
+          phase: config.activePhase,
+          currentItem: index + 1,
+          totalItems: items.length,
+        } as Partial<TProgressState>,
+        options.onProgress,
+      );
 
       try {
-        results.push(await runWithDetails(item.input, {
-          ...options,
-          context: item.context,
-          stripHtml: item.stripHtml
-        } as RunOptions));
+        results.push(
+          await runWithDetails(item.input, {
+            ...options,
+            context: item.context,
+            stripHtml: item.stripHtml,
+          } as RunOptions),
+        );
       } catch (caughtError) {
         failures.push(caughtError);
         results.push(null);
@@ -729,6 +830,6 @@ export function useWritingAssistant<
     runStreaming,
     runStreamingToText,
     runMany,
-    interrupt
+    interrupt,
   };
 }

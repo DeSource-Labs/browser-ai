@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
-const summarizer = ToolItems.find(item => item.id === 'summarizer')!;
+import "@desource/browser-ai-vue/assets/lib.css";
+
+const summarizer = ToolItems.find((item) => item.id === "summarizer")!;
 </script>
 
 <style scoped>

@@ -15,7 +15,11 @@
 </template>
 
 <script setup lang="ts">
-const languageDetector = ToolItems.find(item => item.id === 'language-detector')!;
+import "@desource/browser-ai-vue/assets/lib.css";
+
+const languageDetector = ToolItems.find(
+  (item) => item.id === "language-detector",
+)!;
 </script>
 
 <style scoped>

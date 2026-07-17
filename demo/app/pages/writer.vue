@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
-const writer = ToolItems.find(item => item.id === 'writer')!;
+import "@desource/browser-ai-vue/assets/lib.css";
+
+const writer = ToolItems.find((item) => item.id === "writer")!;
 </script>
 
 <style scoped>

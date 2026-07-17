@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
-const proofreader = ToolItems.find(item => item.id === 'proofreader')!;
+import "@desource/browser-ai-vue/assets/lib.css";
+
+const proofreader = ToolItems.find((item) => item.id === "proofreader")!;
 </script>
 
 <style scoped>

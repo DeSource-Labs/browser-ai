@@ -12,15 +12,15 @@ npm install @desource/browser-ai-vue
 
 Chrome stores built-in AI resources inside the current Chrome profile and manages downloads, updates, and deletion itself. The package can observe `availability()`, call `create()`, and display `downloadprogress`; it cannot list installed models, read model file paths, uninstall models, reset crash counts, toggle Chrome internals, or force Chrome to keep a model installed from JavaScript. Users can inspect and manage some Chrome-owned state manually in Chrome's internal pages.
 
-| API | Local resource | Chrome page | Download trigger | Manual management |
-| --- | --- | --- | --- | --- |
-| Prompt API | Shared Gemini Nano model | `chrome://on-device-internals` | `LanguageModel.create()` | No documented per-API uninstall. Users can uninstall the shared foundational model and reset its crash count from Chrome internals; Chrome can also purge automatically under storage pressure, policy changes, or eligibility changes. |
-| Summarizer | Shared Gemini Nano model | `chrome://on-device-internals` | `Summarizer.create()` | No separate Summarizer uninstall; it uses the shared Gemini Nano lifecycle. |
-| Writer | Shared Gemini Nano model | `chrome://on-device-internals` | `Writer.create()` | No separate Writer uninstall; it uses the shared Gemini Nano lifecycle. |
-| Rewriter | Shared Gemini Nano model | `chrome://on-device-internals` | `Rewriter.create()` | No separate Rewriter uninstall; it uses the shared Gemini Nano lifecycle. |
-| Proofreader | Shared Gemini Nano model | `chrome://on-device-internals` | `Proofreader.create()` | No separate Proofreader uninstall; it uses the shared Gemini Nano lifecycle. |
-| Translator | On-device translation language packs | `chrome://on-device-translation-internals/` | `Translator.create({ sourceLanguage, targetLanguage })` | Supported Chrome builds expose manual language-pack install/uninstall here. Direction can matter, so treat `en -> ru` and `ru -> en` as separate capabilities. |
-| Language Detector | Small local language-detection model and language resources | `chrome://on-device-translation-internals/` for TranslateKit resources in supported Chrome builds | `LanguageDetector.create({ expectedInputLanguages })` | Chrome manages detector resources. Language coverage is browser-defined and not every BCP 47 language is supported. |
+| API               | Local resource                                              | Chrome page                                                                                       | Download trigger                                        | Manual management                                                                                                                                                                                                                       |
+| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prompt API        | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    | `LanguageModel.create()`                                | No documented per-API uninstall. Users can uninstall the shared foundational model and reset its crash count from Chrome internals; Chrome can also purge automatically under storage pressure, policy changes, or eligibility changes. |
+| Summarizer        | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    | `Summarizer.create()`                                   | No separate Summarizer uninstall; it uses the shared Gemini Nano lifecycle.                                                                                                                                                             |
+| Writer            | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    | `Writer.create()`                                       | No separate Writer uninstall; it uses the shared Gemini Nano lifecycle.                                                                                                                                                                 |
+| Rewriter          | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    | `Rewriter.create()`                                     | No separate Rewriter uninstall; it uses the shared Gemini Nano lifecycle.                                                                                                                                                               |
+| Proofreader       | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    | `Proofreader.create()`                                  | No separate Proofreader uninstall; it uses the shared Gemini Nano lifecycle.                                                                                                                                                            |
+| Translator        | On-device translation language packs                        | `chrome://on-device-translation-internals/`                                                       | `Translator.create({ sourceLanguage, targetLanguage })` | Supported Chrome builds expose manual language-pack install/uninstall here. Direction can matter, so treat `en -> ru` and `ru -> en` as separate capabilities.                                                                          |
+| Language Detector | Small local language-detection model and language resources | `chrome://on-device-translation-internals/` for TranslateKit resources in supported Chrome builds | `LanguageDetector.create({ expectedInputLanguages })`   | Chrome manages detector resources. Language coverage is browser-defined and not every BCP 47 language is supported.                                                                                                                     |
 
 Notes:
 
@@ -30,7 +30,7 @@ Notes:
 - The Feature Adaptations `Recently Used` controls in `chrome://on-device-internals` are Chrome-internal debug/retention controls, not application-facing API enable/disable switches.
 - Translator pair availability is privacy-masked by Chrome, so `availability()` may report `downloadable` until `create()` is called for a pair.
 - Language Detector returns ranked candidates with confidence scores. Treat low-confidence results and `und` as unknown in product UI.
-- Proofreader has no `inputQuota`, `measureInputUsage()`, or streaming method in `@types/dom-chromium-ai@0.0.16`; the package chunks long proofreader input by character boundaries.
+- Chrome 150 and `@types/dom-chromium-ai@0.0.17` do not expose Proofreader `inputQuota`, `measureInputUsage()`, or streaming yet; the package chunks long proofreader input by safe text boundaries.
 - Exact storage paths are Chrome implementation details. App code should never depend on them.
 - References: [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Language Detector API](https://developer.chrome.com/docs/ai/language-detection), [Proofreader API](https://developer.chrome.com/docs/ai/proofreader-api), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/), [Language Detector playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/language-detector-api/), [Proofreader API draft](https://webmachinelearning.github.io/proofreader-api/).
 
@@ -42,8 +42,8 @@ Notes:
 </template>
 
 <script setup lang="ts">
-import { PromptApi } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { PromptApi } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -70,43 +70,53 @@ Context restore options:
 ## Composable
 
 ```ts
-import { usePromptApi } from '@desource/browser-ai-vue';
+import { usePromptApi } from "@desource/browser-ai-vue";
 
 const ai = usePromptApi({
   onContextOverflow() {
-    console.warn('Older context may be dropped.');
+    console.warn("Older context may be dropped.");
   },
 });
 
 await ai.init({
-  expectedInputs: [{ type: 'text', languages: ['en'] }],
-  expectedOutputs: [{ type: 'text', languages: ['en'] }],
+  expectedInputs: [{ type: "text", languages: ["en"] }],
+  expectedOutputs: [{ type: "text", languages: ["en"] }],
 });
 
 await ai.create();
 
-const stream = ai.promptStreaming('Write a short greeting.');
+const stream = ai.promptStreaming("Write a short greeting.");
 for await (const chunk of stream) {
   console.log(chunk);
 }
+
+const result = await ai.promptJson<{ accepted: boolean }>(
+  "Classify this input.",
+  {
+    responseConstraint: {
+      type: "object",
+      properties: { accepted: { type: "boolean" } },
+      required: ["accepted"],
+    },
+  },
+);
+
+const branch = await ai.clone();
+branch.destroy();
 ```
 
-Advanced restore helpers live in the composable too: `restoreSession()` performs measured chat hydration, and `promptWithTemporarySession()` is available for isolated one-off model tasks that should not consume the active chat session context.
+Advanced restore helpers live in the composable too: `restoreSession()` performs measured chat hydration, and `promptWithTemporarySession()` is available for isolated one-off model tasks that should not consume the active chat session context. `create()` accepts either a `samplingMode` or raw extension-only sampling parameters and prevents the invalid combination introduced by `@types/dom-chromium-ai@0.0.17`.
 
 ## Summarizer Component
 
 ```vue
 <template>
-  <Summarizer
-    type="key-points"
-    format="markdown"
-    length="medium"
-  />
+  <Summarizer type="key-points" format="markdown" length="medium" />
 </template>
 
 <script setup lang="ts">
-import { Summarizer } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { Summarizer } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -115,23 +125,23 @@ import '@desource/browser-ai-vue/assets/lib.css';
 ## Summarizer Composable
 
 ```ts
-import { useSummarizer } from '@desource/browser-ai-vue';
+import { useSummarizer } from "@desource/browser-ai-vue";
 
 const summarizer = useSummarizer();
 
 await summarizer.requestAvailability({
-  type: 'key-points',
-  format: 'markdown',
-  length: 'medium',
+  type: "key-points",
+  format: "markdown",
+  length: "medium",
 });
 
 const result = await summarizer.summarizeWithDetails(articleText, {
   createOptions: {
-    type: 'key-points',
-    format: 'markdown',
-    length: 'medium',
+    type: "key-points",
+    format: "markdown",
+    length: "medium",
   },
-  context: 'Audience: product engineers',
+  context: "Audience: product engineers",
   stripHtml: true,
 });
 
@@ -144,16 +154,12 @@ The composable keeps native API details in one place: availability, creation, ab
 
 ```vue
 <template>
-  <Writer
-    tone="formal"
-    format="markdown"
-    length="medium"
-  />
+  <Writer tone="formal" format="markdown" length="medium" />
 </template>
 
 <script setup lang="ts">
-import { Writer } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { Writer } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -162,25 +168,29 @@ import '@desource/browser-ai-vue/assets/lib.css';
 ## Writer Composable
 
 ```ts
-import { useWriter } from '@desource/browser-ai-vue';
+import { useWriter } from "@desource/browser-ai-vue";
 
 const writer = useWriter();
 
 await writer.requestAvailability({
-  tone: 'formal',
-  format: 'markdown',
-  length: 'medium',
+  tone: "formal",
+  format: "markdown",
+  length: "medium",
 });
 
-const draft = await writer.writeStreamingToText('Write a short product launch email.', {
-  createOptions: {
-    tone: 'formal',
-    format: 'markdown',
-    length: 'medium',
+const draft = await writer.writeStreamingToText(
+  "Write a short product launch email.",
+  {
+    createOptions: {
+      tone: "formal",
+      format: "markdown",
+      length: "medium",
+    },
+    context:
+      "Audience: existing customers who care about privacy and local AI.",
+    fitStrategy: "truncate-context",
   },
-  context: 'Audience: existing customers who care about privacy and local AI.',
-  fitStrategy: 'truncate-context',
-});
+);
 
 console.log(draft);
 ```
@@ -191,16 +201,12 @@ The composable wraps availability, creation, abort handling, download monitoring
 
 ```vue
 <template>
-  <Rewriter
-    tone="more-formal"
-    format="plain-text"
-    length="shorter"
-  />
+  <Rewriter tone="more-formal" format="plain-text" length="shorter" />
 </template>
 
 <script setup lang="ts">
-import { Rewriter } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { Rewriter } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -209,25 +215,28 @@ import '@desource/browser-ai-vue/assets/lib.css';
 ## Rewriter Composable
 
 ```ts
-import { useRewriter } from '@desource/browser-ai-vue';
+import { useRewriter } from "@desource/browser-ai-vue";
 
 const rewriter = useRewriter();
 
 await rewriter.requestAvailability({
-  tone: 'more-formal',
-  format: 'plain-text',
-  length: 'shorter',
+  tone: "more-formal",
+  format: "plain-text",
+  length: "shorter",
 });
 
-const rewrite = await rewriter.rewriteStreamingToText('This message is too informal for the release note.', {
-  createOptions: {
-    tone: 'more-formal',
-    format: 'plain-text',
-    length: 'shorter',
+const rewrite = await rewriter.rewriteStreamingToText(
+  "This message is too informal for the release note.",
+  {
+    createOptions: {
+      tone: "more-formal",
+      format: "plain-text",
+      length: "shorter",
+    },
+    context: "Audience: enterprise administrators.",
+    fitStrategy: "truncate-context",
   },
-  context: 'Audience: enterprise administrators.',
-  fitStrategy: 'truncate-context',
-});
+);
 
 console.log(rewrite);
 ```
@@ -242,8 +251,8 @@ console.log(rewrite);
 </template>
 
 <script setup lang="ts">
-import { Translator } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { Translator } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -252,26 +261,29 @@ import '@desource/browser-ai-vue/assets/lib.css';
 ## Translator Composable
 
 ```ts
-import { useTranslator } from '@desource/browser-ai-vue';
+import { useTranslator } from "@desource/browser-ai-vue";
 
 const translator = useTranslator({
-  sourceLanguage: 'en',
-  targetLanguage: 'fr',
+  sourceLanguage: "en",
+  targetLanguage: "fr",
 });
 
 await translator.requestAvailability({
-  sourceLanguage: 'en',
-  targetLanguage: 'fr',
+  sourceLanguage: "en",
+  targetLanguage: "fr",
 });
 
-const translated = await translator.translateStreamingToText('Where is the next bus stop?', {
-  createOptions: {
-    sourceLanguage: 'en',
-    targetLanguage: 'fr',
+const translated = await translator.translateStreamingToText(
+  "Where is the next bus stop?",
+  {
+    createOptions: {
+      sourceLanguage: "en",
+      targetLanguage: "fr",
+    },
+    chunking: "auto",
+    stripHtml: true,
   },
-  chunking: 'auto',
-  stripHtml: true,
-});
+);
 
 console.log(translated);
 ```
@@ -286,8 +298,8 @@ The composable wraps availability, creation, abort handling, language-pack downl
 </template>
 
 <script setup lang="ts">
-import { LanguageDetector } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { LanguageDetector } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -296,22 +308,25 @@ import '@desource/browser-ai-vue/assets/lib.css';
 ## Language Detector Composable
 
 ```ts
-import { useLanguageDetector } from '@desource/browser-ai-vue';
+import { useLanguageDetector } from "@desource/browser-ai-vue";
 
 const detector = useLanguageDetector({
-  expectedInputLanguages: ['en', 'fr', 'de'],
+  expectedInputLanguages: ["en", "fr", "de"],
 });
 
 await detector.requestAvailability({
-  expectedInputLanguages: ['en', 'fr', 'de'],
+  expectedInputLanguages: ["en", "fr", "de"],
 });
 
-const result = await detector.detectWithDetails('Bonjour et bienvenue dans notre application.', {
-  minConfidence: 0.45,
-  maxResults: 5,
-  largeInputStrategy: 'chunk',
-  stripHtml: true,
-});
+const result = await detector.detectWithDetails(
+  "Bonjour et bienvenue dans notre application.",
+  {
+    minConfidence: 0.45,
+    maxResults: 5,
+    largeInputStrategy: "chunk",
+    stripHtml: true,
+  },
+);
 
 console.log(result.detectedLanguage, result.confidence, result.results);
 ```
@@ -326,8 +341,8 @@ The composable wraps availability, creation, abort handling, download monitoring
 </template>
 
 <script setup lang="ts">
-import { Proofreader } from '@desource/browser-ai-vue';
-import '@desource/browser-ai-vue/assets/lib.css';
+import { Proofreader } from "@desource/browser-ai-vue";
+import "@desource/browser-ai-vue/assets/lib.css";
 </script>
 ```
 
@@ -336,28 +351,51 @@ import '@desource/browser-ai-vue/assets/lib.css';
 ## Proofreader Composable
 
 ```ts
-import { useProofreader } from '@desource/browser-ai-vue';
+import { useProofreader } from "@desource/browser-ai-vue";
 
 const proofreader = useProofreader({
-  expectedInputLanguages: ['en'],
+  expectedInputLanguages: ["en"],
 });
 
 await proofreader.requestAvailability({
-  expectedInputLanguages: ['en'],
+  expectedInputLanguages: ["en"],
 });
 
 const result = await proofreader.proofreadWithDetails(
-  'I seen him yesterday at the store, and he bought two loafs of bread.',
+  "I seen him yesterday at the store, and he bought two loafs of bread.",
   {
-    largeInputStrategy: 'auto',
+    largeInputStrategy: "auto",
     stripHtml: true,
-  }
+  },
 );
 
 console.log(result.correctedInput, result.corrections);
 ```
 
-The composable wraps availability, creation, abort handling, download monitoring, corrected-output normalization, correction range normalization, batch proofreading, cleanup, and character-based long-input chunking. The current `@types/dom-chromium-ai@0.0.16` Proofreader surface does not include `inputQuota`, `measureInputUsage()`, or streaming, so those are not required for normal Proofreader usage.
+The composable wraps availability, creation, abort handling, download monitoring, corrected-output normalization, correction range normalization, batch proofreading, cleanup, and character-based long-input chunking. The current Chrome 150 and `@types/dom-chromium-ai@0.0.17` Proofreader surface does not include `inputQuota`, `measureInputUsage()`, or streaming, even though the evolving draft now describes measurement.
+
+## WebMCP Composable
+
+```ts
+import { useWebMcp } from "@desource/browser-ai-vue";
+
+const webMcp = useWebMcp();
+const unregister = await webMcp.registerTool({
+  name: "get_account_summary",
+  description:
+    "Return the signed-in user account summary without changing state.",
+  inputSchema: { type: "object", properties: {} },
+  annotations: { readOnlyHint: true },
+  execute: () => getAccountSummary(),
+});
+
+const tools = await webMcp.refreshTools();
+unregister();
+```
+
+`useWebMcp()` targets `document.modelContext`, manages registration with abort signals, unregisters tools on Vue scope disposal, observes `toolchange`, discovers same- or explicitly allowed cross-origin tools, and can manually execute a discovered tool. `getWebMcpSupport()` reports secure-context, origin-isolation, and `tools` Permissions-Policy diagnostics. `createWebMcpFormAttributes()` and `createWebMcpFieldAttributes()` cover the declarative form API.
+
+WebMCP is experimental. Validate authorization inside every `execute()` callback, expose minimal data, and use `readOnlyHint`/`untrustedContentHint` truthfully. See the [WebMCP overview](https://developer.chrome.com/docs/ai/webmcp) and [imperative API](https://developer.chrome.com/docs/ai/webmcp/imperative-api).
 
 ## Exports
 
@@ -379,6 +417,10 @@ The composable wraps availability, creation, abort handling, download monitoring
 - `useTranslator`
 - `useWriter`
 - `useAiChats`
+- `useWebMcp`
+- `getWebMcpSupport`
+- `createWebMcpFormAttributes`
+- `createWebMcpFieldAttributes`
 - `TRANSLATOR_LANGUAGE_OPTIONS`
 - `getTranslatorLanguageName`
 - `LANGUAGE_DETECTOR_LANGUAGE_OPTIONS`

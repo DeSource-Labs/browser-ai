@@ -7,42 +7,81 @@
     <div
       v-for="message in messages"
       :key="message.id"
+      v-memo="[
+        message.content,
+        message.timestamp,
+        message.attachments,
+        isActiveTypingMessage(message),
+      ]"
       class="chat-message"
       :class="{
         'chat-message--user': message.role === 'user',
         'chat-message--assistant': message.role === 'assistant',
-        'chat-message--typing': isActiveTypingMessage(message)
+        'chat-message--typing': isActiveTypingMessage(message),
       }"
     >
       <div class="chat-message__header">
-        <span class="chat-message__role">{{ message.role === 'user' ? 'You' : 'Assistant' }}</span>
-        <span class="chat-message__time">{{ formatTime(message.timestamp) }}</span>
+        <span class="chat-message__role">{{
+          message.role === "user" ? "You" : "Assistant"
+        }}</span>
+        <span class="chat-message__time">{{
+          formatTime(message.timestamp)
+        }}</span>
       </div>
-      
+
       <div v-if="message.attachments?.length" class="chat-message__attachments">
-        <div v-for="attachment in message.attachments" :key="attachment.id" class="chat-message__attachment">
-          <img v-if="attachment.type.startsWith('image/')" :src="attachment.url" :alt="attachment.name" />
+        <div
+          v-for="attachment in message.attachments"
+          :key="attachment.id"
+          class="chat-message__attachment"
+        >
+          <img
+            v-if="attachment.type.startsWith('image/')"
+            :src="attachment.url"
+            :alt="attachment.name"
+          />
           <div v-else class="chat-message__file">
             {{ attachment.name }}
           </div>
         </div>
       </div>
-      <div class="chat-message__text" :class="{ 'chat-message__text--typing': isActiveTypingMessage(message) }">
-        <template v-if="isActiveTypingMessage(message) && !message.content.trim()">
-          <span class="chat-message__dots" aria-live="polite" aria-label="Assistant is typing">
+      <div
+        class="chat-message__text"
+        :class="{
+          'chat-message__text--typing': isActiveTypingMessage(message),
+        }"
+      >
+        <template
+          v-if="isActiveTypingMessage(message) && !message.content.trim()"
+        >
+          <span
+            class="chat-message__dots"
+            aria-live="polite"
+            aria-label="Assistant is typing"
+          >
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
           </span>
         </template>
         <template v-else>
-          <div class="chat-message__content" v-html="formatMessage(message.content)"></div>
-          <span v-if="isActiveTypingMessage(message)" class="typing-cursor" aria-hidden="true"></span>
+          <div
+            class="chat-message__content"
+            v-html="formatMessage(message.content)"
+          ></div>
+          <span
+            v-if="isActiveTypingMessage(message)"
+            class="typing-cursor"
+            aria-hidden="true"
+          ></span>
         </template>
       </div>
     </div>
 
-    <div v-if="showStandaloneTyping" class="chat-message chat-message--assistant chat-message--typing">
+    <div
+      v-if="showStandaloneTyping"
+      class="chat-message chat-message--assistant chat-message--typing"
+    >
       <div class="chat-message__header">
         <span class="chat-message__role">Assistant</span>
       </div>
@@ -56,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
 export type ChatAttachment = {
   id: string;
@@ -67,7 +106,7 @@ export type ChatAttachment = {
 
 export type ChatMessage = {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp?: number;
   attachments?: ChatAttachment[];
@@ -81,7 +120,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   isTyping: false,
-  autoScroll: true
+  autoScroll: true,
 });
 
 const historyEl = ref<HTMLDivElement | null>(null);
@@ -92,7 +131,7 @@ const activeTypingMessageId = computed<string | null>(() => {
   }
 
   const lastMessage = props.messages[props.messages.length - 1];
-  if (!lastMessage || lastMessage.role !== 'assistant') {
+  if (!lastMessage || lastMessage.role !== "assistant") {
     return null;
   }
 
@@ -115,9 +154,17 @@ const scrollToBottom = () => {
   });
 };
 
-watch([() => props.messages, () => props.isTyping, () => props.autoScroll], () => {
-  scrollToBottom();
-}, { deep: true });
+watch(
+  [
+    () => props.messages.length,
+    () => props.messages[props.messages.length - 1]?.content,
+    () => props.isTyping,
+    () => props.autoScroll,
+  ],
+  () => {
+    scrollToBottom();
+  },
+);
 
 onMounted(() => {
   scrollToBottom();
@@ -125,11 +172,11 @@ onMounted(() => {
 
 const escapeHtml = (value: string) => {
   return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 };
 
 const formatMessage = (value: string) => {
@@ -139,16 +186,19 @@ const formatMessage = (value: string) => {
     return `<pre class="chat-message__code"><code>${code}</code></pre>`;
   });
 
-  html = html.replace(/`([^`\n]+)`/g, '<code class="chat-message__inline">$1</code>');
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  html = html.replace(
+    /`([^`\n]+)`/g,
+    '<code class="chat-message__inline">$1</code>',
+  );
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
 
-  html = html.replace(/\n/g, '<br />');
+  html = html.replace(/\n/g, "<br />");
   return html;
 };
 
 const formatTime = (timestamp?: number) => {
-  if (!timestamp) return 'just now';
+  if (!timestamp) return "just now";
 
   const now = Date.now();
   const diff = now - timestamp;
@@ -157,13 +207,13 @@ const formatTime = (timestamp?: number) => {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return 'just now';
+  if (seconds < 60) return "just now";
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
 
   const date = new Date(timestamp);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 </script>
 
@@ -185,7 +235,6 @@ const formatTime = (timestamp?: number) => {
   /* Custom scrollbar styles */
   scrollbar-width: thin;
   scrollbar-color: rgba(120, 120, 120, 0.5) transparent;
-
 }
 
 .chat-history::-webkit-scrollbar {
@@ -308,7 +357,8 @@ const formatTime = (timestamp?: number) => {
 }
 
 .chat-message__text :deep(code) {
-  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+  font-family:
+    "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
 }
 
 .chat-message__inline {

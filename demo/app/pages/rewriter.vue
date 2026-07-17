@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
-const rewriter = ToolItems.find(item => item.id === 'rewriter')!;
+import "@desource/browser-ai-vue/assets/lib.css";
+
+const rewriter = ToolItems.find((item) => item.id === "rewriter")!;
 </script>
 
 <style scoped>

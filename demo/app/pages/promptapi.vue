@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
-const promptApi = ToolItems.find(item => item.id === 'prompt-api')!;
+import "@desource/browser-ai-vue/assets/lib.css";
+
+const promptApi = ToolItems.find((item) => item.id === "prompt-api")!;
 </script>
 
 <style scoped>

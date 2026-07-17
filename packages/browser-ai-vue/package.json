@@ -28,19 +28,21 @@
   "scripts": {
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "build": "pnpm clean && pnpm build:internal",
-    "build:internal": "pnpm build:lib && pnpm build:types && pnpm postbuild",
+    "build:internal": "pnpm build:lib && pnpm build:types",
     "build:lib": "vite build",
     "build:types": "vue-tsc -p tsconfig.json",
     "postbuild": "node scripts/fix-dts.mjs",
-    "typecheck": "vue-tsc -p tsconfig.json --noEmit"
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",
-    "vue-tsc": "^3.3.7",
-    "vue": "^3.5.39"
+    "vue": "^3.5.39",
+    "vue-tsc": "^3.3.7"
   },
   "dependencies": {
-    "@types/dom-chromium-ai": "^0.0.17"
+    "@types/dom-chromium-ai": "^0.0.17",
+    "webmcp-types": "^0.1.2"
   },
   "peerDependencies": {
     "vue": "^3.4.33"

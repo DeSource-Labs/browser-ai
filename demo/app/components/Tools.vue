@@ -19,12 +19,21 @@
                 </div>
               </td>
               <td>
-                <span class="tools__badge" :class="`tools__badge--${item.availability}`">
+                <span
+                  class="tools__badge"
+                  :class="`tools__badge--${item.availability}`"
+                >
                   {{ getAvailabilityLabel(item.availability) }}
                 </span>
               </td>
               <td>
-                <NuxtLink v-if="item.openable" class="tools__action" :to="item.href">Open</NuxtLink>
+                <NuxtLink
+                  v-if="item.openable"
+                  class="tools__action"
+                  :to="item.href"
+                >
+                  Open
+                </NuxtLink>
               </td>
             </tr>
           </tbody>
@@ -35,76 +44,99 @@
 </template>
 
 <script setup lang="ts">
-type DemoAvailability = Availability | 'checking';
+type DemoAvailability = Availability | "checking";
 
 type ApiRow = ToolItem & {
   availability: DemoAvailability;
 };
 
-const promptApiAvailability = ref<DemoAvailability>('checking');
-const summarizerAvailability = ref<DemoAvailability>('checking');
-const writerAvailability = ref<DemoAvailability>('checking');
-const rewriterAvailability = ref<DemoAvailability>('checking');
-const translatorAvailability = ref<DemoAvailability>('checking');
-const languageDetectorAvailability = ref<DemoAvailability>('checking');
-const proofreaderAvailability = ref<DemoAvailability>('checking');
-const { checkAvailability: checkPromptApiAvailability } = usePromptApi();
-const { checkAvailability: checkSummarizerAvailability } = useSummarizer();
-const { checkAvailability: checkWriterAvailability } = useWriter();
-const { checkAvailability: checkRewriterAvailability } = useRewriter();
-const { checkAvailability: checkTranslatorAvailability } = useTranslator();
-const { checkAvailability: checkLanguageDetectorAvailability } = useLanguageDetector();
-const { checkAvailability: checkProofreaderAvailability } = useProofreader();
+const promptApiAvailability = ref<DemoAvailability>("checking");
+const summarizerAvailability = ref<DemoAvailability>("checking");
+const writerAvailability = ref<DemoAvailability>("checking");
+const rewriterAvailability = ref<DemoAvailability>("checking");
+const translatorAvailability = ref<DemoAvailability>("checking");
+const languageDetectorAvailability = ref<DemoAvailability>("checking");
+const proofreaderAvailability = ref<DemoAvailability>("checking");
+const webMcpAvailability = ref<DemoAvailability>("checking");
 
-const AvailableStatuses: DemoAvailability[] = ['available', 'downloadable', 'downloading'];
+type AvailabilityConstructor = {
+  availability: (options?: Record<string, unknown>) => Promise<Availability>;
+};
 
-const getAvailabilityLabel = (status: DemoAvailability) => {
-  switch (status) {
-    case 'checking':
-    case 'downloading':
-    case 'available':
-      return status;
-    case 'downloadable':
-      return 'Needs download';
-    default:
-      return 'Not available';
+const checkNativeAvailability = async (
+  constructorName: string,
+  options?: Record<string, unknown>,
+): Promise<Availability> => {
+  const constructor = (
+    globalThis as typeof globalThis & Record<string, unknown>
+  )[constructorName] as AvailabilityConstructor | undefined;
+  if (typeof constructor?.availability !== "function") return "unavailable";
+
+  try {
+    return await constructor.availability(options);
+  } catch {
+    return "unavailable";
   }
 };
 
-const canOpenDemo = (availability: DemoAvailability) => AvailableStatuses.includes(availability);
+const AvailableStatuses: DemoAvailability[] = [
+  "available",
+  "downloadable",
+  "downloading",
+];
+
+const getAvailabilityLabel = (status: DemoAvailability) => {
+  switch (status) {
+    case "checking":
+    case "downloading":
+    case "available":
+      return status;
+    case "downloadable":
+      return "Needs download";
+    default:
+      return "Not available";
+  }
+};
+
+const canOpenDemo = (availability: DemoAvailability) =>
+  AvailableStatuses.includes(availability);
 
 const apiRows = computed<ApiRow[]>(() => {
   return ToolItems.map((item) => {
-    let availability: DemoAvailability = 'unavailable';
+    let availability: DemoAvailability = "unavailable";
     let openable = false;
     switch (item.id) {
-      case 'prompt-api':
+      case "prompt-api":
         availability = promptApiAvailability.value;
         openable = canOpenDemo(promptApiAvailability.value);
         break;
-      case 'summarizer':
+      case "summarizer":
         availability = summarizerAvailability.value;
         openable = canOpenDemo(summarizerAvailability.value);
         break;
-      case 'writer':
+      case "writer":
         availability = writerAvailability.value;
         openable = canOpenDemo(writerAvailability.value);
         break;
-      case 'rewriter':
+      case "rewriter":
         availability = rewriterAvailability.value;
         openable = canOpenDemo(rewriterAvailability.value);
         break;
-      case 'translator':
+      case "translator":
         availability = translatorAvailability.value;
         openable = canOpenDemo(translatorAvailability.value);
         break;
-      case 'language-detector':
+      case "language-detector":
         availability = languageDetectorAvailability.value;
         openable = canOpenDemo(languageDetectorAvailability.value);
         break;
-      case 'proofreader':
+      case "proofreader":
         availability = proofreaderAvailability.value;
         openable = canOpenDemo(proofreaderAvailability.value);
+        break;
+      case "webmcp":
+        availability = webMcpAvailability.value;
+        openable = canOpenDemo(webMcpAvailability.value);
         break;
     }
     return {
@@ -116,6 +148,9 @@ const apiRows = computed<ApiRow[]>(() => {
 });
 
 onMounted(async () => {
+  webMcpAvailability.value = document.modelContext
+    ? "available"
+    : "unavailable";
   const [
     promptStatus,
     summarizerStatus,
@@ -123,44 +158,50 @@ onMounted(async () => {
     rewriterStatus,
     translatorStatus,
     languageDetectorStatus,
-    proofreaderStatus
+    proofreaderStatus,
   ] = await Promise.allSettled([
-    checkPromptApiAvailability(),
-    checkSummarizerAvailability(),
-    checkWriterAvailability(),
-    checkRewriterAvailability(),
-    checkTranslatorAvailability(),
-    checkLanguageDetectorAvailability(),
-    checkProofreaderAvailability()
+    checkNativeAvailability("LanguageModel"),
+    checkNativeAvailability("Summarizer"),
+    checkNativeAvailability("Writer"),
+    checkNativeAvailability("Rewriter"),
+    checkNativeAvailability("Translator", {
+      sourceLanguage: "en",
+      targetLanguage: "fr",
+    }),
+    checkNativeAvailability("LanguageDetector"),
+    checkNativeAvailability("Proofreader"),
   ]);
 
-  promptApiAvailability.value = promptStatus.status === 'fulfilled'
-    ? promptStatus.value
-    : 'unavailable';
+  promptApiAvailability.value =
+    promptStatus.status === "fulfilled" ? promptStatus.value : "unavailable";
 
-  summarizerAvailability.value = summarizerStatus.status === 'fulfilled'
-    ? summarizerStatus.value
-    : 'unavailable';
+  summarizerAvailability.value =
+    summarizerStatus.status === "fulfilled"
+      ? summarizerStatus.value
+      : "unavailable";
 
-  writerAvailability.value = writerStatus.status === 'fulfilled'
-    ? writerStatus.value
-    : 'unavailable';
+  writerAvailability.value =
+    writerStatus.status === "fulfilled" ? writerStatus.value : "unavailable";
 
-  rewriterAvailability.value = rewriterStatus.status === 'fulfilled'
-    ? rewriterStatus.value
-    : 'unavailable';
+  rewriterAvailability.value =
+    rewriterStatus.status === "fulfilled"
+      ? rewriterStatus.value
+      : "unavailable";
 
-  translatorAvailability.value = translatorStatus.status === 'fulfilled'
-    ? translatorStatus.value
-    : 'unavailable';
+  translatorAvailability.value =
+    translatorStatus.status === "fulfilled"
+      ? translatorStatus.value
+      : "unavailable";
 
-  languageDetectorAvailability.value = languageDetectorStatus.status === 'fulfilled'
-    ? languageDetectorStatus.value
-    : 'unavailable';
+  languageDetectorAvailability.value =
+    languageDetectorStatus.status === "fulfilled"
+      ? languageDetectorStatus.value
+      : "unavailable";
 
-  proofreaderAvailability.value = proofreaderStatus.status === 'fulfilled'
-    ? proofreaderStatus.value
-    : 'unavailable';
+  proofreaderAvailability.value =
+    proofreaderStatus.status === "fulfilled"
+      ? proofreaderStatus.value
+      : "unavailable";
 });
 </script>
 

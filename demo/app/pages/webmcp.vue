@@ -2,34 +2,30 @@
   <section class="page">
     <Header
       compact
-      title="Translator API"
-      :subtitle="translator.description"
+      title="WebMCP"
+      :subtitle="webMcp.description"
       leading-label="API directory"
       leading-icon=""
       leading-to="/"
     />
     <main class="page__main">
-      <TranslatorDemo />
+      <WebMcpDemo />
     </main>
   </section>
 </template>
 
 <script setup lang="ts">
-import "@desource/browser-ai-vue/assets/lib.css";
-
-const translator = ToolItems.find((item) => item.id === "translator")!;
+const webMcp = ToolItems.find((item) => item.id === "webmcp")!;
 </script>
 
 <style scoped>
 .page {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   z-index: 0;
   display: flex;
   flex-direction: column;
-  height: 100svh;
-  width: 100svw;
+  min-height: 100svh;
   padding-bottom: 1rem;
 }
 
