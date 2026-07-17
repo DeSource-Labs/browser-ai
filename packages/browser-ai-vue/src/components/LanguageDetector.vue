@@ -201,6 +201,12 @@ import {
   type LanguageDetectorProgressState,
   type LanguageDetectorResult,
 } from "../composables/useLanguageDetector";
+import { useSyncedString } from "../composables/useSyncedString";
+import {
+  copyText,
+  formatAvailability,
+  formatTokenCount,
+} from "../utils/display";
 
 interface Props {
   modelValue?: string;
@@ -254,7 +260,10 @@ const {
   expectedInputLanguages: props.expectedInputLanguages ?? [],
 });
 
-const sourceText = ref(props.modelValue);
+const sourceText = useSyncedString(
+  () => props.modelValue,
+  (value) => emit("update:modelValue", value),
+);
 const errorMessage = ref("");
 const expectedLanguagesText = ref(
   (props.expectedInputLanguages ?? []).join(", "),
@@ -288,14 +297,7 @@ const expectedLanguagesLabel = computed(() => {
 });
 
 const operationalStatusLabel = computed(() => {
-  if (downloadProgress.value > 0 && downloadProgress.value < 100) {
-    return `${downloadProgress.value}%`;
-  }
-  if (availability.value === "available") return "Ready";
-  if (availability.value === "downloadable") return "Download";
-  if (availability.value === "downloading") return "Downloading";
-  if (availability.value === "unavailable") return "Unavailable";
-  return "Checking";
+  return formatAvailability(availability.value, downloadProgress.value);
 });
 
 const isBusy = computed(() => props.disabled || isProcessing.value);
@@ -310,12 +312,6 @@ const canDetect = computed(() => {
 });
 
 const displayedResults = computed(() => results.value);
-const formatTokenCount = (value: number | null) => {
-  if (value == null) return "-";
-  if (!Number.isFinite(value)) return "unlimited";
-  return value.toLocaleString();
-};
-
 const inputUsageLabel = computed(() => formatTokenCount(inputUsage.value));
 const inputQuotaLabel = computed(() => formatTokenCount(inputQuota.value));
 
@@ -382,22 +378,9 @@ const handleDetect = async () => {
 
 const copyTopLanguage = async () => {
   const language = lastResult.value?.detectedLanguage;
-  if (!language || typeof navigator === "undefined") return;
-  await navigator.clipboard?.writeText(language);
+  if (!language) return;
+  await copyText(language);
 };
-
-watch(sourceText, (value) => {
-  emit("update:modelValue", value);
-});
-
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== sourceText.value) {
-      sourceText.value = value;
-    }
-  },
-);
 
 watch(
   () => props.expectedInputLanguages,

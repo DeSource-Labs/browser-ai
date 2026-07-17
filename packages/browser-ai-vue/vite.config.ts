@@ -15,7 +15,7 @@ export default defineConfig({
       },
     },
     rolldownOptions: {
-      external: ["vue"],
+      external: ["vue", "markdown-it"],
       output: {
         exports: "named",
         globals: {

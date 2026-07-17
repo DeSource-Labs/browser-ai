@@ -1,3 +1,5 @@
+import "./styles/writing-tool.css";
+
 export { useAiChats } from "./composables/useAiChats";
 
 export { usePromptApi } from "./composables/usePromptApi";
@@ -36,6 +38,7 @@ export {
 export { default as ChatHistory } from "./components/ChatHistory.vue";
 export { default as ChatSidebar } from "./components/ChatSidebar.vue";
 export { default as LanguageDetector } from "./components/LanguageDetector.vue";
+export { default as MarkdownRenderer } from "./components/MarkdownRenderer.vue";
 export { default as Proofreader } from "./components/Proofreader.vue";
 export { default as PromptApi } from "./components/PromptApi.vue";
 export { default as PromptInput } from "./components/PromptInput.vue";

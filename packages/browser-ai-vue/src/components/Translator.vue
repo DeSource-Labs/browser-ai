@@ -192,7 +192,11 @@
         </div>
 
         <div class="translator__output">
-          <pre v-if="translatedText">{{ translatedText }}</pre>
+          <MarkdownRenderer
+            v-if="translatedText && renderMarkdown"
+            :content="translatedText"
+          />
+          <pre v-else-if="translatedText">{{ translatedText }}</pre>
           <p v-else>{{ emptyOutputMessage }}</p>
         </div>
       </section>
@@ -211,6 +215,9 @@ import {
   type TranslatorProgressState,
   type TranslatorResult,
 } from "../composables/useTranslator";
+import { useSyncedString } from "../composables/useSyncedString";
+import { copyText, formatTokenCount } from "../utils/display";
+import MarkdownRenderer from "./MarkdownRenderer.vue";
 
 interface Props {
   modelValue?: string;
@@ -226,6 +233,7 @@ interface Props {
   stripHtml?: boolean;
   chunking?: "auto" | "never";
   stream?: boolean;
+  renderMarkdown?: boolean;
   disabled?: boolean;
 }
 
@@ -243,6 +251,7 @@ const props = withDefaults(defineProps<Props>(), {
   stripHtml: true,
   chunking: "auto",
   stream: true,
+  renderMarkdown: true,
   disabled: false,
 });
 
@@ -273,7 +282,10 @@ const {
   targetLanguage: props.targetLanguage,
 });
 
-const sourceText = ref(props.modelValue);
+const sourceText = useSyncedString(
+  () => props.modelValue,
+  (value) => emit("update:modelValue", value),
+);
 const translatedText = ref("");
 const errorMessage = ref("");
 const selectedSourceLanguage = ref(props.sourceLanguage);
@@ -383,8 +395,8 @@ const prepareButtonLabel = computed(() => {
   return isProcessing.value ? "Translating" : "Translate";
 });
 
-const inputUsageLabel = computed(() => inputUsage.value ?? "-");
-const inputQuotaLabel = computed(() => inputQuota.value ?? "-");
+const inputUsageLabel = computed(() => formatTokenCount(inputUsage.value));
+const inputQuotaLabel = computed(() => formatTokenCount(inputQuota.value));
 
 const progressLabel = computed(() => {
   const state = progressState.value;
@@ -553,8 +565,7 @@ const handlePreparePair = async () => {
 };
 
 const copyTranslation = async () => {
-  if (!translatedText.value || typeof navigator === "undefined") return;
-  await navigator.clipboard?.writeText(translatedText.value);
+  await copyText(translatedText.value);
 };
 
 const swapLanguages = () => {
@@ -576,9 +587,8 @@ const handleLanguageSelection = () => {
   pendingAutoTranslate.value = false;
 };
 
-watch(sourceText, (value) => {
+watch(sourceText, () => {
   translationVersion.value += 1;
-  emit("update:modelValue", value);
   if (
     isProcessing.value &&
     ["measuring", "chunking", "translating"].includes(progressState.value.phase)
@@ -587,15 +597,6 @@ watch(sourceText, (value) => {
   }
   scheduleAutoTranslate();
 });
-
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== sourceText.value) {
-      sourceText.value = value;
-    }
-  },
-);
 
 watch(
   () => props.sourceLanguage,

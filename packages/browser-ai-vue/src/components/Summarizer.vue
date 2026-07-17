@@ -163,7 +163,11 @@
         </div>
 
         <div class="summarizer__output">
-          <pre v-if="summary">{{ summary }}</pre>
+          <MarkdownRenderer
+            v-if="summary && renderMarkdown && selectedFormat === 'markdown'"
+            :content="summary"
+          />
+          <pre v-else-if="summary">{{ summary }}</pre>
           <p v-else>{{ emptyOutputMessage }}</p>
         </div>
       </section>
@@ -179,6 +183,9 @@ import {
   type SummarizerProgressState,
   type SummarizerResult,
 } from "../composables/useSummarizer";
+import { useSyncedString } from "../composables/useSyncedString";
+import { formatAvailability, formatTokenCount } from "../utils/display";
+import MarkdownRenderer from "./MarkdownRenderer.vue";
 
 interface Props {
   modelValue?: string;
@@ -197,6 +204,7 @@ interface Props {
   autoInit?: boolean;
   autoCreate?: boolean;
   stripHtml?: boolean;
+  renderMarkdown?: boolean;
   disabled?: boolean;
 }
 
@@ -217,6 +225,7 @@ const props = withDefaults(defineProps<Props>(), {
   autoInit: true,
   autoCreate: true,
   stripHtml: true,
+  renderMarkdown: true,
   disabled: false,
 });
 
@@ -241,7 +250,10 @@ const {
   dispose,
 } = useSummarizer();
 
-const sourceText = ref(props.modelValue);
+const sourceText = useSyncedString(
+  () => props.modelValue,
+  (value) => emit("update:modelValue", value),
+);
 const summary = ref("");
 const errorMessage = ref("");
 const summaryContext = ref(props.context);
@@ -293,14 +305,7 @@ const coreOptions = computed<SummarizerCreateCoreOptions>(() => {
 });
 
 const operationalStatusLabel = computed(() => {
-  if (downloadProgress.value > 0 && downloadProgress.value < 100) {
-    return `${downloadProgress.value}%`;
-  }
-  if (availability.value === "available") return "Ready";
-  if (availability.value === "downloadable") return "Download";
-  if (availability.value === "downloading") return "Downloading";
-  if (availability.value === "unavailable") return "Unavailable";
-  return "Checking";
+  return formatAvailability(availability.value, downloadProgress.value);
 });
 
 const settingsSummary = computed(() => {
@@ -328,8 +333,8 @@ const canSummarize = computed(() => {
   );
 });
 
-const inputUsageLabel = computed(() => inputUsage.value ?? "—");
-const inputQuotaLabel = computed(() => inputQuota.value ?? "—");
+const inputUsageLabel = computed(() => formatTokenCount(inputUsage.value));
+const inputQuotaLabel = computed(() => formatTokenCount(inputQuota.value));
 
 const progressLabel = computed(() => {
   const state = progressState.value;
@@ -382,19 +387,6 @@ const handleSummarize = async () => {
     emit("error", error);
   }
 };
-
-watch(sourceText, (value) => {
-  emit("update:modelValue", value);
-});
-
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== sourceText.value) {
-      sourceText.value = value;
-    }
-  },
-);
 
 watch(
   () => props.context,

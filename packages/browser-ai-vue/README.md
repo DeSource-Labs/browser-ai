@@ -10,6 +10,7 @@ Chrome's native AI APIs provide the model. This package provides the application
 
 - reactive availability, download, progress, error, and abort states;
 - streaming without flooding Vue's render loop;
+- safe, styled Markdown rendering for model answers, code blocks, tables, and links;
 - measured long-input chunking, batching, and context fitting;
 - Prompt API chat persistence, structured JSON, clone, append, and automatic context compaction;
 - SSR-safe browser access and reliable native-session cleanup;
@@ -39,9 +40,25 @@ import "@desource/browser-ai-vue/assets/lib.css";
 </template>
 ```
 
-The component includes persisted chats, streaming responses, file attachments supported by the browser, model-download UX, stop controls, history navigation, and automatic recovery when a conversation outgrows the current context window.
+The component includes persisted chats, streaming Markdown responses, file attachments supported by the browser, model-download UX, stop controls, history navigation, and automatic recovery when a conversation outgrows the current context window. Raw HTML in model output is escaped rather than executed.
 
 The package also exports ready-made `<Summarizer />`, `<Writer />`, `<Rewriter />`, `<Translator />`, `<LanguageDetector />`, and `<Proofreader />` components.
+
+Generated prose is rendered as Markdown by default. Set `:render-markdown="false"` when a product needs literal text. Proofreader keeps correction-range highlighting by default; opt into Markdown with `render-markdown` when the corrected document is the primary output.
+
+For a custom interface, use the same renderer directly:
+
+```vue
+<script setup lang="ts">
+import { MarkdownRenderer } from "@desource/browser-ai-vue";
+
+defineProps<{ answer: string }>();
+</script>
+
+<template>
+  <MarkdownRenderer :content="answer" />
+</template>
+```
 
 ## Build your own interface
 
@@ -160,6 +177,7 @@ WebMCP is experimental. Your production document needs origin isolation and `Per
 | Language detection     | `LanguageDetector`, `useLanguageDetector`, language option helpers                     |
 | Proofreading           | `Proofreader`, `useProofreader`, language option helpers                               |
 | Browser tools          | `useWebMcp`, `getWebMcpSupport`, declarative form helpers                              |
+| Markdown output        | `MarkdownRenderer`, `renderMarkdown`                                                   |
 
 Result, option, progress, availability, message, correction, and tool types are exported from the package root.
 

@@ -58,12 +58,14 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
     "@vitejs/plugin-vue": "^6.0.8",
     "vue": "^3.5.39",
     "vue-tsc": "^3.3.7"
   },
   "dependencies": {
     "@types/dom-chromium-ai": "^0.0.17",
+    "markdown-it": "^14.3.0",
     "webmcp-types": "^0.1.2"
   },
   "peerDependencies": {

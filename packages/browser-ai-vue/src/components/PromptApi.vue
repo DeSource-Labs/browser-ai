@@ -1394,18 +1394,8 @@ const handleVoice = () => {
   emit("voice");
 };
 
-const handleRenameChat = async (chatId: string) => {
-  const target = chatStore.getChatById(chatId);
-  if (!target) return;
-
-  const nextTitle =
-    typeof window !== "undefined"
-      ? window.prompt("Rename chat", target.title)
-      : target.title;
-
-  if (nextTitle === null) return;
-
-  await chatStore.renameChat(chatId, nextTitle);
+const handleRenameChat = async (chatId: string, title: string) => {
+  await chatStore.renameChat(chatId, title);
 };
 
 watch(
@@ -1573,10 +1563,17 @@ defineExpose({
 }
 
 .prompt-api__header {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 0.9rem;
-  border: 1px solid rgba(120, 120, 120, 0.24);
-  background: rgba(20, 20, 20, 0.35);
-  padding: 0.6rem 0.75rem;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(124, 92, 228, 0.09),
+      transparent 36%
+    ),
+    rgba(5, 8, 17, 0.62);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.045);
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -1591,16 +1588,16 @@ defineExpose({
 
 .prompt-api__title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.2;
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: 740;
 }
 
 .prompt-api__availability {
-  font-size: 0.74rem;
+  font-size: 0.69rem;
   line-height: 1;
-  padding: 0.3rem 0.45rem;
+  padding: 0.32rem 0.5rem;
   border-radius: 999px;
   border: 1px solid rgba(120, 120, 120, 0.35);
   text-transform: capitalize;

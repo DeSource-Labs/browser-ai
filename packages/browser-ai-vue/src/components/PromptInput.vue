@@ -72,6 +72,7 @@
       />
 
       <textarea
+        ref="textareaEl"
         class="prompt-input__field"
         :value="modelValue"
         :placeholder="placeholder"
@@ -97,7 +98,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 
 export type PromptAttachment = {
   id: string;
@@ -139,6 +147,8 @@ const emit = defineEmits<{
 }>();
 
 const fileInput = ref<HTMLInputElement | null>(null);
+const textareaEl = ref<HTMLTextAreaElement | null>(null);
+let resizeFrame: number | null = null;
 
 const canSend = computed(() => {
   return props.modelValue.trim().length > 0 || props.attachments.length > 0;
@@ -147,6 +157,20 @@ const canSend = computed(() => {
 const onInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement;
   emit("update:modelValue", target.value);
+  scheduleResize();
+};
+
+const resizeTextarea = () => {
+  resizeFrame = null;
+  const element = textareaEl.value;
+  if (!element) return;
+  element.style.height = "auto";
+  element.style.height = `${Math.min(element.scrollHeight, 160)}px`;
+};
+
+const scheduleResize = () => {
+  if (typeof window === "undefined" || resizeFrame !== null) return;
+  resizeFrame = window.requestAnimationFrame(resizeTextarea);
 };
 
 const onKeydown = (event: KeyboardEvent) => {
@@ -232,7 +256,17 @@ watch(
   { deep: true },
 );
 
+watch(
+  () => props.modelValue,
+  () => void nextTick(scheduleResize),
+);
+
+onMounted(scheduleResize);
+
 onBeforeUnmount(() => {
+  if (resizeFrame !== null) {
+    window.cancelAnimationFrame(resizeFrame);
+  }
   props.attachments.forEach((attachment) => {
     URL.revokeObjectURL(attachment.url);
   });
@@ -245,11 +279,17 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.75rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
-  background: rgba(30, 30, 30, 0.5);
-  border: 1px solid rgba(120, 120, 120, 0.25);
-  backdrop-filter: blur(10px);
+  background:
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(124, 92, 228, 0.08),
+      transparent 36%
+    ),
+    rgba(7, 10, 20, 0.78);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.045);
   pointer-events: all;
 }
 
@@ -304,7 +344,7 @@ onBeforeUnmount(() => {
 
 .prompt-input__row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.5rem;
 }
 
@@ -331,12 +371,17 @@ onBeforeUnmount(() => {
 
 .prompt-input__field {
   flex: 1;
+  min-height: 2.5rem;
+  max-height: 10rem;
+  overflow-y: auto;
   resize: none;
   border: none;
   background: transparent;
   color: var(--color-primary);
-  font-size: 0.95rem;
-  padding: 0.35rem 0.5rem;
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  padding: 0.58rem 0.55rem;
 }
 
 .prompt-input__field:focus {
@@ -346,9 +391,13 @@ onBeforeUnmount(() => {
 .prompt-input__send {
   width: 40px;
   height: 40px;
-  border-radius: 0.8rem;
-  border: none;
-  background: rgba(120, 120, 120, 0.35);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: 0.78rem;
+  background: linear-gradient(
+    145deg,
+    rgba(124, 92, 228, 0.42),
+    rgba(77, 109, 220, 0.34)
+  );
   color: var(--color-primary);
   cursor: pointer;
   display: grid;
@@ -357,7 +406,11 @@ onBeforeUnmount(() => {
 }
 
 .prompt-input__send:hover {
-  background: rgba(180, 180, 180, 0.35);
+  background: linear-gradient(
+    145deg,
+    rgba(139, 108, 244, 0.58),
+    rgba(88, 122, 238, 0.48)
+  );
 }
 
 .prompt-input__send:disabled,

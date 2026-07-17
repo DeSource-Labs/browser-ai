@@ -169,7 +169,12 @@
         </div>
 
         <div class="proofreader__output">
-          <div v-if="lastResult" class="proofreader__corrected">
+          <MarkdownRenderer
+            v-if="lastResult && renderMarkdown"
+            class="proofreader__corrected"
+            :content="lastResult.correctedInput"
+          />
+          <div v-else-if="lastResult" class="proofreader__corrected">
             <template
               v-for="(segment, index) in correctedSegments"
               :key="index"
@@ -228,6 +233,9 @@ import {
   type ProofreaderProgressState,
   type ProofreaderResult,
 } from "../composables/useProofreader";
+import { useSyncedString } from "../composables/useSyncedString";
+import { copyText, formatAvailability } from "../utils/display";
+import MarkdownRenderer from "./MarkdownRenderer.vue";
 
 interface Props {
   modelValue?: string;
@@ -242,6 +250,7 @@ interface Props {
   stripHtml?: boolean;
   largeInputStrategy?: ProofreaderLargeInputStrategy;
   maxChunkCharacters?: number;
+  renderMarkdown?: boolean;
   disabled?: boolean;
 }
 
@@ -259,6 +268,7 @@ const props = withDefaults(defineProps<Props>(), {
   stripHtml: true,
   largeInputStrategy: "auto",
   maxChunkCharacters: 8000,
+  renderMarkdown: false,
   disabled: false,
 });
 
@@ -288,7 +298,10 @@ const {
   correctionExplanationLanguage: props.correctionExplanationLanguage,
 });
 
-const sourceText = ref(props.modelValue);
+const sourceText = useSyncedString(
+  () => props.modelValue,
+  (value) => emit("update:modelValue", value),
+);
 const errorMessage = ref("");
 const expectedLanguagesText = ref(
   (props.expectedInputLanguages ?? []).join(", "),
@@ -329,14 +342,7 @@ const expectedLanguagesLabel = computed(() => {
 });
 
 const operationalStatusLabel = computed(() => {
-  if (downloadProgress.value > 0 && downloadProgress.value < 100) {
-    return `${downloadProgress.value}%`;
-  }
-  if (availability.value === "available") return "Ready";
-  if (availability.value === "downloadable") return "Download";
-  if (availability.value === "downloading") return "Downloading";
-  if (availability.value === "unavailable") return "Unavailable";
-  return "Checking";
+  return formatAvailability(availability.value, downloadProgress.value);
 });
 
 const isBusy = computed(() => props.disabled || isProcessing.value);
@@ -435,22 +441,9 @@ const handleProofread = async () => {
 
 const copyCorrectedText = async () => {
   const corrected = lastResult.value?.correctedInput;
-  if (!corrected || typeof navigator === "undefined") return;
-  await navigator.clipboard?.writeText(corrected);
+  if (!corrected) return;
+  await copyText(corrected);
 };
-
-watch(sourceText, (value) => {
-  emit("update:modelValue", value);
-});
-
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (value !== sourceText.value) {
-      sourceText.value = value;
-    }
-  },
-);
 
 watch(
   () => props.expectedInputLanguages,

@@ -25,6 +25,7 @@ Browser AI Kit handles that operational layer while keeping the native browser A
 - **Private by design.** Inference stays in Chrome; the library has no inference server and no API key.
 - **Production state management.** Availability, download progress, cancellation, quotas, overflow, errors, and cleanup are first-class states.
 - **Fast where users notice.** Native sessions use shallow reactivity, streaming updates are frame-coalesced, and long work is chunked without blocking typing.
+- **Markdown that is ready to render.** Generated headings, lists, links, tables, and code blocks are styled consistently, with raw HTML disabled by default.
 - **SSR-safe.** Browser globals are accessed on the client, and the Nuxt module registers client components automatically.
 - **Complete Prompt API coverage.** Streaming chat, system and multimodal prompts, structured JSON, tools, append, clone, measurement, persisted history, and context compaction.
 - **Agent-ready with WebMCP.** Register, discover, observe, and execute tools with lifecycle cleanup and deployment diagnostics.
@@ -38,6 +39,7 @@ The native API is the only direct alternative we recommend. Browser AI Kit does 
 | ---------------------------------- | --------------------------------- | -------------------------------------------------- |
 | Model availability and download UX | Build it per API                  | Shared, reactive state and progress                |
 | Streaming UI                       | Wire streams and rendering        | Components plus stream-to-text helpers             |
+| Markdown output                    | Sanitize and style it yourself    | Safe renderer with raw HTML disabled               |
 | Long inputs and quotas             | Measure, split, merge, retry      | Measured chunking and API-specific rollups         |
 | Prompt context overflow            | Rebuild the session yourself      | Restore, summarize, cache, and compact             |
 | Nuxt SSR                           | Guard every browser access        | Client-safe module and auto-imports                |
