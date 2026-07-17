@@ -12,6 +12,7 @@ Native AI globals only exist in supported browsers. Nuxt renders on the server, 
 - auto-imports composables, helpers, constants, and TypeScript types;
 - includes the component stylesheet by default;
 - preserves native download, progress, abort, quota, streaming, and cleanup behavior;
+- renders generated Markdown safely and consistently, with raw HTML disabled;
 - adds no inference server, proxy, account, or API key.
 
 ## Install
@@ -89,6 +90,7 @@ Disable `css` when you only use composables or want to load the stylesheet in se
 
 - `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`
 - `<Translator />`, `<LanguageDetector />`, `<Proofreader />`
+- `<MarkdownRenderer />` for product-specific model output
 - `<BrowserAiPromptInput />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`
 - `BrowserAi`-prefixed aliases for every primary component
 
@@ -101,6 +103,8 @@ Disable `css` when you only use composables or want to load the stylesheet in se
 - language option collections and display-name helpers
 
 All public types from the Vue core are available to Nuxt's generated type system.
+
+Generated prose in the starter components is Markdown-aware by default. Use `:render-markdown="false"` for literal output; Proofreader keeps its correction highlights unless `render-markdown` is enabled.
 
 ## Deployment headers for WebMCP
 

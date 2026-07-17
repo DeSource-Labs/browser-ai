@@ -20,6 +20,7 @@ export {
   ChatHistory,
   ChatSidebar,
   LanguageDetector,
+  MarkdownRenderer,
   Proofreader,
   PromptApi,
   PromptInput,
