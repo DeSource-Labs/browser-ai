@@ -1,6 +1,21 @@
 {
+  "name": "browser-ai-kit",
+  "description": "Production-ready framework libraries for Chrome built-in AI and WebMCP.",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": "DeSource Labs <hello@desource-labs.org>",
+  "homepage": "https://ai.desource-labs.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DeSource-Labs/browser-ai/issues"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "build": "pnpm -w -r --filter \"./packages/**\" --stream run build",
     "clean": "pnpm -w -r --filter \"./packages/**\" --stream run clean",
@@ -14,6 +29,8 @@
     "release": "pnpm changeset:version && pnpm changeset:publish",
     "lint": "eslint .",
     "test": "pnpm --filter @desource/browser-ai-vue test",
+    "typecheck": "pnpm --filter @desource/browser-ai-vue typecheck && pnpm --filter demo deps:prepare && pnpm --filter demo exec nuxt typecheck",
+    "check": "pnpm lint && pnpm test && pnpm typecheck && pnpm build && pnpm build:demo",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\"",
     "format:check": "prettier --check \"**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\""

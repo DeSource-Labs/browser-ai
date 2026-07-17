@@ -27,7 +27,7 @@ The demo's home page performs non-mutating feature detection. Downloads are neve
 - Context naming is now `contextUsage`, `contextWindow`, `measureContextUsage()`, and `contextoverflow`. Older input-quota aliases are deprecated or removed on the web surface.
 - Session tool declarations are accepted through `LanguageModel.create({ tools })`.
 
-The latest community specification also describes `tool-call`/`tool-response` message content and an instance `samplingMode` attribute. Those draft details lead the Chrome 150 runtime and `@types/dom-chromium-ai@0.0.17`; this package does not pretend unavailable runtime members exist.
+The latest community specification also describes `tool-call`/`tool-response` message content and an instance `samplingMode` attribute. Those draft details lead the Chrome 150 runtime and `@types/dom-chromium-ai@0.0.17`; the package exposes them only after they are present in the supported runtime and type surface.
 
 References: [Chrome Prompt API](https://developer.chrome.com/docs/ai/prompt-api), [session management](https://developer.chrome.com/docs/ai/session-management), [session compacting](https://developer.chrome.com/docs/ai/session-compacting), [structured output](https://developer.chrome.com/docs/ai/structured-output-for-prompt-api), and the [Prompt API specification](https://webmachinelearning.github.io/prompt-api/).
 
@@ -50,7 +50,7 @@ Permissions-Policy: tools=(self)
 
 Registration is lifetime-based: pass an `AbortSignal` to `registerTool()` and abort it to unregister. `useWebMcp()` owns these controllers and aborts them on manual unregister or Vue scope disposal. Cross-origin discovery additionally requires both `getTools({ fromOrigins })` on the caller and `registerTool(..., { exposedTo })` on the provider.
 
-Treat tool descriptions and schemas as a security boundary, not only agent documentation. Re-check authentication and authorization during execution, avoid returning secrets, mark `readOnlyHint` accurately, set `untrustedContentHint` when output can contain external content, and keep destructive operations visibly confirmable in the product UI.
+Tool descriptions and schemas are agent guidance, not a security boundary. Re-check authentication and authorization during execution, validate inputs, avoid returning secrets, mark `readOnlyHint` accurately, set `untrustedContentHint` when output can contain external content, and keep destructive operations visibly confirmable in the product UI.
 
 References: [WebMCP overview](https://developer.chrome.com/docs/ai/webmcp), [imperative API](https://developer.chrome.com/docs/ai/webmcp/imperative-api), [declarative API](https://developer.chrome.com/docs/ai/webmcp/declarative-api), and [security guidance](https://developer.chrome.com/docs/ai/webmcp/security).
 

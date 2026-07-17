@@ -1,105 +1,72 @@
-# browser-ai-kit
+<div align="center">
+  <img src="demo/public/logo/android-chrome-192x192.png" alt="Browser AI Kit" width="88" height="88" />
 
-Production-oriented Vue and Nuxt helpers for Chrome's local Prompt, Summarizer, Writer, Rewriter, Translator, Language Detector, and Proofreader APIs, plus WebMCP tools for agent-ready web applications.
+# Browser AI Kit
 
-## Status
+**Chrome's on-device AI, shaped into framework APIs you can ship.**
 
-The packages target `@types/dom-chromium-ai@0.0.17` and the current `document.modelContext` WebMCP surface. The complete Prompt API path includes availability and download handling, mutually exclusive `samplingMode`/raw sampling options, multimodal and tool declarations, `append()`, structured output, streaming, usage measurement, cloning, overflow handling, persisted chats, and measured context restoration/compaction.
+Typed Vue components, composables, and a zero-config Nuxt module for Prompt API, Summarizer, Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP.
 
-| Surface           | Library coverage                                                                                            |
-| ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| Prompt API        | Component and composable; streaming chat, structured JSON, clone/append, context restoration and compaction |
-| Summarizer        | Component and composable; streaming, measured chunking and recursive rollups                                |
-| Writer / Rewriter | Components and composables; streaming, batching, quota preflight and context fitting                        |
-| Translator        | Component and composable; pair availability, language-pack UX, streaming and measured chunking              |
-| Language Detector | Component and composable; ranked confidence, thresholds, batching and weighted chunk merging                |
-| Proofreader       | Component and composable; normalized corrections, highlights, batching and safe long-input chunking         |
-| WebMCP            | `useWebMcp()` for imperative registration/discovery/execution plus declarative form helpers                 |
+[Website](https://ai.desource-labs.org) · [Documentation](https://ai.desource-labs.org/docs) · [Interactive examples](https://ai.desource-labs.org/#apis) · [API status](docs/api-status.md)
 
-See [the current API compatibility report](docs/api-status.md) for the verified Chrome runtime surface, specification gaps, and migration notes.
+[![CI](https://github.com/DeSource-Labs/browser-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/DeSource-Labs/browser-ai/actions/workflows/ci.yml)
+[![npm Vue](https://img.shields.io/npm/v/@desource/browser-ai-vue?label=Vue)](https://www.npmjs.com/package/@desource/browser-ai-vue)
+[![npm Nuxt](https://img.shields.io/npm/v/@desource/browser-ai-nuxt?label=Nuxt)](https://www.npmjs.com/package/@desource/browser-ai-nuxt)
+[![MIT](https://img.shields.io/badge/license-MIT-7c3aed)](LICENSE)
 
-## Packages
+</div>
 
-- `@desource/browser-ai-vue`: Vue components and composables.
-- `@desource/browser-ai-nuxt`: Nuxt module that auto-imports the Vue helpers and registers client components.
+## Local AI should not require browser-internals expertise
 
-## Chrome Requirements
+Chrome exposes powerful built-in models, but a production integration is more than calling `LanguageModel.create()`. Applications must account for browser support, model downloads, genuine user activation, quotas, aborts, streaming, long inputs, context overflow, session cleanup, SSR, persistence, and API changes between Chrome releases.
 
-Use a desktop Chrome build with the built-in AI flags enabled. For localhost development, Chrome currently documents:
+Browser AI Kit handles that operational layer while keeping the native browser API visible. Use a ready-made interface, build your own UI around the composables, or mix both approaches.
 
-- `chrome://flags/#optimization-guide-on-device-model`
-- `chrome://flags/#prompt-api-for-gemini-nano-multimodal-input`
-- `chrome://flags/#writer-api-for-gemini-nano`
-- `chrome://flags/#rewriter-api-for-gemini-nano`
-- `chrome://flags/#translation-api`
-- `chrome://flags/#language-detection-api`
-- `chrome://flags/#proofreader-api-for-gemini-nano`
-- `chrome://flags/#enable-webmcp-testing`
+- **Private by design.** Inference stays in Chrome; the library has no inference server and no API key.
+- **Production state management.** Availability, download progress, cancellation, quotas, overflow, errors, and cleanup are first-class states.
+- **Fast where users notice.** Native sessions use shallow reactivity, streaming updates are frame-coalesced, and long work is chunked without blocking typing.
+- **SSR-safe.** Browser globals are accessed on the client, and the Nuxt module registers client components automatically.
+- **Complete Prompt API coverage.** Streaming chat, system and multimodal prompts, structured JSON, tools, append, clone, measurement, persisted history, and context compaction.
+- **Agent-ready with WebMCP.** Register, discover, observe, and execute tools with lifecycle cleanup and deployment diagnostics.
+- **TypeScript-native.** Built against the current Chromium AI type surface with explicit result and error types.
 
-Prompt API, Summarizer, Writer, Rewriter, and Proofreader require Gemini Nano to be available for the current Chrome profile/device. Translator uses Chrome's on-device translation language packs instead of the Gemini Nano model lifecycle. Language Detector uses a small local language-detection model and related language resources.
+## Browser AI Kit or the native API?
 
-## Chrome Model Management
+The native API is the only direct alternative we recommend. Browser AI Kit does not replace Chrome's models—it removes repeated application plumbing around them.
 
-Chrome owns the storage, update, and deletion lifecycle for built-in AI models. Browser AI Kit cannot list installed models, pin models, uninstall models, reset model crashes, toggle Chrome internals, or read model file paths from JavaScript. Users can still inspect and manage some Chrome-owned resources manually from Chrome's internal pages while debugging a local profile.
+| Capability                         | Native browser API                | Browser AI Kit                                     |
+| ---------------------------------- | --------------------------------- | -------------------------------------------------- |
+| Model availability and download UX | Build it per API                  | Shared, reactive state and progress                |
+| Streaming UI                       | Wire streams and rendering        | Components plus stream-to-text helpers             |
+| Long inputs and quotas             | Measure, split, merge, retry      | Measured chunking and API-specific rollups         |
+| Prompt context overflow            | Rebuild the session yourself      | Restore, summarize, cache, and compact             |
+| Nuxt SSR                           | Guard every browser access        | Client-safe module and auto-imports                |
+| Cancellation and cleanup           | Manage controllers and sessions   | Consistent abort and lifecycle handling            |
+| WebMCP                             | Low-level `document.modelContext` | Registration, discovery, diagnostics, form helpers |
+| UI                                 | Build every state                 | Accessible starter components you can theme        |
 
-| API               | Chrome resource                                                                         | Inspect or manage in Chrome                                                                                                                                                      | Install trigger                                                                                                                         | Uninstall / purge behavior                                                                                                                                                                                                     |
-| ----------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Prompt API        | Gemini Nano base model                                                                  | `chrome://on-device-internals` for model/debug state, event logs, model criteria, feature adaptations, supplementary model status, shared model uninstall, and crash-count reset | `LanguageModel.create()` from a meaningful user interaction when `LanguageModel.availability()` is `downloadable`                       | No documented per-API uninstall. Users can uninstall the shared foundational model from `chrome://on-device-internals`; Chrome can also purge it automatically under storage pressure, policy changes, or eligibility changes. |
-| Summarizer        | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals`                                                                                                                                                   | `Summarizer.create()` from a user interaction when `Summarizer.availability()` is `downloadable`                                        | Same shared Gemini Nano lifecycle; there is no separate Summarizer model to uninstall from web code.                                                                                                                           |
-| Writer            | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals`                                                                                                                                                   | `Writer.create()` from a user interaction when `Writer.availability()` is `downloadable`                                                | Same shared Gemini Nano lifecycle; there is no separate Writer model to uninstall from web code.                                                                                                                               |
-| Rewriter          | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals`                                                                                                                                                   | `Rewriter.create()` from a user interaction when `Rewriter.availability()` is `downloadable`                                            | Same shared Gemini Nano lifecycle; there is no separate Rewriter model to uninstall from web code.                                                                                                                             |
-| Proofreader       | Gemini Nano base model, shared with Prompt API, plus API-specific runtime configuration | `chrome://on-device-internals`                                                                                                                                                   | `Proofreader.create()` from a user interaction when `Proofreader.availability()` is `downloadable`                                      | Same shared Gemini Nano lifecycle; there is no separate Proofreader model to uninstall from web code.                                                                                                                          |
-| Translator        | On-device translation language packs for a `sourceLanguage` and `targetLanguage` pair   | `chrome://on-device-translation-internals/` for manual language-pack install/uninstall in supported Chrome builds                                                                | `Translator.create({ sourceLanguage, targetLanguage })` from a real user gesture when `Translator.availability()` is `downloadable`     | Manage packs in `chrome://on-device-translation-internals/`. Chrome may also evict packs automatically. Treat `en -> ru` and `ru -> en` as separate API capabilities.                                                          |
-| Language Detector | Small local language-detection model and language resources                             | `chrome://on-device-translation-internals/` exposes TranslateKit language resources in supported Chrome builds; use `LanguageDetector.availability()` for detector readiness     | `LanguageDetector.create({ expectedInputLanguages })` from a real user gesture when `LanguageDetector.availability()` is `downloadable` | Chrome manages detector resources. Language coverage is browser-defined, and not every BCP 47 language is supported.                                                                                                           |
+Choose the native API directly when you need a tiny, one-off call and are comfortable owning its full lifecycle. Choose Browser AI Kit when the feature needs to survive real users, long content, reloads, downloads, and framework rendering.
 
-Important Chrome behavior:
+## Install
 
-- `available`, `downloadable`, `downloading`, and `unavailable` are browser-owned states returned by each API's `availability()` method.
-- `create()` is the operation that prepares a usable local session and starts downloads when needed.
-- Downloadable or downloading resources require a real user activation. Programmatic `.click()` calls from tests are not enough.
-- Translator availability is intentionally privacy-masked. Chrome may report language pairs as `downloadable` until the site creates a translator for that pair, even if related language resources already exist.
-- Language Detector returns ranked candidates with confidence scores. Very short text and unsupported languages should be treated as `und`/unknown below your chosen confidence threshold.
-- Chrome 150's Proofreader runtime and `@types/dom-chromium-ai@0.0.17` do not yet expose the draft `measureInputUsage()` method or streaming; Browser AI Kit therefore chunks long proofreader input on safe text boundaries without assuming an unavailable quota API.
-- In `chrome://on-device-internals` -> Model Status, users can inspect foundational model state, model name/version, backend type, file path, folder size, device criteria, feature adaptations, and supplementary model status. They can also uninstall the shared foundational model and reset its crash count for the current Chrome profile.
-- The Feature Adaptations table in `chrome://on-device-internals` exposes Chrome-internal `Recently Used` debug controls such as `set to true` / `set to false`. Treat them as browser debugging/retention controls, not application-facing API enable/disable switches.
-- `chrome://on-device-internals` does not show Translator language packs. Use `chrome://on-device-translation-internals/` for Translator.
-- Model and language-pack files are stored in Chrome-managed profile storage. Exact paths are implementation details and should not be used by apps.
-- Chrome can remove Gemini Nano when free disk space drops below its threshold or when policies/eligibility change; after purge, a later `create()` must trigger a new download.
-
-References: [Prompt API](https://developer.chrome.com/docs/ai/prompt-api), [Debug Gemini Nano](https://developer.chrome.com/docs/ai/debug-gemini-nano), [Chrome model management](https://developer.chrome.com/docs/ai/understand-built-in-model-management), [Translator API](https://developer.chrome.com/docs/ai/translator-api), [Language Detector API](https://developer.chrome.com/docs/ai/language-detection), [Proofreader API](https://developer.chrome.com/docs/ai/proofreader-api), [Translator playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/translator-api/), [Language Detector playground](https://chrome.dev/web-ai-demos/built-in-ai-playground/language-detector-api/), [Proofreader API draft](https://webmachinelearning.github.io/proofreader-api/).
-
-## Vue
+### Vue
 
 ```bash
 npm install @desource/browser-ai-vue
 ```
 
 ```vue
-<template>
-  <PromptApi context-strategy="summarize" />
-  <Summarizer />
-  <Writer />
-  <Rewriter />
-  <Translator />
-  <LanguageDetector />
-  <Proofreader />
-</template>
-
 <script setup lang="ts">
-import {
-  LanguageDetector,
-  Proofreader,
-  PromptApi,
-  Rewriter,
-  Summarizer,
-  Translator,
-  Writer,
-} from "@desource/browser-ai-vue";
+import { PromptApi } from "@desource/browser-ai-vue";
 import "@desource/browser-ai-vue/assets/lib.css";
 </script>
+
+<template>
+  <PromptApi context-strategy="summarize" />
+</template>
 ```
 
-Composable usage:
+Or own the interface and use the composable:
 
 ```ts
 import { usePromptApi } from "@desource/browser-ai-vue";
@@ -110,202 +77,155 @@ await ai.init({
   expectedInputs: [{ type: "text", languages: ["en"] }],
   expectedOutputs: [{ type: "text", languages: ["en"] }],
 });
+await ai.create(); // Call from a user action when the model is downloadable.
 
-await ai.create();
-const response = await ai.prompt("Reply with one short sentence.");
-
-const data = await ai.promptJson<{ category: string }>(
-  "Classify this message.",
-  {
-    responseConstraint: {
-      type: "object",
-      properties: { category: { type: "string" } },
-      required: ["category"],
-    },
-  },
-);
-
-const branch = await ai.clone();
-try {
-  await branch.prompt("Explore a different answer.");
-} finally {
-  branch.destroy();
-}
+const answer = await ai.prompt("Explain view transitions in two sentences.");
 ```
 
-For restored chats, `<PromptApi />` delegates to `usePromptApi().restoreSession()`, which creates one final `LanguageModel` session with `initialPrompts`; it does not append messages one by one. Large histories are measured against the browser-reported `contextWindow` with a binary-search fit. When the full chat does not fit, the default `contextStrategy="summarize"` summarizes only the omitted older prefix, splits that prefix into measured chunks, stores chunk and rollup summaries in IndexedDB, and reuses unchanged cached summaries on later reloads. The default `contextSummaryMode="cache-first"` restores immediately with recent messages when summaries are missing, then warms the cache in the background so the input is not blocked by local summarization. During an active session, `contextoverflow` triggers automatic compaction into a fresh summarized session instead of showing a blocking overflow dialog.
+[Vue package guide](packages/browser-ai-vue/README.md)
 
-WebMCP usage:
-
-```ts
-import { useWebMcp } from "@desource/browser-ai-vue";
-
-const webMcp = useWebMcp();
-const unregister = await webMcp.registerTool({
-  name: "get_cart_total",
-  description: "Return the current cart total without modifying the cart.",
-  inputSchema: { type: "object", properties: {} },
-  annotations: { readOnlyHint: true },
-  execute: () => ({ total: cart.total, currency: cart.currency }),
-});
-
-// Aborting the internally managed signal unregisters the tool.
-unregister();
-```
-
-`useWebMcp()` uses `document.modelContext`, reports secure-context/origin-isolation/Permissions-Policy diagnostics, tracks `toolchange`, supports same- and cross-origin discovery options, executes discovered tools, and unregisters every owned tool when the Vue scope is disposed. For declarative forms, use `createWebMcpFormAttributes()` and `createWebMcpFieldAttributes()`. Tool implementations remain security-sensitive application code: validate authorization again inside `execute`, expose the minimum data, and mark read-only or untrusted-output behavior accurately.
-
-Summarizer usage:
-
-```ts
-import { useSummarizer } from "@desource/browser-ai-vue";
-
-const summarizer = useSummarizer();
-
-const result = await summarizer.summarizeWithDetails(longText, {
-  createOptions: { type: "key-points", format: "markdown", length: "medium" },
-  context: "Audience: product engineers",
-});
-```
-
-`useSummarizer()` measures input against `inputQuota` before summarizing. When input is too large for one native request, it splits text on paragraph/sentence boundaries, summarizes measured chunks, and recursively summarizes combined chunk summaries until a final summary fits.
-
-Writer usage:
-
-```ts
-import { useWriter } from "@desource/browser-ai-vue";
-
-const writer = useWriter();
-
-const draft = await writer.writeStreamingToText(
-  "Write a concise launch email.",
-  {
-    createOptions: { tone: "formal", format: "markdown", length: "medium" },
-    context: "Audience: existing customers who value privacy and local AI.",
-    fitStrategy: "truncate-context",
-  },
-);
-```
-
-`useWriter()` preflights tasks with `measureInputUsage()`, streams drafts, supports reusable writer sessions, and can explicitly fit long context while preserving the user task.
-
-Rewriter usage:
-
-```ts
-import { useRewriter } from "@desource/browser-ai-vue";
-
-const rewriter = useRewriter();
-
-const rewrite = await rewriter.rewriteStreamingToText(
-  "This update is kind of confusing but should work.",
-  {
-    createOptions: {
-      tone: "more-formal",
-      format: "plain-text",
-      length: "shorter",
-    },
-    context: "Make the text clear for a customer success email.",
-    fitStrategy: "truncate-context",
-  },
-);
-```
-
-`useWriter()` and `useRewriter()` share the same production path for availability, download monitoring, abort handling, input quota preflight, streaming, batch runs, and optional-context fitting.
-
-Translator usage:
-
-```ts
-import { useTranslator } from "@desource/browser-ai-vue";
-
-const translator = useTranslator({
-  sourceLanguage: "en",
-  targetLanguage: "fr",
-});
-
-const translated = await translator.translateStreamingToText(
-  "Where is the next bus stop?",
-  {
-    createOptions: { sourceLanguage: "en", targetLanguage: "fr" },
-    chunking: "auto",
-  },
-);
-```
-
-`useTranslator()` checks language-pair availability, reports language-pack download progress, bypasses same-language translations, measures input quota, chunks long text on paragraph/sentence boundaries, streams output, and supports batch translation.
-
-Language Detector usage:
-
-```ts
-import { useLanguageDetector } from "@desource/browser-ai-vue";
-
-const detector = useLanguageDetector({
-  expectedInputLanguages: ["en", "fr", "de"],
-});
-
-const result = await detector.detectWithDetails(
-  "Bonjour et bienvenue dans notre application.",
-  {
-    minConfidence: 0.45,
-    largeInputStrategy: "chunk",
-  },
-);
-```
-
-`useLanguageDetector()` checks detector availability, reports download progress, measures input quota, filters low-confidence results, returns ranked language candidates, chunks long input and merges weighted confidences, and supports batch detection.
-
-Proofreader usage:
-
-```ts
-import { useProofreader } from "@desource/browser-ai-vue";
-
-const proofreader = useProofreader({
-  expectedInputLanguages: ["en"],
-});
-
-const result = await proofreader.proofreadWithDetails(
-  "I seen him yesterday at the store, and he bought two loafs of bread.",
-  { largeInputStrategy: "auto" },
-);
-```
-
-`useProofreader()` checks availability, reports model download progress, returns the corrected text plus normalized correction ranges, supports optional correction labels/explanations when Chrome supports those options, chunks long input by sentence/word boundaries, and supports batch proofreading.
-
-## Nuxt
+### Nuxt
 
 ```bash
 npm install @desource/browser-ai-nuxt
 ```
 
 ```ts
+// nuxt.config.ts
 export default defineNuxtConfig({
   modules: ["@desource/browser-ai-nuxt"],
 });
 ```
 
-The module registers `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`, `<Translator />`, `<LanguageDetector />`, `<Proofreader />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiWriter />`, `<BrowserAiRewriter />`, `<BrowserAiTranslator />`, `<BrowserAiLanguageDetector />`, `<BrowserAiProofreader />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components. It also auto-imports all composables, including `useWebMcp()`, and the declarative WebMCP attribute helpers.
+`<PromptApi />`, the other UI components, and every composable are now available without manual imports.
 
-## Demo
+[Nuxt package guide](packages/browser-ai-nuxt/README.md)
+
+## One toolkit, eight browser surfaces
+
+| Surface           | What you can ship                                                    | Library coverage                                                                            |
+| ----------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Prompt API        | Chat, extraction, classification, multimodal tasks, tool-aware flows | Streaming, JSON Schema output, clone, append, usage, persisted sessions, context compaction |
+| Summarizer        | Key points, headlines, teasers, and summaries                        | Quota measurement, streaming, batching, chunking, recursive rollups                         |
+| Writer            | Drafts in a chosen tone, format, and length                          | Reusable sessions, streaming, batching, context fitting                                     |
+| Rewriter          | Clearer, shorter, longer, or differently toned text                  | Reusable sessions, streaming, batching, context fitting                                     |
+| Translator        | Private on-device translation                                        | Pair availability, pack download UX, streaming, measured chunking                           |
+| Language Detector | Ranked language identification                                       | Confidence thresholds, batching, weighted chunk merging                                     |
+| Proofreader       | Grammar, spelling, and punctuation correction                        | Normalized corrections, highlights, batching, safe long-input splitting                     |
+| WebMCP            | App tools that browser agents can discover and call                  | Registration, discovery, execution, events, diagnostics, declarative forms                  |
+
+Try every surface in the [interactive examples](https://ai.desource-labs.org/#apis).
+
+## Chrome requirements
+
+Chrome's built-in AI APIs are evolving and are not available to every browser, device, language, region, or managed profile. Build a graceful unsupported state into your product. The library exposes that state; it cannot change Chrome eligibility.
+
+For local development, use a supported desktop Chrome build and enable the flags for the APIs you need:
+
+- `chrome://flags/#optimization-guide-on-device-model`
+- `chrome://flags/#prompt-api-for-gemini-nano`
+- `chrome://flags/#writer-api-for-gemini-nano`
+- `chrome://flags/#rewriter-api-for-gemini-nano`
+- `chrome://flags/#translation-api`
+- `chrome://flags/#language-detection-api`
+- `chrome://flags/#proofreader-api-for-gemini-nano`
+- `chrome://flags/#enable-webmcp-testing`
+
+Model downloads can only start from a genuine user action. Chrome owns model installation, storage, updates, and removal. Prompt, Summarizer, Writer, Rewriter, and Proofreader share Gemini Nano resources; Translator uses language packs; Language Detector uses separate local resources.
+
+Read [Getting started](docs/getting-started.md) for setup and fallback guidance, or [API status](docs/api-status.md) for the exact runtime surface verified by this repository.
+
+## Structured output
+
+```ts
+const result = await ai.promptJson<{ priority: "low" | "high" }>(
+  "Classify this support request: Production is down.",
+  {
+    responseConstraint: {
+      type: "object",
+      properties: {
+        priority: { type: "string", enum: ["low", "high"] },
+      },
+      required: ["priority"],
+      additionalProperties: false,
+    },
+  },
+);
+```
+
+The browser constrains generation to the supplied schema; `promptJson()` also parses the response into your TypeScript type.
+
+## WebMCP
+
+```ts
+import { useWebMcp } from "@desource/browser-ai-vue";
+
+const webMcp = useWebMcp();
+
+const unregister = await webMcp.registerTool({
+  name: "get_cart_total",
+  description: "Return the current cart total without changing the cart.",
+  inputSchema: { type: "object", properties: {} },
+  annotations: { readOnlyHint: true },
+  execute: () => ({ total: cart.total, currency: cart.currency }),
+});
+
+// Unregister explicitly, or let the Vue scope dispose it.
+unregister();
+```
+
+WebMCP is experimental. Production pages need an origin-isolated document and an appropriate `Permissions-Policy`, and every tool must enforce authorization inside `execute`. See the [WebMCP guide](docs/webmcp.md).
+
+## Framework roadmap
+
+Browser AI Kit is becoming a consistent family of framework libraries, not a Vue-only experiment.
+
+| Framework       | Status    | Direction                                            |
+| --------------- | --------- | ---------------------------------------------------- |
+| Vue             | Available | Components and composables                           |
+| Nuxt            | Available | Auto-imports, client components, deployment defaults |
+| React           | Planned   | Hooks and accessible headless/UI components          |
+| Angular         | Planned   | Injectable services, signals, and components         |
+| Svelte          | Planned   | Stores, actions, and components                      |
+| TypeScript core | Planned   | Framework-neutral lifecycle and utility layer        |
+
+Public behavior will stay aligned across frameworks while each package follows its framework's native conventions. Follow the [framework roadmap](docs/framework-roadmap.md) or join a design discussion before starting a new adapter.
+
+## Performance and privacy
+
+The demo and packages are built around three constraints: no server inference, no deep proxies around native sessions, and no unbounded synchronous rendering during streams. Persisted chats live in the browser's IndexedDB. The library does not send prompts, outputs, or telemetry to DeSource Labs.
+
+Your application can still transmit data through its own code, browser extensions, monitoring tools, or WebMCP implementations. Audit those paths separately and treat model output as untrusted content.
+
+## Project documentation
+
+- [Getting started](docs/getting-started.md)
+- [Why Browser AI Kit](docs/why-browser-ai-kit.md)
+- [Current Chrome API status](docs/api-status.md)
+- [WebMCP integration and security](docs/webmcp.md)
+- [Framework roadmap](docs/framework-roadmap.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Support](SUPPORT.md)
+
+## Development
 
 ```bash
+corepack enable
 pnpm install
+pnpm build
 pnpm dev:demo
 ```
 
-Open `http://localhost:3000` in Chrome with the built-in AI flags enabled.
-
-## Verification
+Run the complete quality gate with:
 
 ```bash
-pnpm --filter @desource/browser-ai-vue typecheck
-pnpm test
-pnpm --filter @desource/browser-ai-vue build
-pnpm --filter @desource/browser-ai-nuxt build
-pnpm build:demo
-pnpm lint
+pnpm check
+pnpm format:check
 ```
 
-Runtime AI verification must use a desktop Chrome profile with the relevant models/flags. Unit tests intentionally mock browser-owned model objects and cover option normalization, structured output, cloning, streaming, and WebMCP lifecycle behavior.
+Changes to published packages use [Changesets](https://github.com/changesets/changesets). See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
-## Roadmap
+## License
 
-- Add framework packages for React and plain TypeScript once the experimental browser surfaces stabilize.
+[MIT](LICENSE) © DeSource Labs

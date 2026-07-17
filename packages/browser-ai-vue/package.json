@@ -1,13 +1,35 @@
 {
   "name": "@desource/browser-ai-vue",
   "version": "0.2.0",
-  "author": "Stefan Popov <stefan@desource-labs.org>",
+  "description": "Production-ready Vue components and composables for Chrome built-in AI and WebMCP.",
+  "keywords": [
+    "vue",
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp",
+    "on-device-ai",
+    "local-ai"
+  ],
+  "author": "DeSource Labs <hello@desource-labs.org>",
   "license": "MIT",
+  "homepage": "https://ai.desource-labs.org/docs#vue",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/browser-ai-vue"
+  },
+  "bugs": {
+    "url": "https://github.com/DeSource-Labs/browser-ai/issues"
+  },
   "private": false,
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",

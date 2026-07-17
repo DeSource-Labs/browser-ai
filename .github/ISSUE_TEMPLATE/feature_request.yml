@@ -1,0 +1,47 @@
+name: Feature request
+description: Propose a framework integration, API improvement, or developer-experience enhancement.
+title: "[Feature]: "
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the developer or user problem, not only the requested implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed experience
+      description: Show the API or user flow you would like to use.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include the native-browser approach or any other library you evaluated.
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Framework
+      options:
+        - Framework-agnostic
+        - Vue
+        - Nuxt
+        - React (roadmap)
+        - Angular (roadmap)
+        - Svelte (roadmap)
+        - Documentation or demo
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: The proposal keeps inference in Chrome and does not require a hosted-model fallback.
+          required: true
+        - label: I searched existing issues and discussions.
+          required: true

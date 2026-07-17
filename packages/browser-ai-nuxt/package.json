@@ -1,6 +1,17 @@
 {
   "name": "@desource/browser-ai-nuxt",
   "version": "0.2.0",
+  "description": "Zero-config Nuxt module for Chrome built-in AI and WebMCP, powered by Browser AI Kit.",
+  "keywords": [
+    "nuxt",
+    "vue",
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp",
+    "on-device-ai"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -15,8 +26,17 @@
     "CHANGELOG.md",
     "README.md"
   ],
-  "author": "Stefan Popov <stefan@desource-labs.org>",
+  "author": "DeSource Labs <hello@desource-labs.org>",
   "license": "MIT",
+  "homepage": "https://ai.desource-labs.org/docs#nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/browser-ai-nuxt"
+  },
+  "bugs": {
+    "url": "https://github.com/DeSource-Labs/browser-ai/issues"
+  },
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -28,6 +48,7 @@
     "build": "pnpm clean && pnpm build:internal"
   },
   "peerDependencies": {
+    "nuxt": "^3.17.0 || ^4.0.0",
     "vue": "^3.4.33"
   },
   "dependencies": {

@@ -1,0 +1,58 @@
+name: Bug report
+description: Report reproducible package, browser API, or demo behavior.
+title: "[Bug]: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping Browser AI Kit work reliably across Chrome releases.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package or surface
+      options:
+        - "@desource/browser-ai-vue"
+        - "@desource/browser-ai-nuxt"
+        - Demo and documentation site
+        - Repository tooling
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Package version, exact Chrome version, operating system, and framework version.
+      placeholder: "browser-ai-vue 0.2.0; Chrome 150.0.x; macOS 15; Vue 3.5"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Link a repository or provide the smallest code sample and exact steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include errors, API availability states, enabled flags, screenshots, and logs where useful.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and discussions.
+          required: true
+        - label: I reproduced this with a real user gesture if Chrome needed to download a model or language pack.
+          required: true
+        - label: This report does not contain secrets or sensitive personal data.
+          required: true

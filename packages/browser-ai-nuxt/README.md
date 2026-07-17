@@ -1,6 +1,18 @@
 # @desource/browser-ai-nuxt
 
-Nuxt module for `@desource/browser-ai-vue`.
+The Nuxt module for Browser AI Kit: Chrome's on-device Prompt API, Summarizer, Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP—with auto-imports and SSR-safe client components.
+
+[Live examples](https://ai.desource-labs.org/#apis) · [Documentation](https://ai.desource-labs.org/docs) · [GitHub](https://github.com/DeSource-Labs/browser-ai) · [Vue core](https://www.npmjs.com/package/@desource/browser-ai-vue)
+
+## What the module solves
+
+Native AI globals only exist in supported browsers. Nuxt renders on the server, manages imports, splits routes, and hydrates on the client. This module connects those worlds without forcing browser guards into every component.
+
+- registers every Browser AI Kit component in client mode;
+- auto-imports composables, helpers, constants, and TypeScript types;
+- includes the component stylesheet by default;
+- preserves native download, progress, abort, quota, streaming, and cleanup behavior;
+- adds no inference server, proxy, account, or API key.
 
 ## Install
 
@@ -8,45 +20,51 @@ Nuxt module for `@desource/browser-ai-vue`.
 npm install @desource/browser-ai-nuxt
 ```
 
-## Chrome Model Management
-
-Nuxt components and composables use the same Chrome-managed local resources as `@desource/browser-ai-vue`.
-
-| API               | Chrome resource                                             | Inspect/manage page                                                                               |
-| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Prompt API        | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    |
-| Summarizer        | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    |
-| Writer            | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    |
-| Rewriter          | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    |
-| Proofreader       | Shared Gemini Nano model                                    | `chrome://on-device-internals`                                                                    |
-| Translator        | On-device translation language packs                        | `chrome://on-device-translation-internals/`                                                       |
-| Language Detector | Small local language-detection model and language resources | `chrome://on-device-translation-internals/` for TranslateKit resources in supported Chrome builds |
-
-Chrome reports API availability as `available`, `downloadable`, `downloading`, or `unavailable`. It requires a real user gesture to run `create()` when a model or language pack must be downloaded. Gemini Nano does not have documented per-API uninstall controls; Chrome purges it automatically under its own storage and policy rules. Users can inspect foundational model state, model name/version, backend type, file path, folder size, device criteria, feature adaptations, supplementary model status, shared model uninstall, and crash-count reset in `chrome://on-device-internals` -> Model Status. The Feature Adaptations `Recently Used` controls are Chrome-internal debug/retention controls, not application-facing API enable/disable switches. Translator language packs can be manually installed/uninstalled from `chrome://on-device-translation-internals/` in supported Chrome builds. `chrome://on-device-internals` does not list Translator language packs. Language Detector support is browser-defined, and low-confidence or `und` results should be treated as unknown in product UI. Chrome 150 and `@types/dom-chromium-ai@0.0.17` do not yet expose Proofreader `inputQuota`, `measureInputUsage()`, or streaming.
-
-## Usage
+Add the module:
 
 ```ts
+// nuxt.config.ts
 export default defineNuxtConfig({
   modules: ["@desource/browser-ai-nuxt"],
 });
 ```
 
-Then use the client component:
+Use a complete interface immediately:
 
 ```vue
 <template>
   <PromptApi context-strategy="summarize" />
-  <Summarizer />
-  <Writer />
-  <Rewriter />
-  <Translator />
-  <LanguageDetector />
-  <Proofreader />
 </template>
 ```
 
-## Module Options
+Or build a product-specific interface around an auto-imported composable:
+
+```vue
+<script setup lang="ts">
+const ai = usePromptApi();
+const answer = ref("");
+
+async function start() {
+  await ai.init({
+    expectedInputs: [{ type: "text", languages: ["en"] }],
+    expectedOutputs: [{ type: "text", languages: ["en"] }],
+  });
+  await ai.create();
+}
+
+async function send(prompt: string) {
+  answer.value = "";
+  const stream = ai.promptStreaming(prompt);
+  for await (const chunk of stream) {
+    answer.value += chunk;
+  }
+}
+</script>
+```
+
+When Chrome reports `downloadable`, call `create()` from a genuine user action. Programmatic clicks do not satisfy Chrome's activation requirement.
+
+## Configuration
 
 ```ts
 export default defineNuxtConfig({
@@ -59,20 +77,70 @@ export default defineNuxtConfig({
 });
 ```
 
-The module auto-imports `usePromptApi()`, `useSummarizer()`, `useWriter()`, `useRewriter()`, `useTranslator()`, `useLanguageDetector()`, `useProofreader()`, `useWebMcp()`, the language option helpers, `getWebMcpSupport()`, the declarative WebMCP attribute helpers, and `useAiChats()`. It registers the package CSS by default. It registers `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`, `<Translator />`, `<LanguageDetector />`, `<Proofreader />`, `<BrowserAiPromptApi />`, `<BrowserAiSummarizer />`, `<BrowserAiWriter />`, `<BrowserAiRewriter />`, `<BrowserAiTranslator />`, `<BrowserAiLanguageDetector />`, `<BrowserAiProofreader />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`, and `<BrowserAiPromptInput />` as client components.
+| Option      | Default | Purpose                                                |
+| ----------- | ------- | ------------------------------------------------------ |
+| `css`       | `true`  | Add the themeable component stylesheet                 |
+| `component` | `true`  | Register client-only components                        |
+| `helpers`   | `true`  | Auto-import composables, constants, helpers, and types |
 
-Prompt API restore helpers, including `restoreSession()` and `promptWithTemporarySession()`, are available through the auto-imported composable. Saved chats also keep cached restore summaries in IndexedDB so unchanged long histories do not need to be summarized again on every reload. Missing summaries are warmed in the background by default instead of blocking the restored chat input.
+Disable `css` when you only use composables or want to load the stylesheet in selected routes. Disable `component` for a headless integration.
 
-`useSummarizer()` wraps Chrome's native Summarizer API with availability checks, download progress, abort handling, input quota measurement, batch and streaming output, and measured chunk/rollup summarization for long inputs.
+## Auto-imported components
 
-`useWriter()` wraps Chrome's native Writer API with availability checks, download progress, abort handling, input quota measurement, streaming and non-streaming drafts, batch output, and explicit optional-context fitting.
+- `<PromptApi />`, `<Summarizer />`, `<Writer />`, `<Rewriter />`
+- `<Translator />`, `<LanguageDetector />`, `<Proofreader />`
+- `<BrowserAiPromptInput />`, `<BrowserAiChatHistory />`, `<BrowserAiChatSidebar />`
+- `BrowserAi`-prefixed aliases for every primary component
 
-`useRewriter()` wraps Chrome's native Rewriter API with the same shared writing-assistant engine: availability checks, download progress, abort handling, input quota measurement, streaming and non-streaming rewrites, batch output, and explicit optional-context fitting.
+## Auto-imported composables
 
-`useTranslator()` wraps Chrome's native Translator API with language-pair availability checks, explicit user-triggered language-pack downloads, debounced auto-translation support in the Vue component, download progress, abort handling, input quota measurement, streaming and non-streaming translation, batch output, same-language bypass, and measured long-text chunking.
+- `usePromptApi()` and `useAiChats()`
+- `useSummarizer()`, `useWriter()`, and `useRewriter()`
+- `useTranslator()`, `useLanguageDetector()`, and `useProofreader()`
+- `useWebMcp()` and its support/declarative helpers
+- language option collections and display-name helpers
 
-`useLanguageDetector()` wraps Chrome's native Language Detector API with availability checks, download progress, abort handling, input quota measurement, ranked confidence normalization, batch detection, confidence thresholding, and measured long-input chunking with weighted result merging.
+All public types from the Vue core are available to Nuxt's generated type system.
 
-`useProofreader()` wraps Chrome's native Proofreader API with availability checks, download progress, abort handling, corrected-output normalization, correction range normalization, batch proofreading, and character-based long-input chunking.
+## Deployment headers for WebMCP
 
-`useWebMcp()` wraps Chrome's current `document.modelContext` surface with support diagnostics, lifecycle-safe imperative registration, discovery, manual execution, `toolchange` observation, cross-origin options, and declarative form helpers. Configure production responses with an origin-isolated document and at least `Permissions-Policy: tools=(self)`; the demo's Nuxt route rules show the required headers.
+WebMCP is experimental and requires an origin-isolated production document plus a `tools` Permissions Policy. With Nitro:
+
+```ts
+export default defineNuxtConfig({
+  routeRules: {
+    "/**": {
+      headers: {
+        "origin-agent-cluster": "?1",
+        "permissions-policy": "tools=(self)",
+      },
+    },
+  },
+});
+```
+
+If your reverse proxy or hosting platform overwrites headers, configure them at that layer too. Cross-origin tool discovery needs a deliberately broader policy. Every tool must validate input and re-check authorization inside `execute`; registration is not an authorization boundary.
+
+Read the complete [WebMCP guide](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md).
+
+## Performance notes
+
+Browser AI Kit keeps native sessions out of Vue's deep-reactivity graph and coalesces high-frequency stream updates to animation frames. Prompt history restoration measures the real browser context window, caches summaries in IndexedDB, and can warm missing summaries in the background so a long saved chat does not block the input.
+
+For the smallest public route, set `css: false` globally and import `@desource/browser-ai-vue/assets/lib.css` only in layouts or routes that render the components.
+
+## Browser support and fallbacks
+
+Availability depends on Chrome version, channel, platform, device eligibility, storage, language, region, enterprise policy, and downloaded resources. The module exposes browser state; it cannot install a model without user activation or enable an unsupported browser.
+
+Keep a non-AI path for essential workflows. If you add a hosted fallback, disclose that prompts will leave the device and ask for consent before switching.
+
+See [Getting started](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/getting-started.md) and the [verified API status](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md).
+
+## Why not call the native API directly?
+
+You can—and for a small client-only experiment, that may be enough. The module becomes valuable when you need SSR-safe access, auto-imports, production download and error states, long-input handling, persisted chat context, consistent cancellation, or a maintained boundary around Chrome's evolving APIs.
+
+## License
+
+[MIT](https://github.com/DeSource-Labs/browser-ai/blob/main/LICENSE) © DeSource Labs
