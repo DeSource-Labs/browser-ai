@@ -14,7 +14,7 @@
   "dependencies": {
     "@desource/browser-ai-nuxt": "workspace:*",
     "@desource/browser-ai-vue": "workspace:*",
-    "@nuxtjs/sitemap": "^8.2.2",
+    "@nuxtjs/sitemap": "^8.2.3",
     "nuxt": "^4.4.8",
     "vue": "^3.5.39"
   },
