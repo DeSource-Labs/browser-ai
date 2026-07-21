@@ -20,10 +20,10 @@ const SENTENCE_BOUNDARY = /(?<=[.!?。！？])\s+/u;
 
 export const normalizeTextInput = (value: string) => {
   return value
-    .replace(/\r\n/g, "\n")
-    .replace(/\u00a0/g, " ")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/\r\n/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 };
 
@@ -32,13 +32,13 @@ export const stripHtmlForText = (value: string) => {
     return normalizeTextInput(value);
   }
 
-  if (typeof document === "undefined") {
-    return normalizeTextInput(value.replace(/<[^>]+>/g, " "));
+  if (typeof document === 'undefined') {
+    return normalizeTextInput(value.replace(/<[^>]+>/g, ' '));
   }
 
-  const container = document.createElement("div");
+  const container = document.createElement('div');
   container.innerHTML = value;
-  return normalizeTextInput(container.innerText || container.textContent || "");
+  return normalizeTextInput(container.innerText || container.textContent || '');
 };
 
 export const normalizeSummaryInput = normalizeTextInput;
@@ -76,20 +76,14 @@ export const splitTextIntoSegments = (value: string): TextSegment[] => {
     });
   });
 
-  return segments.length > 0
-    ? segments
-    : [{ text: input, start: 0, end: input.length }];
+  return segments.length > 0 ? segments : [{ text: input, start: 0, end: input.length }];
 };
 
-export const createTextChunk = (
-  text: string,
-  index: number,
-  start = 0,
-): TextChunk => ({
+export const createTextChunk = (text: string, index: number, start = 0): TextChunk => ({
   text: text.trim(),
   index,
   start,
-  end: start + text.trim().length,
+  end: start + text.trim().length
 });
 
 export const joinTextBlocks = (current: string, next: string) => {
@@ -100,7 +94,7 @@ const splitOversizedTextSegment = async (
   segment: TextSegment,
   budget: number,
   measure: (input: string) => Promise<number>,
-  startIndex: number,
+  startIndex: number
 ) => {
   const chunks: TextChunk[] = [];
   let remaining = segment.text;
@@ -128,7 +122,7 @@ const splitOversizedTextSegment = async (
       best = Math.min(remaining.length, 1200);
     }
 
-    const whitespace = remaining.lastIndexOf(" ", best);
+    const whitespace = remaining.lastIndexOf(' ', best);
     const sliceEnd = whitespace > 240 ? whitespace : best;
     const text = remaining.slice(0, sliceEnd).trim();
     chunks.push(createTextChunk(text, index, absoluteStart));
@@ -146,11 +140,11 @@ export const buildMeasuredTextChunks = async ({
   budget,
   measure,
   startIndex = 0,
-  onProgress,
+  onProgress
 }: BuildMeasuredTextChunksOptions) => {
   const segments = splitTextIntoSegments(input);
   const chunks: TextChunk[] = [];
-  let current = "";
+  let current = '';
   let currentStart = segments[0]?.start ?? 0;
 
   for (const segment of segments) {
@@ -163,17 +157,10 @@ export const buildMeasuredTextChunks = async ({
       }
       current = candidate;
     } else if (!current) {
-      const split = await splitOversizedTextSegment(
-        segment,
-        budget,
-        measure,
-        startIndex + chunks.length,
-      );
+      const split = await splitOversizedTextSegment(segment, budget, measure, startIndex + chunks.length);
       chunks.push(...split);
     } else {
-      chunks.push(
-        createTextChunk(current, startIndex + chunks.length, currentStart),
-      );
+      chunks.push(createTextChunk(current, startIndex + chunks.length, currentStart));
       current = segment.text;
       currentStart = segment.start;
     }
@@ -182,9 +169,7 @@ export const buildMeasuredTextChunks = async ({
   }
 
   if (current.trim()) {
-    chunks.push(
-      createTextChunk(current, startIndex + chunks.length, currentStart),
-    );
+    chunks.push(createTextChunk(current, startIndex + chunks.length, currentStart));
   }
 
   return chunks;

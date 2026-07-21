@@ -18,11 +18,7 @@
           <a :href="Links.coreRepo" target="_blank" rel="noopener noreferrer">
             <span>GitHub</span>
           </a>
-          <a
-            :href="Links.contributing"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a :href="Links.contributing" target="_blank" rel="noopener noreferrer">
             <span>Contributing</span>
           </a>
           <a

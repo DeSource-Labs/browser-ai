@@ -1,9 +1,6 @@
-import { ref, watch } from "vue";
+import { ref, watch } from 'vue';
 
-export const useSyncedString = (
-  getExternalValue: () => string,
-  onInternalUpdate: (value: string) => void,
-) => {
+export const useSyncedString = (getExternalValue: () => string, onInternalUpdate: (value: string) => void) => {
   const value = ref(getExternalValue());
 
   watch(value, onInternalUpdate);

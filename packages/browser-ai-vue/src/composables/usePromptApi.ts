@@ -1,36 +1,20 @@
-import { computed, ref, shallowRef } from "vue";
-import {
-  createDownloadMonitor,
-  safeCheckAvailability,
-} from "../utils/browserAi";
+import { computed, ref, shallowRef } from 'vue';
+import { createDownloadMonitor, safeCheckAvailability } from '../utils/browserAi';
 
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
-  ? Omit<T, Extract<keyof T, K>>
-  : never;
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, Extract<keyof T, K>> : never;
 
 export type LLMAvailability = Availability;
-export type LLMPromptOptions = Omit<LanguageModelPromptOptions, "signal">;
-export type LLMProcessingState =
-  "availability" | "create" | "measure" | "prompt" | "";
+export type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
+export type LLMProcessingState = 'availability' | 'create' | 'measure' | 'prompt' | '';
 export type LLMCreateCoreOptions = LanguageModelCreateCoreOptions;
-export type LLMCreateOptions = DistributiveOmit<
-  LanguageModelCreateOptions,
-  "signal" | "monitor"
->;
-export type LLMCloneOptions = Omit<LanguageModelCloneOptions, "signal">;
+export type LLMCreateOptions = DistributiveOmit<LanguageModelCreateOptions, 'signal' | 'monitor'>;
+export type LLMCloneOptions = Omit<LanguageModelCloneOptions, 'signal'>;
 export type LLMSamplingMode = LanguageModelSamplingMode;
 export type LLMPrompt = LanguageModelPrompt;
-export type LLMContextStrategy = "recent" | "summarize";
-export type LLMContextSummaryMode = "cache-first" | "eager";
+export type LLMContextStrategy = 'recent' | 'summarize';
+export type LLMContextSummaryMode = 'cache-first' | 'eager';
 export type LLMContextRestorePhase =
-  | "idle"
-  | "checking"
-  | "creating"
-  | "measuring"
-  | "summarizing"
-  | "restoring"
-  | "ready"
-  | "error";
+  'idle' | 'checking' | 'creating' | 'measuring' | 'summarizing' | 'restoring' | 'ready' | 'error';
 
 export interface LLMContextRestoreState {
   phase: LLMContextRestorePhase;
@@ -76,15 +60,10 @@ export interface LLMRestoreSessionOptions {
   summaryBackgroundTimeoutMs?: number;
   messageMetadata?: LLMContextMessageMetadata[];
   summaryCache?: LLMContextSummaryRecord[];
-  onSummaryCacheUpdate?: (
-    summaries: LLMContextSummaryRecord[],
-  ) => void | Promise<void>;
+  onSummaryCacheUpdate?: (summaries: LLMContextSummaryRecord[]) => void | Promise<void>;
   onSummaryCacheError?: (error: unknown) => void;
   shouldContinue?: () => boolean;
-  onStateChange?: (
-    state: LLMContextRestoreState,
-    event: "start" | "progress" | "complete",
-  ) => void;
+  onStateChange?: (state: LLMContextRestoreState, event: 'start' | 'progress' | 'complete') => void;
   onInitStart?: () => void;
   onInitComplete?: () => void;
   onCreateStart?: () => void;
@@ -153,7 +132,7 @@ const DEFAULT_SUMMARY_CHUNK_BUDGET_RATIO = 0.18;
 const DEFAULT_SUMMARY_MAX_CHARACTERS = 0;
 const DEFAULT_SUMMARY_TIMEOUT_MS = 15000;
 const DEFAULT_BACKGROUND_SUMMARY_TIMEOUT_MS = 60000;
-const DEFAULT_SUMMARY_MODE: LLMContextSummaryMode = "cache-first";
+const DEFAULT_SUMMARY_MODE: LLMContextSummaryMode = 'cache-first';
 const SUMMARY_CACHE_VERSION = 1;
 const MAX_SUMMARY_ROLLUP_ATTEMPTS = 4;
 
@@ -161,26 +140,24 @@ const getLanguageModel = () => {
   return (globalThis as GlobalWithLanguageModel).LanguageModel;
 };
 
-const getCreateCoreOptions = (
-  options: LLMCreateOptions = {},
-): LanguageModelCreateCoreOptions => {
+const getCreateCoreOptions = (options: LLMCreateOptions = {}): LanguageModelCreateCoreOptions => {
   const commonOptions = {
     expectedInputs: options.expectedInputs,
     expectedOutputs: options.expectedOutputs,
-    tools: options.tools,
+    tools: options.tools
   };
 
   if (options.samplingMode !== undefined) {
     return {
       ...commonOptions,
-      samplingMode: options.samplingMode,
+      samplingMode: options.samplingMode
     };
   }
 
   return {
     ...commonOptions,
     topK: options.topK,
-    temperature: options.temperature,
+    temperature: options.temperature
   };
 };
 
@@ -188,39 +165,35 @@ const mergeCreateOptions = (
   baseOptions: LanguageModelCreateCoreOptions,
   createOptions: LLMCreateOptions,
   signal: AbortSignal,
-  monitor: CreateMonitorCallback,
+  monitor: CreateMonitorCallback
 ): LanguageModelCreateOptions => {
   const commonOptions = {
     expectedInputs: createOptions.expectedInputs ?? baseOptions.expectedInputs,
-    expectedOutputs:
-      createOptions.expectedOutputs ?? baseOptions.expectedOutputs,
+    expectedOutputs: createOptions.expectedOutputs ?? baseOptions.expectedOutputs,
     tools: createOptions.tools ?? baseOptions.tools,
     initialPrompts: createOptions.initialPrompts,
     signal,
-    monitor,
+    monitor
   };
-  const overridesRawSampling =
-    createOptions.topK !== undefined || createOptions.temperature !== undefined;
-  const samplingMode = overridesRawSampling
-    ? undefined
-    : (createOptions.samplingMode ?? baseOptions.samplingMode);
+  const overridesRawSampling = createOptions.topK !== undefined || createOptions.temperature !== undefined;
+  const samplingMode = overridesRawSampling ? undefined : (createOptions.samplingMode ?? baseOptions.samplingMode);
 
   if (samplingMode !== undefined) {
     return {
       ...commonOptions,
-      samplingMode,
+      samplingMode
     };
   }
 
   return {
     ...commonOptions,
     topK: createOptions.topK ?? baseOptions.topK,
-    temperature: createOptions.temperature ?? baseOptions.temperature,
+    temperature: createOptions.temperature ?? baseOptions.temperature
   };
 };
 
 const createEmptyContextRestoreState = (): LLMContextRestoreState => ({
-  phase: "idle",
+  phase: 'idle',
   loadedMessages: 0,
   totalMessages: 0,
   summarizedMessages: 0,
@@ -228,7 +201,7 @@ const createEmptyContextRestoreState = (): LLMContextRestoreState => ({
   measuredTokens: null,
   cachedSummaries: 0,
   createdSummaries: 0,
-  summaryChunks: 0,
+  summaryChunks: 0
 });
 
 export function usePromptApi(options: UsePromptApiOptions = {}) {
@@ -237,7 +210,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   // Browser model instances are mutable platform objects. Keeping them shallow avoids
   // Vue proxying and recursively traversing a live native session on every render.
   const session = shallowRef<LanguageModel | null>(null);
-  const processing = ref<LLMProcessingState>("");
+  const processing = ref<LLMProcessingState>('');
   const availability = ref<Availability | null>(null);
   const defaultParams = ref<LanguageModelParams | null>(null);
   const params = ref<LanguageModelCreateCoreOptions | null>(null);
@@ -247,17 +220,15 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   const topK = ref<number | null>(null);
   const contextWindow = ref<number | null>(null);
   const contextUsage = ref<number | null>(null);
-  const contextRestoreState = ref<LLMContextRestoreState>(
-    createEmptyContextRestoreState(),
-  );
+  const contextRestoreState = ref<LLMContextRestoreState>(createEmptyContextRestoreState());
 
   const abortController = shallowRef<AbortController | null>(null);
 
   const isReady = computed(() => {
-    return session.value !== null && availability.value === "available";
+    return session.value !== null && availability.value === 'available';
   });
 
-  const isProcessing = computed(() => processing.value !== "");
+  const isProcessing = computed(() => processing.value !== '');
 
   const contextWindowAvailable = computed(() => {
     if (contextWindow.value == null || contextUsage.value == null) {
@@ -297,7 +268,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
    */
   const requestDefaultParams = async () => {
     const LanguageModel = getLanguageModel();
-    if (typeof LanguageModel?.params !== "function") {
+    if (typeof LanguageModel?.params !== 'function') {
       defaultParams.value = null;
       return null;
     }
@@ -311,21 +282,17 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     }
   };
 
-  const checkAvailability = async (
-    model: LanguageModelCreateCoreOptions = {},
-  ) => {
+  const checkAvailability = async (model: LanguageModelCreateCoreOptions = {}) => {
     return safeCheckAvailability(getLanguageModel(), model);
   };
 
-  const requestAvailability = async (
-    model: LanguageModelCreateCoreOptions = {},
-  ) => {
-    processing.value = "availability";
+  const requestAvailability = async (model: LanguageModelCreateCoreOptions = {}) => {
+    processing.value = 'availability';
     try {
       availability.value = await checkAvailability(model);
       return availability.value;
     } finally {
-      processing.value = "";
+      processing.value = '';
     }
   };
 
@@ -334,10 +301,8 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     params.value = model;
     const status = await requestAvailability(model);
 
-    if (status === "unavailable") {
-      throw new Error(
-        "LanguageModel is unavailable with the provided options.",
-      );
+    if (status === 'unavailable') {
+      throw new Error('LanguageModel is unavailable with the provided options.');
     }
 
     return status;
@@ -345,32 +310,26 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
 
   const create = async (createOptions: LLMCreateOptions = {}) => {
     const LanguageModel = getLanguageModel();
-    if (typeof LanguageModel?.create !== "function") {
-      throw new Error(
-        "LanguageModel is not available in this browser context.",
-      );
+    if (typeof LanguageModel?.create !== 'function') {
+      throw new Error('LanguageModel is not available in this browser context.');
     }
 
     const coreOptions = getCreateCoreOptions(createOptions);
     const modelOptions = params.value ?? coreOptions;
     params.value = modelOptions;
 
-    if (availability.value === "unavailable") {
-      throw new Error(
-        "LanguageModel is unavailable with the provided options.",
-      );
+    if (availability.value === 'unavailable') {
+      throw new Error('LanguageModel is unavailable with the provided options.');
     }
 
     if (!availability.value) {
       availability.value = await checkAvailability(modelOptions);
-      if (availability.value === "unavailable") {
-        throw new Error(
-          "LanguageModel is unavailable with the provided options.",
-        );
+      if (availability.value === 'unavailable') {
+        throw new Error('LanguageModel is unavailable with the provided options.');
       }
     }
 
-    processing.value = "create";
+    processing.value = 'create';
     const signal = beginOperation();
     destroy();
 
@@ -379,17 +338,15 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     });
 
     try {
-      session.value = await LanguageModel.create(
-        mergeCreateOptions(modelOptions, createOptions, signal, monitor),
-      );
-      session.value.addEventListener("contextoverflow", handleContextOverflow);
-      availability.value = "available";
+      session.value = await LanguageModel.create(mergeCreateOptions(modelOptions, createOptions, signal, monitor));
+      session.value.addEventListener('contextoverflow', handleContextOverflow);
+      availability.value = 'available';
       downloadProgress.value = 100;
       updateSessionProps(session.value);
       return session.value;
     } finally {
       endOperation(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
@@ -399,7 +356,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       return;
     }
 
-    session.value.removeEventListener("contextoverflow", handleContextOverflow);
+    session.value.removeEventListener('contextoverflow', handleContextOverflow);
     session.value.destroy();
     session.value = null;
     updateSessionProps(null);
@@ -411,36 +368,33 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     params.value = null;
     availability.value = null;
     downloadProgress.value = 0;
-    processing.value = "";
+    processing.value = '';
   };
 
-  const prompt = async (
-    input: LanguageModelPrompt,
-    options?: LLMPromptOptions,
-  ): Promise<string> => {
+  const prompt = async (input: LanguageModelPrompt, options?: LLMPromptOptions): Promise<string> => {
     if (!session.value) {
-      throw new Error("Session is not initialized. Call create() first.");
+      throw new Error('Session is not initialized. Call create() first.');
     }
 
-    processing.value = "prompt";
+    processing.value = 'prompt';
     const signal = beginOperation();
 
     try {
       const response = await session.value.prompt(input, {
         ...options,
-        signal,
+        signal
       });
       updateSessionProps(session.value);
       return response;
     } finally {
       endOperation(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
   const promptJson = async <T = unknown>(
     input: LanguageModelPrompt,
-    options: LLMStructuredPromptOptions,
+    options: LLMStructuredPromptOptions
   ): Promise<T> => {
     const response = await prompt(input, options);
     return JSON.parse(response) as T;
@@ -450,33 +404,28 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
    * Clone the current native session, including its initial prompts and interaction
    * history. The caller owns the returned session and must destroy it when finished.
    */
-  const clone = async (
-    options: LLMCloneOptions = {},
-  ): Promise<LanguageModel> => {
+  const clone = async (options: LLMCloneOptions = {}): Promise<LanguageModel> => {
     const sourceSession = session.value;
     if (!sourceSession) {
-      throw new Error("Session is not initialized. Call create() first.");
+      throw new Error('Session is not initialized. Call create() first.');
     }
 
-    processing.value = "create";
+    processing.value = 'create';
     const signal = beginOperation();
     try {
       return await sourceSession.clone({ ...options, signal });
     } finally {
       endOperation(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
-  const promptStreaming = (
-    input: LanguageModelPrompt,
-    options?: LLMPromptOptions,
-  ): ReadableStream<string> => {
+  const promptStreaming = (input: LanguageModelPrompt, options?: LLMPromptOptions): ReadableStream<string> => {
     if (!session.value) {
-      throw new Error("Session is not initialized. Call create() first.");
+      throw new Error('Session is not initialized. Call create() first.');
     }
 
-    processing.value = "prompt";
+    processing.value = 'prompt';
     const signal = beginOperation();
     const stream = session.value.promptStreaming(input, { ...options, signal });
     const reader = stream.getReader();
@@ -489,7 +438,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
             controller.close();
             updateSessionProps(session.value);
             endOperation(signal);
-            processing.value = "";
+            processing.value = '';
             return;
           }
 
@@ -497,7 +446,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         } catch (error) {
           updateSessionProps(session.value);
           endOperation(signal);
-          processing.value = "";
+          processing.value = '';
           controller.error(error);
         }
       },
@@ -507,18 +456,18 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         } finally {
           updateSessionProps(session.value);
           endOperation(signal);
-          processing.value = "";
+          processing.value = '';
         }
-      },
+      }
     });
   };
 
   const append = async (input: LanguageModelPrompt) => {
     if (!session.value) {
-      throw new Error("Session is not initialized. Call create() first.");
+      throw new Error('Session is not initialized. Call create() first.');
     }
 
-    processing.value = "prompt";
+    processing.value = 'prompt';
     const signal = beginOperation();
 
     try {
@@ -526,44 +475,41 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       updateSessionProps(session.value);
     } finally {
       endOperation(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
-  const measureContextUsage = async (
-    input: LanguageModelPrompt,
-    options?: LLMPromptOptions,
-  ): Promise<number> => {
+  const measureContextUsage = async (input: LanguageModelPrompt, options?: LLMPromptOptions): Promise<number> => {
     if (!session.value) {
-      throw new Error("Session is not initialized. Call create() first.");
+      throw new Error('Session is not initialized. Call create() first.');
     }
 
-    processing.value = "measure";
+    processing.value = 'measure';
     const signal = beginOperation();
 
     try {
       return await session.value.measureContextUsage(input, {
         ...options,
-        signal,
+        signal
       });
     } finally {
       endOperation(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
   const cloneContextRestoreState = (): LLMContextRestoreState => ({
-    ...contextRestoreState.value,
+    ...contextRestoreState.value
   });
 
   const setContextRestoreState = (
     patch: Partial<LLMContextRestoreState>,
-    event: "start" | "progress" | "complete" = "progress",
-    onStateChange?: LLMRestoreSessionOptions["onStateChange"],
+    event: 'start' | 'progress' | 'complete' = 'progress',
+    onStateChange?: LLMRestoreSessionOptions['onStateChange']
   ) => {
     contextRestoreState.value = {
       ...contextRestoreState.value,
-      ...patch,
+      ...patch
     };
     onStateChange?.(cloneContextRestoreState(), event);
   };
@@ -573,21 +519,18 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     selectedMessages: RestorePrompt[],
     selectedConversationCount: number,
     totalConversationCount: number,
-    summarizedMessages = 0,
+    summarizedMessages = 0
   ): LLMRestoreSessionResult => ({
     ready,
     selectedMessages,
     selectedConversationCount,
     totalConversationCount,
     summarizedMessages,
-    partiallyLoaded:
-      ready &&
-      (summarizedMessages > 0 ||
-        selectedConversationCount < totalConversationCount),
+    partiallyLoaded: ready && (summarizedMessages > 0 || selectedConversationCount < totalConversationCount)
   });
 
   const createId = () => {
-    return typeof crypto !== "undefined" && "randomUUID" in crypto
+    return typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random()}`;
   };
@@ -601,22 +544,20 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     return (hash >>> 0).toString(36);
   };
 
-  const normalizeSummaryCache = (
-    summaries: LLMContextSummaryRecord[] = [],
-  ): LLMContextSummaryRecord[] => {
+  const normalizeSummaryCache = (summaries: LLMContextSummaryRecord[] = []): LLMContextSummaryRecord[] => {
     const seen = new Set<string>();
     const normalized: LLMContextSummaryRecord[] = [];
 
     summaries.forEach((summary) => {
       if (
-        typeof summary.id !== "string" ||
-        typeof summary.summary !== "string" ||
+        typeof summary.id !== 'string' ||
+        typeof summary.summary !== 'string' ||
         summary.summary.trim().length === 0 ||
         !Number.isInteger(summary.startIndex) ||
         !Number.isInteger(summary.endIndex) ||
         summary.startIndex < 0 ||
         summary.endIndex <= summary.startIndex ||
-        typeof summary.hash !== "string"
+        typeof summary.hash !== 'string'
       ) {
         return;
       }
@@ -629,12 +570,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       seen.add(key);
       normalized.push({
         ...summary,
-        messageIds: Array.isArray(summary.messageIds)
-          ? [...summary.messageIds]
-          : [],
+        messageIds: Array.isArray(summary.messageIds) ? [...summary.messageIds] : [],
         level: Number.isInteger(summary.level) ? summary.level : 0,
-        tokenUsage:
-          typeof summary.tokenUsage === "number" ? summary.tokenUsage : null,
+        tokenUsage: typeof summary.tokenUsage === 'number' ? summary.tokenUsage : null
       });
     });
 
@@ -646,20 +584,15 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   };
 
   const getConversationMessages = (history: RestorePrompt[]) => {
-    const leadingSystemMessage =
-      history[0]?.role === "system"
-        ? (history[0] as LanguageModelSystemMessage)
-        : null;
+    const leadingSystemMessage = history[0]?.role === 'system' ? (history[0] as LanguageModelSystemMessage) : null;
     const rest = leadingSystemMessage ? history.slice(1) : history;
-    const conversationHistory = rest.filter(
-      (message): message is LanguageModelMessage => {
-        return message.role !== "system";
-      },
-    );
+    const conversationHistory = rest.filter((message): message is LanguageModelMessage => {
+      return message.role !== 'system';
+    });
 
     return {
       leadingSystemMessage,
-      conversationHistory,
+      conversationHistory
     };
   };
 
@@ -672,40 +605,30 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   };
 
   const getMessageText = (message: LanguageModelMessage) => {
-    if (typeof message.content === "string") {
+    if (typeof message.content === 'string') {
       return message.content;
     }
 
     return message.content
-      .filter((item) => item.type === "text")
+      .filter((item) => item.type === 'text')
       .map((item) => String(item.value))
-      .join("\n");
+      .join('\n');
   };
 
-  const getMessageHash = (
-    message: LanguageModelMessage,
-    metadata?: LLMContextMessageMetadata,
-  ) => {
-    return (
-      metadata?.hash ??
-      hashString(
-        [metadata?.id ?? "", message.role, getMessageText(message)].join(
-          "\u001f",
-        ),
-      )
-    );
+  const getMessageHash = (message: LanguageModelMessage, metadata?: LLMContextMessageMetadata) => {
+    return metadata?.hash ?? hashString([metadata?.id ?? '', message.role, getMessageText(message)].join('\u001f'));
   };
 
   const formatMessagesForSummary = (
     items: LanguageModelMessage[],
-    summaryMaxCharacters = DEFAULT_SUMMARY_MAX_CHARACTERS,
+    summaryMaxCharacters = DEFAULT_SUMMARY_MAX_CHARACTERS
   ) => {
     const transcript = items
       .map((message) => {
-        const role = message.role === "assistant" ? "Assistant" : "User";
+        const role = message.role === 'assistant' ? 'Assistant' : 'User';
         return `${role}: ${getMessageText(message).trim()}`;
       })
-      .join("\n\n");
+      .join('\n\n');
 
     if (summaryMaxCharacters > 0 && transcript.length > summaryMaxCharacters) {
       return transcript.slice(-summaryMaxCharacters);
@@ -716,27 +639,21 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
 
   const createSummaryPrompt = (transcript: string): LanguageModelMessage[] => [
     {
-      role: "user",
+      role: 'user',
       content: [
-        "Summarize the earlier chat history below for a future assistant session.",
-        "Keep durable facts, user preferences, decisions, unresolved tasks, names, IDs, and constraints.",
-        "Preserve chronological order when it matters. Do not invent details.",
-        "Do not include filler. Use concise bullet points.",
-        "",
-        transcript,
-      ].join("\n"),
-    },
+        'Summarize the earlier chat history below for a future assistant session.',
+        'Keep durable facts, user preferences, decisions, unresolved tasks, names, IDs, and constraints.',
+        'Preserve chronological order when it matters. Do not invent details.',
+        'Do not include filler. Use concise bullet points.',
+        '',
+        transcript
+      ].join('\n')
+    }
   ];
 
-  const mergeSystemContent = (
-    systemMessage: LanguageModelSystemMessage | null,
-    summary?: string,
-  ) => {
+  const mergeSystemContent = (systemMessage: LanguageModelSystemMessage | null, summary?: string) => {
     const parts: string[] = [];
-    const systemContent =
-      typeof systemMessage?.content === "string"
-        ? systemMessage.content.trim()
-        : "";
+    const systemContent = typeof systemMessage?.content === 'string' ? systemMessage.content.trim() : '';
 
     if (systemContent) {
       parts.push(systemContent);
@@ -751,57 +668,47 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     }
 
     return {
-      role: "system",
-      content: parts.join("\n\n"),
+      role: 'system',
+      content: parts.join('\n\n')
     } as LanguageModelSystemMessage;
   };
 
   const resolveSummaryModelOptions = (
-    modelOptions?: LanguageModelCreateCoreOptions,
+    modelOptions?: LanguageModelCreateCoreOptions
   ): LanguageModelCreateCoreOptions => ({
     ...(modelOptions ?? params.value ?? {}),
-    expectedInputs: [{ type: "text" }],
-    expectedOutputs: [{ type: "text" }],
+    expectedInputs: [{ type: 'text' }],
+    expectedOutputs: [{ type: 'text' }]
   });
 
   const promptWithTemporarySession = async (
     input: LanguageModelPrompt,
-    temporaryOptions: LLMTemporaryPromptOptions = {},
+    temporaryOptions: LLMTemporaryPromptOptions = {}
   ) => {
     const LanguageModel = getLanguageModel();
-    if (typeof LanguageModel?.create !== "function") {
-      throw new Error(
-        "LanguageModel is not available in this browser context.",
-      );
+    if (typeof LanguageModel?.create !== 'function') {
+      throw new Error('LanguageModel is not available in this browser context.');
     }
 
-    const timeoutMs =
-      temporaryOptions.timeoutMs == null
-        ? null
-        : Math.max(temporaryOptions.timeoutMs, 1000);
+    const timeoutMs = temporaryOptions.timeoutMs == null ? null : Math.max(temporaryOptions.timeoutMs, 1000);
     const controller = new AbortController();
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let temporarySession: LanguageModel | null = null;
 
     if (timeoutMs) {
       timeoutId = setTimeout(() => {
-        controller.abort(
-          new DOMException(
-            "Temporary LanguageModel prompt timed out.",
-            "AbortError",
-          ),
-        );
+        controller.abort(new DOMException('Temporary LanguageModel prompt timed out.', 'AbortError'));
       }, timeoutMs);
     }
 
     try {
       temporarySession = await LanguageModel.create({
-        ...(temporaryOptions.modelOptions ?? params.value ?? {}),
+        ...(temporaryOptions.modelOptions ?? params.value ?? {})
       });
 
       return await temporarySession.prompt(input, {
         ...(temporaryOptions.promptOptions ?? {}),
-        signal: controller.signal,
+        signal: controller.signal
       });
     } finally {
       if (timeoutId) {
@@ -814,59 +721,42 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   const summarizeMessages = async (
     items: LanguageModelMessage[],
     restoreOptions: LLMRestoreSessionOptions,
-    trackState = true,
+    trackState = true
   ) => {
-    const transcript = formatMessagesForSummary(
-      items,
-      restoreOptions.summaryMaxCharacters,
-    );
+    const transcript = formatMessagesForSummary(items, restoreOptions.summaryMaxCharacters);
     if (!transcript.trim()) {
-      return "";
+      return '';
     }
 
     if (trackState) {
       setContextRestoreState(
         {
-          phase: "summarizing",
-          loadedMessages: Math.max(
-            contextRestoreState.value.totalMessages - items.length,
-            0,
-          ),
-          summarizedMessages: items.length,
+          phase: 'summarizing',
+          loadedMessages: Math.max(contextRestoreState.value.totalMessages - items.length, 0),
+          summarizedMessages: items.length
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
     }
 
-    const summary = await promptWithTemporarySession(
-      createSummaryPrompt(transcript),
-      {
-        modelOptions: resolveSummaryModelOptions(restoreOptions.modelOptions),
-        timeoutMs:
-          restoreOptions.summaryTimeoutMs ?? DEFAULT_SUMMARY_TIMEOUT_MS,
-      },
-    );
+    const summary = await promptWithTemporarySession(createSummaryPrompt(transcript), {
+      modelOptions: resolveSummaryModelOptions(restoreOptions.modelOptions),
+      timeoutMs: restoreOptions.summaryTimeoutMs ?? DEFAULT_SUMMARY_TIMEOUT_MS
+    });
 
     return summary.trim();
   };
 
   const createSummaryRecord = async (
     messagesToSummarize: LanguageModelMessage[],
-    window: Pick<
-      SummaryWindow,
-      "startIndex" | "endIndex" | "hash" | "messageIds"
-    >,
+    window: Pick<SummaryWindow, 'startIndex' | 'endIndex' | 'hash' | 'messageIds'>,
     level: number,
     restoreOptions: LLMRestoreSessionOptions,
     tokenUsage: number | null,
-    trackState = true,
+    trackState = true
   ): Promise<LLMContextSummaryRecord> => {
-    const summary = await summarizeMessages(
-      messagesToSummarize,
-      restoreOptions,
-      trackState,
-    );
+    const summary = await summarizeMessages(messagesToSummarize, restoreOptions, trackState);
     const now = Date.now();
 
     return {
@@ -879,7 +769,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       tokenUsage,
       level,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     };
   };
 
@@ -888,7 +778,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     startIndex: number,
     endIndex: number,
     hash: string,
-    level: number,
+    level: number
   ) => {
     return (
       cache.records.find((summary) => {
@@ -907,7 +797,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     cache: SummaryCacheState,
     record: LLMContextSummaryRecord,
     restoreOptions: LLMRestoreSessionOptions,
-    trackState = true,
+    trackState = true
   ) => {
     const nextRecords = cache.records.filter((summary) => {
       return !(
@@ -925,16 +815,14 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       setContextRestoreState(
         {
           createdSummaries: cache.createdSummaries,
-          cachedSummaries: cache.cachedSummaries,
+          cachedSummaries: cache.cachedSummaries
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
     }
 
-    await restoreOptions.onSummaryCacheUpdate?.(
-      cache.records.map((summary) => ({ ...summary })),
-    );
+    await restoreOptions.onSummaryCacheUpdate?.(cache.records.map((summary) => ({ ...summary })));
   };
 
   const getSummaryChunkBudget = (restoreOptions: LLMRestoreSessionOptions) => {
@@ -943,10 +831,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     }
 
     const ratio = Number.isFinite(restoreOptions.summaryChunkBudgetRatio)
-      ? Math.min(
-          Math.max(restoreOptions.summaryChunkBudgetRatio as number, 0.1),
-          0.95,
-        )
+      ? Math.min(Math.max(restoreOptions.summaryChunkBudgetRatio as number, 0.1), 0.95)
       : DEFAULT_SUMMARY_CHUNK_BUDGET_RATIO;
 
     return Math.floor(contextWindow.value * ratio);
@@ -955,7 +840,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   const createWindowHash = (
     messagesToSummarize: LanguageModelMessage[],
     metadata: LLMContextMessageMetadata[],
-    level: number,
+    level: number
   ) => {
     return hashString(
       [
@@ -963,13 +848,11 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         level,
         ...messagesToSummarize.map((message, index) => {
           const itemMetadata = metadata[index];
-          return [
-            itemMetadata?.id ?? index,
-            itemMetadata?.timestamp ?? "",
-            getMessageHash(message, itemMetadata),
-          ].join("\u001f");
-        }),
-      ].join("\u001e"),
+          return [itemMetadata?.id ?? index, itemMetadata?.timestamp ?? '', getMessageHash(message, itemMetadata)].join(
+            '\u001f'
+          );
+        })
+      ].join('\u001e')
     );
   };
 
@@ -978,7 +861,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     metadata: LLMContextMessageMetadata[],
     startIndex: number,
     measureSession: LanguageModel,
-    restoreOptions: LLMRestoreSessionOptions,
+    restoreOptions: LLMRestoreSessionOptions
   ): Promise<SummaryWindow[]> => {
     const chunkBudget = getSummaryChunkBudget(restoreOptions);
 
@@ -990,8 +873,8 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
           messages: messagesToSummarize,
           metadata,
           hash: createWindowHash(messagesToSummarize, metadata, 0),
-          messageIds: metadata.map((item) => item.id),
-        },
+          messageIds: metadata.map((item) => item.id)
+        }
       ];
     }
 
@@ -1008,13 +891,8 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         const candidateMessages = messagesToSummarize.slice(cursor, middle);
         const usage = await measurePromptsSafely(
           measureSession,
-          createSummaryPrompt(
-            formatMessagesForSummary(
-              candidateMessages,
-              restoreOptions.summaryMaxCharacters,
-            ),
-          ),
-          restoreOptions,
+          createSummaryPrompt(formatMessagesForSummary(candidateMessages, restoreOptions.summaryMaxCharacters)),
+          restoreOptions
         );
 
         if (usage <= chunkBudget) {
@@ -1033,7 +911,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         messages,
         metadata: windowMetadata,
         hash: createWindowHash(messages, windowMetadata, 0),
-        messageIds: windowMetadata.map((item) => item.id),
+        messageIds: windowMetadata.map((item) => item.id)
       });
       cursor = bestEnd;
     }
@@ -1047,15 +925,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     level: number,
     measureSession: LanguageModel | null,
     restoreOptions: LLMRestoreSessionOptions,
-    trackState = true,
+    trackState = true
   ) => {
-    const cached = findCachedSummary(
-      cache,
-      window.startIndex,
-      window.endIndex,
-      window.hash,
-      level,
-    );
+    const cached = findCachedSummary(cache, window.startIndex, window.endIndex, window.hash, level);
 
     if (cached) {
       cache.cachedSummaries += 1;
@@ -1063,21 +935,17 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         setContextRestoreState(
           {
             cachedSummaries: cache.cachedSummaries,
-            createdSummaries: cache.createdSummaries,
+            createdSummaries: cache.createdSummaries
           },
-          "progress",
-          restoreOptions.onStateChange,
+          'progress',
+          restoreOptions.onStateChange
         );
       }
       return cached;
     }
 
     const tokenUsage = measureSession
-      ? await measurePromptsSafely(
-          measureSession,
-          window.messages,
-          restoreOptions,
-        )
+      ? await measurePromptsSafely(measureSession, window.messages, restoreOptions)
       : null;
     const record = await createSummaryRecord(
       window.messages,
@@ -1085,7 +953,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       level,
       restoreOptions,
       Number.isFinite(tokenUsage) ? tokenUsage : null,
-      trackState,
+      trackState
     );
 
     await persistSummaryRecord(cache, record, restoreOptions, trackState);
@@ -1099,31 +967,25 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         const start = record.startIndex + 1;
         return `Messages ${start}-${record.endIndex} summary:\n${record.summary.trim()}`;
       })
-      .join("\n\n");
+      .join('\n\n');
   };
 
-  const createRollupSummaryIdentity = (
-    records: LLMContextSummaryRecord[],
-    level: number,
-  ) => {
+  const createRollupSummaryIdentity = (records: LLMContextSummaryRecord[], level: number) => {
     const startIndex = Math.min(...records.map((record) => record.startIndex));
     const endIndex = Math.max(...records.map((record) => record.endIndex));
     const hash = hashString(
       [
         SUMMARY_CACHE_VERSION,
         level,
-        ...records.map(
-          (record) =>
-            `${record.level}:${record.startIndex}:${record.endIndex}:${record.hash}`,
-        ),
-      ].join("\u001e"),
+        ...records.map((record) => `${record.level}:${record.startIndex}:${record.endIndex}:${record.hash}`)
+      ].join('\u001e')
     );
 
     return {
       startIndex,
       endIndex,
       hash,
-      messageIds: records.flatMap((summary) => summary.messageIds),
+      messageIds: records.flatMap((summary) => summary.messageIds)
     };
   };
 
@@ -1132,16 +994,10 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     records: LLMContextSummaryRecord[],
     level: number,
     restoreOptions: LLMRestoreSessionOptions,
-    trackState = true,
+    trackState = true
   ) => {
     const identity = createRollupSummaryIdentity(records, level);
-    const cached = findCachedSummary(
-      cache,
-      identity.startIndex,
-      identity.endIndex,
-      identity.hash,
-      level,
-    );
+    const cached = findCachedSummary(cache, identity.startIndex, identity.endIndex, identity.hash, level);
 
     if (!cached) {
       return null;
@@ -1152,10 +1008,10 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       setContextRestoreState(
         {
           cachedSummaries: cache.cachedSummaries,
-          createdSummaries: cache.createdSummaries,
+          createdSummaries: cache.createdSummaries
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
     }
 
@@ -1167,15 +1023,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     records: LLMContextSummaryRecord[],
     level: number,
     restoreOptions: LLMRestoreSessionOptions,
-    trackState = true,
+    trackState = true
   ) => {
-    const cached = getCachedRollupSummaryRecord(
-      cache,
-      records,
-      level,
-      restoreOptions,
-      trackState,
-    );
+    const cached = getCachedRollupSummaryRecord(cache, records, level, restoreOptions, trackState);
     if (cached) {
       return cached;
     }
@@ -1183,18 +1033,11 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     const identity = createRollupSummaryIdentity(records, level);
     const rollupInput: LanguageModelMessage[] = [
       {
-        role: "user",
-        content: formatSummaryRecords(records),
-      },
+        role: 'user',
+        content: formatSummaryRecords(records)
+      }
     ];
-    const record = await createSummaryRecord(
-      rollupInput,
-      identity,
-      level,
-      restoreOptions,
-      null,
-      trackState,
-    );
+    const record = await createSummaryRecord(rollupInput, identity, level, restoreOptions, null, trackState);
 
     await persistSummaryRecord(cache, record, restoreOptions, trackState);
     return record;
@@ -1204,9 +1047,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     cache: SummaryCacheState,
     records: LLMContextSummaryRecord[],
     level: number,
-    restoreOptions: LLMRestoreSessionOptions,
+    restoreOptions: LLMRestoreSessionOptions
   ) => {
-    if (records.length === 0 || typeof window === "undefined") {
+    if (records.length === 0 || typeof window === 'undefined') {
       return;
     }
 
@@ -1215,26 +1058,15 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       void (async () => {
         const backgroundRestoreOptions: LLMRestoreSessionOptions = {
           ...restoreOptions,
-          summaryTimeoutMs:
-            restoreOptions.summaryBackgroundTimeoutMs ??
-            DEFAULT_BACKGROUND_SUMMARY_TIMEOUT_MS,
-          shouldContinue: undefined,
+          summaryTimeoutMs: restoreOptions.summaryBackgroundTimeoutMs ?? DEFAULT_BACKGROUND_SUMMARY_TIMEOUT_MS,
+          shouldContinue: undefined
         };
 
         try {
-          await createRollupSummaryRecord(
-            cache,
-            rollupRecords,
-            level,
-            backgroundRestoreOptions,
-            false,
-          );
+          await createRollupSummaryRecord(cache, rollupRecords, level, backgroundRestoreOptions, false);
         } catch (error) {
           backgroundRestoreOptions.onSummaryCacheError?.(error);
-          console.warn(
-            "Browser AI background summary rollup cache update failed.",
-            error,
-          );
+          console.warn('Browser AI background summary rollup cache update failed.', error);
         }
       })();
     }, 0);
@@ -1243,9 +1075,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   const warmMissingSummaryRecords = (
     cache: SummaryCacheState,
     windows: SummaryWindow[],
-    restoreOptions: LLMRestoreSessionOptions,
+    restoreOptions: LLMRestoreSessionOptions
   ) => {
-    if (windows.length === 0 || typeof window === "undefined") {
+    if (windows.length === 0 || typeof window === 'undefined') {
       return;
     }
 
@@ -1253,40 +1085,20 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       void (async () => {
         const backgroundRestoreOptions: LLMRestoreSessionOptions = {
           ...restoreOptions,
-          summaryTimeoutMs:
-            restoreOptions.summaryBackgroundTimeoutMs ??
-            DEFAULT_BACKGROUND_SUMMARY_TIMEOUT_MS,
-          shouldContinue: undefined,
+          summaryTimeoutMs: restoreOptions.summaryBackgroundTimeoutMs ?? DEFAULT_BACKGROUND_SUMMARY_TIMEOUT_MS,
+          shouldContinue: undefined
         };
 
         for (const summaryWindow of windows) {
-          if (
-            findCachedSummary(
-              cache,
-              summaryWindow.startIndex,
-              summaryWindow.endIndex,
-              summaryWindow.hash,
-              0,
-            )
-          ) {
+          if (findCachedSummary(cache, summaryWindow.startIndex, summaryWindow.endIndex, summaryWindow.hash, 0)) {
             continue;
           }
 
           try {
-            await getOrCreateSummaryRecord(
-              cache,
-              summaryWindow,
-              0,
-              null,
-              backgroundRestoreOptions,
-              false,
-            );
+            await getOrCreateSummaryRecord(cache, summaryWindow, 0, null, backgroundRestoreOptions, false);
           } catch (error) {
             backgroundRestoreOptions.onSummaryCacheError?.(error);
-            console.warn(
-              "Browser AI background summary cache update failed.",
-              error,
-            );
+            console.warn('Browser AI background summary cache update failed.', error);
             break;
           }
         }
@@ -1303,139 +1115,98 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     budget: number | null,
     measureSession: LanguageModel,
     restoreOptions: LLMRestoreSessionOptions,
-    cache: SummaryCacheState,
+    cache: SummaryCacheState
   ): Promise<CachedSummaryResult> => {
     const windows = await buildSummaryWindows(
       messagesToSummarize,
       metadata,
       startIndex,
       measureSession,
-      restoreOptions,
+      restoreOptions
     );
 
     setContextRestoreState(
       {
         summaryChunks: windows.length,
-        summarizedMessages: messagesToSummarize.length,
+        summarizedMessages: messagesToSummarize.length
       },
-      "progress",
-      restoreOptions.onStateChange,
+      'progress',
+      restoreOptions.onStateChange
     );
 
     const cachedRecords = windows.map((windowItem) =>
-      findCachedSummary(
-        cache,
-        windowItem.startIndex,
-        windowItem.endIndex,
-        windowItem.hash,
-        0,
-      ),
+      findCachedSummary(cache, windowItem.startIndex, windowItem.endIndex, windowItem.hash, 0)
     );
-    const missingWindows = windows.filter(
-      (_windowItem, index) => cachedRecords[index] === null,
-    );
+    const missingWindows = windows.filter((_windowItem, index) => cachedRecords[index] === null);
     const summaryMode = restoreOptions.summaryMode ?? DEFAULT_SUMMARY_MODE;
 
-    if (missingWindows.length > 0 && summaryMode === "cache-first") {
+    if (missingWindows.length > 0 && summaryMode === 'cache-first') {
       return {
-        text: "",
-        warmCache: () =>
-          warmMissingSummaryRecords(cache, missingWindows, restoreOptions),
+        text: '',
+        warmCache: () => warmMissingSummaryRecords(cache, missingWindows, restoreOptions)
       };
     }
 
-    let records = cachedRecords.filter(
-      (record): record is LLMContextSummaryRecord => record !== null,
-    );
+    let records = cachedRecords.filter((record): record is LLMContextSummaryRecord => record !== null);
     if (records.length > 0) {
       cache.cachedSummaries += records.length;
       setContextRestoreState(
         {
-          cachedSummaries: cache.cachedSummaries,
+          cachedSummaries: cache.cachedSummaries
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
     }
     for (const summaryWindow of windows) {
-      if (
-        findCachedSummary(
-          cache,
-          summaryWindow.startIndex,
-          summaryWindow.endIndex,
-          summaryWindow.hash,
-          0,
-        )
-      ) {
+      if (findCachedSummary(cache, summaryWindow.startIndex, summaryWindow.endIndex, summaryWindow.hash, 0)) {
         continue;
       }
 
       setContextRestoreState(
         {
-          phase: "summarizing",
+          phase: 'summarizing',
           loadedMessages: summaryWindow.endIndex - startIndex,
           summarizedMessages: messagesToSummarize.length,
-          summaryChunks: windows.length,
+          summaryChunks: windows.length
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
 
-      const record = await getOrCreateSummaryRecord(
-        cache,
-        summaryWindow,
-        0,
-        measureSession,
-        restoreOptions,
-      );
+      const record = await getOrCreateSummaryRecord(cache, summaryWindow, 0, measureSession, restoreOptions);
       records.push(record);
 
       setContextRestoreState(
         {
           loadedMessages: summaryWindow.endIndex - startIndex,
-          summarizedMessages: messagesToSummarize.length,
+          summarizedMessages: messagesToSummarize.length
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
     }
 
     let summaryText = formatSummaryRecords(records);
-    for (
-      let attempt = 1;
-      attempt <= MAX_SUMMARY_ROLLUP_ATTEMPTS;
-      attempt += 1
-    ) {
+    for (let attempt = 1; attempt <= MAX_SUMMARY_ROLLUP_ATTEMPTS; attempt += 1) {
       if (!budget) {
         return { text: summaryText };
       }
 
       const summarySystem = mergeSystemContent(systemMessage, summaryText);
-      const candidate = summarySystem
-        ? [summarySystem, ...tailMessages]
-        : tailMessages;
-      const usage = await measurePromptsSafely(
-        measureSession,
-        candidate,
-        restoreOptions,
-      );
+      const candidate = summarySystem ? [summarySystem, ...tailMessages] : tailMessages;
+      const usage = await measurePromptsSafely(measureSession, candidate, restoreOptions);
       if (usage <= budget) {
         return { text: summaryText };
       }
 
-      if (summaryMode === "cache-first") {
-        const cachedRollup = getCachedRollupSummaryRecord(
-          cache,
-          records,
-          attempt,
-          restoreOptions,
-        );
+      if (summaryMode === 'cache-first') {
+        const cachedRollup = getCachedRollupSummaryRecord(cache, records, attempt, restoreOptions);
 
         if (!cachedRollup) {
           return {
-            text: "",
-            warmCache: () =>
-              warmRollupSummaryRecord(cache, records, attempt, restoreOptions),
+            text: '',
+            warmCache: () => warmRollupSummaryRecord(cache, records, attempt, restoreOptions)
           };
         }
 
@@ -1444,12 +1215,7 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         continue;
       }
 
-      const rollup = await createRollupSummaryRecord(
-        cache,
-        records,
-        attempt,
-        restoreOptions,
-      );
+      const rollup = await createRollupSummaryRecord(cache, records, attempt, restoreOptions);
       records = [rollup];
       summaryText = formatSummaryRecords(records);
     }
@@ -1459,13 +1225,13 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
 
   const toMeasurablePrompt = (prompts: RestorePrompt[]) => {
     return prompts.map((message) => {
-      if (message.role !== "system") {
+      if (message.role !== 'system') {
         return message;
       }
 
       return {
-        role: "user",
-        content: `System instructions:\n${message.content}`,
+        role: 'user',
+        content: `System instructions:\n${message.content}`
       } as LanguageModelMessage;
     });
   };
@@ -1473,17 +1239,11 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
   const measurePromptsSafely = async (
     measureSession: LanguageModel,
     prompts: RestorePrompt[],
-    restoreOptions: LLMRestoreSessionOptions,
+    restoreOptions: LLMRestoreSessionOptions
   ) => {
     try {
-      const usage = await measureSession.measureContextUsage(
-        toMeasurablePrompt(prompts),
-      );
-      setContextRestoreState(
-        { measuredTokens: usage },
-        "progress",
-        restoreOptions.onStateChange,
-      );
+      const usage = await measureSession.measureContextUsage(toMeasurablePrompt(prompts));
+      setContextRestoreState({ measuredTokens: usage }, 'progress', restoreOptions.onStateChange);
       return usage;
     } catch {
       return Number.POSITIVE_INFINITY;
@@ -1495,15 +1255,13 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     conversationHistory: LanguageModelMessage[],
     budget: number | null,
     measureSession: LanguageModel,
-    restoreOptions: LLMRestoreSessionOptions,
+    restoreOptions: LLMRestoreSessionOptions
   ): Promise<PromptFitResult> => {
     if (!budget || conversationHistory.length === 0) {
       return {
-        selected: systemMessage
-          ? [systemMessage, ...conversationHistory]
-          : [...conversationHistory],
+        selected: systemMessage ? [systemMessage, ...conversationHistory] : [...conversationHistory],
         selectedConversationCount: conversationHistory.length,
-        omitted: [],
+        omitted: []
       };
     }
 
@@ -1512,25 +1270,21 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       return systemMessage ? [systemMessage, ...messages] : messages;
     };
 
-    const fullUsage = await measurePromptsSafely(
-      measureSession,
-      buildCandidate(0),
-      restoreOptions,
-    );
+    const fullUsage = await measurePromptsSafely(measureSession, buildCandidate(0), restoreOptions);
     if (fullUsage <= budget) {
       setContextRestoreState(
         {
-          phase: "measuring",
+          phase: 'measuring',
           loadedMessages: conversationHistory.length,
-          includedMessages: conversationHistory.length,
+          includedMessages: conversationHistory.length
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
       return {
         selected: buildCandidate(0),
         selectedConversationCount: conversationHistory.length,
-        omitted: [],
+        omitted: []
       };
     }
 
@@ -1540,21 +1294,17 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
 
     while (low < high) {
       const middle = Math.floor((low + high) / 2);
-      const usage = await measurePromptsSafely(
-        measureSession,
-        buildCandidate(middle),
-        restoreOptions,
-      );
+      const usage = await measurePromptsSafely(measureSession, buildCandidate(middle), restoreOptions);
       const includedMessages = conversationHistory.length - middle;
 
       setContextRestoreState(
         {
-          phase: "measuring",
+          phase: 'measuring',
           loadedMessages: includedMessages,
-          includedMessages,
+          includedMessages
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
 
       if (usage <= budget) {
@@ -1567,31 +1317,28 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
 
     const selectedMessages = conversationHistory.slice(bestStart);
     return {
-      selected: systemMessage
-        ? [systemMessage, ...selectedMessages]
-        : selectedMessages,
+      selected: systemMessage ? [systemMessage, ...selectedMessages] : selectedMessages,
       selectedConversationCount: selectedMessages.length,
-      omitted: conversationHistory.slice(0, bestStart),
+      omitted: conversationHistory.slice(0, bestStart)
     };
   };
 
   const pickMessagesForRestore = async (
     history: RestorePrompt[],
     measureSession: LanguageModel,
-    restoreOptions: LLMRestoreSessionOptions,
+    restoreOptions: LLMRestoreSessionOptions
   ): Promise<PromptFitResult> => {
-    const { leadingSystemMessage, conversationHistory } =
-      getConversationMessages(history);
+    const { leadingSystemMessage, conversationHistory } = getConversationMessages(history);
     const budget = getContextBudget(restoreOptions.budgetRatio);
     const cache: SummaryCacheState = {
       records: normalizeSummaryCache(restoreOptions.summaryCache),
       cachedSummaries: 0,
-      createdSummaries: 0,
+      createdSummaries: 0
     };
 
     setContextRestoreState(
       {
-        phase: "measuring",
+        phase: 'measuring',
         totalMessages: conversationHistory.length,
         loadedMessages: 0,
         includedMessages: 0,
@@ -1599,10 +1346,10 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         cachedSummaries: 0,
         createdSummaries: 0,
         summaryChunks: 0,
-        measuredTokens: null,
+        measuredTokens: null
       },
-      "progress",
-      restoreOptions.onStateChange,
+      'progress',
+      restoreOptions.onStateChange
     );
 
     const recentFit = await fitPromptHistory(
@@ -1610,16 +1357,13 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       conversationHistory,
       budget,
       measureSession,
-      restoreOptions,
+      restoreOptions
     );
 
-    if (
-      recentFit.omitted.length === 0 ||
-      restoreOptions.strategy === "recent"
-    ) {
+    if (recentFit.omitted.length === 0 || restoreOptions.strategy === 'recent') {
       return {
         ...recentFit,
-        summarizedMessages: 0,
+        summarizedMessages: 0
       };
     }
 
@@ -1634,48 +1378,42 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         budget,
         measureSession,
         restoreOptions,
-        cache,
+        cache
       );
       if (!summary.text) {
         return {
           ...recentFit,
           summarizedMessages: 0,
-          warmSummaryCache: summary.warmCache,
+          warmSummaryCache: summary.warmCache
         };
       }
 
-      const summarizedSystem = mergeSystemContent(
-        leadingSystemMessage,
-        summary.text,
-      );
+      const summarizedSystem = mergeSystemContent(leadingSystemMessage, summary.text);
       const summarizedFit = await fitPromptHistory(
         summarizedSystem,
         conversationHistory.slice(omittedCount),
         budget,
         measureSession,
-        restoreOptions,
+        restoreOptions
       );
 
       return {
         ...summarizedFit,
         summarizedMessages: omittedCount,
-        warmSummaryCache: summary.warmCache,
+        warmSummaryCache: summary.warmCache
       };
     } catch (error) {
-      console.warn(
-        "Browser AI context summarization failed; falling back to recent messages.",
-        error,
-      );
+      console.warn('Browser AI context summarization failed; falling back to recent messages.', error);
       return {
         ...recentFit,
-        summarizedMessages: 0,
+        summarizedMessages: 0
       };
     }
   };
 
   const restoreSession = async (
     history: RestorePrompt[] = [],
-    restoreOptions: LLMRestoreSessionOptions = {},
+    restoreOptions: LLMRestoreSessionOptions = {}
   ): Promise<LLMRestoreSessionResult> => {
     const modelOptions = restoreOptions.modelOptions ?? params.value ?? {};
     const { conversationHistory } = getConversationMessages(history);
@@ -1684,15 +1422,15 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
 
     setContextRestoreState(
       {
-        phase: "checking",
+        phase: 'checking',
         loadedMessages: 0,
         totalMessages: totalConversationCount,
         summarizedMessages: 0,
         includedMessages: 0,
-        measuredTokens: null,
+        measuredTokens: null
       },
-      "start",
-      restoreOptions.onStateChange,
+      'start',
+      restoreOptions.onStateChange
     );
 
     try {
@@ -1705,48 +1443,25 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       }
 
       if (!restoreOptions.autoCreate && !restoreOptions.allowDownloadCreate) {
-        setContextRestoreState(
-          { phase: "idle" },
-          "complete",
-          restoreOptions.onStateChange,
-        );
+        setContextRestoreState({ phase: 'idle' }, 'complete', restoreOptions.onStateChange);
         return createRestoreResult(false, [], 0, totalConversationCount);
       }
 
-      if (
-        availability.value !== "available" &&
-        !restoreOptions.allowDownloadCreate
-      ) {
-        setContextRestoreState(
-          { phase: "idle" },
-          "complete",
-          restoreOptions.onStateChange,
-        );
+      if (availability.value !== 'available' && !restoreOptions.allowDownloadCreate) {
+        setContextRestoreState({ phase: 'idle' }, 'complete', restoreOptions.onStateChange);
         return createRestoreResult(false, [], 0, totalConversationCount);
       }
 
       if (history.length === 0) {
-        setContextRestoreState(
-          { phase: "creating" },
-          "progress",
-          restoreOptions.onStateChange,
-        );
+        setContextRestoreState({ phase: 'creating' }, 'progress', restoreOptions.onStateChange);
         restoreOptions.onCreateStart?.();
         await create();
         restoreOptions.onCreateComplete?.();
-        setContextRestoreState(
-          { phase: "ready" },
-          "complete",
-          restoreOptions.onStateChange,
-        );
+        setContextRestoreState({ phase: 'ready' }, 'complete', restoreOptions.onStateChange);
         return createRestoreResult(true, [], 0, 0);
       }
 
-      setContextRestoreState(
-        { phase: "creating" },
-        "progress",
-        restoreOptions.onStateChange,
-      );
+      setContextRestoreState({ phase: 'creating' }, 'progress', restoreOptions.onStateChange);
       restoreOptions.onCreateStart?.();
       const measureSession = await create();
       restoreOptions.onCreateComplete?.();
@@ -1756,9 +1471,9 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
       }
 
       const fitted = await pickMessagesForRestore(history, measureSession, {
-        strategy: "summarize",
+        strategy: 'summarize',
         ...restoreOptions,
-        modelOptions,
+        modelOptions
       });
 
       if (!shouldContinue()) {
@@ -1767,40 +1482,39 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
           fitted.selected,
           fitted.selectedConversationCount,
           totalConversationCount,
-          fitted.summarizedMessages ?? 0,
+          fitted.summarizedMessages ?? 0
         );
       }
 
       const summarizedMessages = fitted.summarizedMessages ?? 0;
       setContextRestoreState(
         {
-          phase: "restoring",
+          phase: 'restoring',
           loadedMessages: fitted.selectedConversationCount,
           includedMessages: fitted.selectedConversationCount,
-          summarizedMessages,
+          summarizedMessages
         },
-        "progress",
-        restoreOptions.onStateChange,
+        'progress',
+        restoreOptions.onStateChange
       );
 
       restoreOptions.onCreateStart?.();
       await create({
-        initialPrompts:
-          fitted.selected as LanguageModelCreateOptions["initialPrompts"],
+        initialPrompts: fitted.selected as LanguageModelCreateOptions['initialPrompts']
       });
       restoreOptions.onCreateComplete?.();
       fitted.warmSummaryCache?.();
 
       setContextRestoreState(
         {
-          phase: "ready",
+          phase: 'ready',
           loadedMessages: fitted.selectedConversationCount,
           totalMessages: totalConversationCount,
           includedMessages: fitted.selectedConversationCount,
-          summarizedMessages,
+          summarizedMessages
         },
-        "complete",
-        restoreOptions.onStateChange,
+        'complete',
+        restoreOptions.onStateChange
       );
 
       return createRestoreResult(
@@ -1808,14 +1522,10 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
         fitted.selected,
         fitted.selectedConversationCount,
         totalConversationCount,
-        summarizedMessages,
+        summarizedMessages
       );
     } catch (error) {
-      setContextRestoreState(
-        { phase: "error" },
-        "progress",
-        restoreOptions.onStateChange,
-      );
+      setContextRestoreState({ phase: 'error' }, 'progress', restoreOptions.onStateChange);
       throw error;
     }
   };
@@ -1859,6 +1569,6 @@ export function usePromptApi(options: UsePromptApiOptions = {}) {
     restoreSession,
     append,
     measureContextUsage,
-    interrupt,
+    interrupt
   };
 }

@@ -14,10 +14,7 @@
     "esModuleInterop": true,
     "outDir": "dist"
   },
-  "references": [
-    { "path": "./packages/browser-ai-vue" },
-    { "path": "./packages/browser-ai-nuxt" }
-  ],
+  "references": [{ "path": "./packages/browser-ai-vue" }, { "path": "./packages/browser-ai-nuxt" }],
   "include": [],
   "exclude": ["node_modules", "dist"]
 }

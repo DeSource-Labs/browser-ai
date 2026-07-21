@@ -59,8 +59,8 @@ npm install @desource/browser-ai-vue
 
 ```vue
 <script setup lang="ts">
-import { PromptApi } from "@desource/browser-ai-vue";
-import "@desource/browser-ai-vue/assets/lib.css";
+import { PromptApi } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 
 <template>
@@ -71,17 +71,17 @@ import "@desource/browser-ai-vue/assets/lib.css";
 Or own the interface and use the composable:
 
 ```ts
-import { usePromptApi } from "@desource/browser-ai-vue";
+import { usePromptApi } from '@desource/browser-ai-vue';
 
 const ai = usePromptApi();
 
 await ai.init({
-  expectedInputs: [{ type: "text", languages: ["en"] }],
-  expectedOutputs: [{ type: "text", languages: ["en"] }],
+  expectedInputs: [{ type: 'text', languages: ['en'] }],
+  expectedOutputs: [{ type: 'text', languages: ['en'] }]
 });
 await ai.create(); // Call from a user action when the model is downloadable.
 
-const answer = await ai.prompt("Explain view transitions in two sentences.");
+const answer = await ai.prompt('Explain view transitions in two sentences.');
 ```
 
 [Vue package guide](packages/browser-ai-vue/README.md)
@@ -95,7 +95,7 @@ npm install @desource/browser-ai-nuxt
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ["@desource/browser-ai-nuxt"],
+  modules: ['@desource/browser-ai-nuxt']
 });
 ```
 
@@ -140,19 +140,16 @@ Read [Getting started](docs/getting-started.md) for setup and fallback guidance,
 ## Structured output
 
 ```ts
-const result = await ai.promptJson<{ priority: "low" | "high" }>(
-  "Classify this support request: Production is down.",
-  {
-    responseConstraint: {
-      type: "object",
-      properties: {
-        priority: { type: "string", enum: ["low", "high"] },
-      },
-      required: ["priority"],
-      additionalProperties: false,
+const result = await ai.promptJson<{ priority: 'low' | 'high' }>('Classify this support request: Production is down.', {
+  responseConstraint: {
+    type: 'object',
+    properties: {
+      priority: { type: 'string', enum: ['low', 'high'] }
     },
-  },
-);
+    required: ['priority'],
+    additionalProperties: false
+  }
+});
 ```
 
 The browser constrains generation to the supplied schema; `promptJson()` also parses the response into your TypeScript type.
@@ -160,16 +157,16 @@ The browser constrains generation to the supplied schema; `promptJson()` also pa
 ## WebMCP
 
 ```ts
-import { useWebMcp } from "@desource/browser-ai-vue";
+import { useWebMcp } from '@desource/browser-ai-vue';
 
 const webMcp = useWebMcp();
 
 const unregister = await webMcp.registerTool({
-  name: "get_cart_total",
-  description: "Return the current cart total without changing the cart.",
-  inputSchema: { type: "object", properties: {} },
+  name: 'get_cart_total',
+  description: 'Return the current cart total without changing the cart.',
+  inputSchema: { type: 'object', properties: {} },
   annotations: { readOnlyHint: true },
-  execute: () => ({ total: cart.total, currency: cart.currency }),
+  execute: () => ({ total: cart.total, currency: cart.currency })
 });
 
 // Unregister explicitly, or let the Vue scope dispose it.

@@ -1,27 +1,12 @@
 <template>
   <div class="prompt-input">
-    <div
-      v-if="allowAttachments && attachments.length"
-      class="prompt-input__attachments"
-    >
-      <div
-        v-for="attachment in attachments"
-        :key="attachment.id"
-        class="prompt-input__attachment"
-      >
-        <img
-          v-if="attachment.type.startsWith('image/')"
-          :src="attachment.url"
-          :alt="attachment.name"
-        />
+    <div v-if="allowAttachments && attachments.length" class="prompt-input__attachments">
+      <div v-for="attachment in attachments" :key="attachment.id" class="prompt-input__attachment">
+        <img v-if="attachment.type.startsWith('image/')" :src="attachment.url" :alt="attachment.name" />
         <div v-else class="prompt-input__file">
           {{ attachment.name }}
         </div>
-        <button
-          type="button"
-          class="prompt-input__remove"
-          @click="removeAttachment(attachment.id)"
-        >
+        <button type="button" class="prompt-input__remove" @click="removeAttachment(attachment.id)">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -98,14 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 export type PromptAttachment = {
   id: string;
@@ -129,19 +107,19 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: "Ask the assistant... ",
+  placeholder: 'Ask the assistant... ',
   disabled: false,
   busy: false,
   sendOnEnter: true,
   allowAttachments: false,
   allowVoice: false,
-  accept: "image/*",
-  maxAttachments: undefined,
+  accept: 'image/*',
+  maxAttachments: undefined
 });
 
 const emit = defineEmits<{
-  "update:modelValue": [value: string];
-  "update:attachments": [value: PromptAttachment[]];
+  'update:modelValue': [value: string];
+  'update:attachments': [value: PromptAttachment[]];
   send: [];
   voice: [];
 }>();
@@ -156,7 +134,7 @@ const canSend = computed(() => {
 
 const onInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement;
-  emit("update:modelValue", target.value);
+  emit('update:modelValue', target.value);
   scheduleResize();
 };
 
@@ -164,24 +142,18 @@ const resizeTextarea = () => {
   resizeFrame = null;
   const element = textareaEl.value;
   if (!element) return;
-  element.style.height = "auto";
+  element.style.height = 'auto';
   element.style.height = `${Math.min(element.scrollHeight, 160)}px`;
 };
 
 const scheduleResize = () => {
-  if (typeof window === "undefined" || resizeFrame !== null) return;
+  if (typeof window === 'undefined' || resizeFrame !== null) return;
   resizeFrame = window.requestAnimationFrame(resizeTextarea);
 };
 
 const onKeydown = (event: KeyboardEvent) => {
   if (!props.sendOnEnter) return;
-  if (
-    event.key !== "Enter" ||
-    event.shiftKey ||
-    event.metaKey ||
-    event.ctrlKey ||
-    event.altKey
-  ) {
+  if (event.key !== 'Enter' || event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) {
     return;
   }
   event.preventDefault();
@@ -190,12 +162,12 @@ const onKeydown = (event: KeyboardEvent) => {
 
 const emitSend = () => {
   if (!canSend.value || props.disabled || props.busy) return;
-  emit("send");
+  emit('send');
 };
 
 const handleVoice = () => {
   if (props.disabled) return;
-  emit("voice");
+  emit('voice');
 };
 
 const triggerFile = () => {
@@ -212,24 +184,22 @@ const handleFiles = (event: Event) => {
     ? Math.max(props.maxAttachments - props.attachments.length, 0)
     : files.length;
   if (availableSlots === 0) {
-    target.value = "";
+    target.value = '';
     return;
   }
 
   const selectedFiles = files.slice(0, availableSlots);
   const next = selectedFiles.map((file) => ({
     id:
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random()}`,
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     file,
     url: URL.createObjectURL(file),
     name: file.name,
-    type: file.type,
+    type: file.type
   }));
 
-  emit("update:attachments", [...props.attachments, ...next]);
-  target.value = "";
+  emit('update:attachments', [...props.attachments, ...next]);
+  target.value = '';
 };
 
 const removeAttachment = (id: string) => {
@@ -238,8 +208,8 @@ const removeAttachment = (id: string) => {
     URL.revokeObjectURL(toRemove.url);
   }
   emit(
-    "update:attachments",
-    props.attachments.filter((item) => item.id !== id),
+    'update:attachments',
+    props.attachments.filter((item) => item.id !== id)
   );
 };
 
@@ -253,12 +223,12 @@ watch(
       }
     });
   },
-  { deep: true },
+  { deep: true }
 );
 
 watch(
   () => props.modelValue,
-  () => void nextTick(scheduleResize),
+  () => void nextTick(scheduleResize)
 );
 
 onMounted(scheduleResize);
@@ -282,13 +252,7 @@ onBeforeUnmount(() => {
   padding: 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
-  background:
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(124, 92, 228, 0.08),
-      transparent 36%
-    ),
-    rgba(7, 10, 20, 0.78);
+  background: radial-gradient(circle at 100% 100%, rgba(124, 92, 228, 0.08), transparent 36%), rgba(7, 10, 20, 0.78);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.045);
   pointer-events: all;
 }
@@ -393,11 +357,7 @@ onBeforeUnmount(() => {
   height: 40px;
   border: 1px solid rgba(167, 139, 250, 0.25);
   border-radius: 0.78rem;
-  background: linear-gradient(
-    145deg,
-    rgba(124, 92, 228, 0.42),
-    rgba(77, 109, 220, 0.34)
-  );
+  background: linear-gradient(145deg, rgba(124, 92, 228, 0.42), rgba(77, 109, 220, 0.34));
   color: var(--color-primary);
   cursor: pointer;
   display: grid;
@@ -406,11 +366,7 @@ onBeforeUnmount(() => {
 }
 
 .prompt-input__send:hover {
-  background: linear-gradient(
-    145deg,
-    rgba(139, 108, 244, 0.58),
-    rgba(88, 122, 238, 0.48)
-  );
+  background: linear-gradient(145deg, rgba(139, 108, 244, 0.58), rgba(88, 122, 238, 0.48));
 }
 
 .prompt-input__send:disabled,

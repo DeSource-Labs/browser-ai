@@ -7,29 +7,29 @@ WebMCP is experimental. At the time of this review it is available through Chrom
 ## Imperative tool registration
 
 ```ts
-import { useWebMcp } from "@desource/browser-ai-vue";
+import { useWebMcp } from '@desource/browser-ai-vue';
 
 const webMcp = useWebMcp();
 
 const unregister = await webMcp.registerTool({
-  name: "search_catalog",
-  description: "Search products available to the current visitor.",
+  name: 'search_catalog',
+  description: 'Search products available to the current visitor.',
   inputSchema: {
-    type: "object",
+    type: 'object',
     properties: {
-      query: { type: "string", minLength: 2 },
-      limit: { type: "integer", minimum: 1, maximum: 20 },
+      query: { type: 'string', minLength: 2 },
+      limit: { type: 'integer', minimum: 1, maximum: 20 }
     },
-    required: ["query"],
-    additionalProperties: false,
+    required: ['query'],
+    additionalProperties: false
   },
   annotations: {
     readOnlyHint: true,
-    untrustedContentHint: true,
+    untrustedContentHint: true
   },
   execute: async ({ query, limit = 10 }) => {
     return catalog.search(String(query), Number(limit));
-  },
+  }
 });
 ```
 
@@ -40,9 +40,9 @@ The returned function aborts the registration. Registrations owned by a Vue effe
 ```ts
 await webMcp.refreshTools();
 
-const result = await webMcp.executeTool("search_catalog", {
-  query: "ergonomic keyboard",
-  limit: 5,
+const result = await webMcp.executeTool('search_catalog', {
+  query: 'ergonomic keyboard',
+  limit: 5
 });
 ```
 
@@ -54,18 +54,15 @@ WebMCP can describe an existing form without duplicating its submit behavior:
 
 ```vue
 <script setup lang="ts">
-import {
-  createWebMcpFieldAttributes,
-  createWebMcpFormAttributes,
-} from "@desource/browser-ai-vue";
+import { createWebMcpFieldAttributes, createWebMcpFormAttributes } from '@desource/browser-ai-vue';
 
 const formAttrs = createWebMcpFormAttributes({
-  name: "request_demo",
-  description: "Request a product demonstration.",
+  name: 'request_demo',
+  description: 'Request a product demonstration.'
 });
 
 const emailAttrs = createWebMcpFieldAttributes({
-  description: "Work email address for the confirmation.",
+  description: 'Work email address for the confirmation.'
 });
 </script>
 
@@ -93,13 +90,13 @@ Nuxt/Nitro example:
 ```ts
 export default defineNuxtConfig({
   routeRules: {
-    "/**": {
+    '/**': {
       headers: {
-        "origin-agent-cluster": "?1",
-        "permissions-policy": "tools=(self)",
-      },
-    },
-  },
+        'origin-agent-cluster': '?1',
+        'permissions-policy': 'tools=(self)'
+      }
+    }
+  }
 });
 ```
 

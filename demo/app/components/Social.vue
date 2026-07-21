@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SocialMediaKey } from "~~/shared/types";
+import type { SocialMediaKey } from '~~/shared/types';
 
 const props = withDefaults(
   defineProps<{
@@ -26,42 +26,40 @@ const props = withDefaults(
     background?: string;
   }>(),
   {
-    size: "1rem",
-    color: "currentColor",
-    background: "var(--color-background)",
-  },
+    size: '1rem',
+    color: 'currentColor',
+    background: 'var(--color-background)'
+  }
 );
 
 const icon = computed(() => icons[props.type]);
 
-const target = computed(() =>
-  props.href.startsWith("mailto:") ? "_self" : "_blank",
-);
+const target = computed(() => (props.href.startsWith('mailto:') ? '_self' : '_blank'));
 
 const styles = computed(() => {
   switch (props.type) {
-    case "email":
+    case 'email':
       return {
         background: props.color,
-        fill: "none",
+        fill: 'none',
         stroke: props.background,
-        padding: "1px",
+        padding: '1px'
       };
-    case "x":
+    case 'x':
       return {
         background: props.color,
         fill: props.background,
-        padding: "2px",
+        padding: '2px'
       };
-    case "github":
-    case "telegram":
+    case 'github':
+    case 'telegram':
       return {
         background: props.color,
-        fill: props.background,
+        fill: props.background
       };
-    case "linkedin":
+    case 'linkedin':
       return {
-        fill: props.color,
+        fill: props.color
       };
     default:
       return {};

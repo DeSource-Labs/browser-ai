@@ -26,7 +26,7 @@ Add the module:
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ["@desource/browser-ai-nuxt"],
+  modules: ['@desource/browser-ai-nuxt']
 });
 ```
 
@@ -43,18 +43,18 @@ Or build a product-specific interface around an auto-imported composable:
 ```vue
 <script setup lang="ts">
 const ai = usePromptApi();
-const answer = ref("");
+const answer = ref('');
 
 async function start() {
   await ai.init({
-    expectedInputs: [{ type: "text", languages: ["en"] }],
-    expectedOutputs: [{ type: "text", languages: ["en"] }],
+    expectedInputs: [{ type: 'text', languages: ['en'] }],
+    expectedOutputs: [{ type: 'text', languages: ['en'] }]
   });
   await ai.create();
 }
 
 async function send(prompt: string) {
-  answer.value = "";
+  answer.value = '';
   const stream = ai.promptStreaming(prompt);
   for await (const chunk of stream) {
     answer.value += chunk;
@@ -69,12 +69,12 @@ When Chrome reports `downloadable`, call `create()` from a genuine user action. 
 
 ```ts
 export default defineNuxtConfig({
-  modules: ["@desource/browser-ai-nuxt"],
+  modules: ['@desource/browser-ai-nuxt'],
   browserAi: {
     css: true,
     component: true,
-    helpers: true,
-  },
+    helpers: true
+  }
 });
 ```
 
@@ -113,13 +113,13 @@ WebMCP is experimental and requires an origin-isolated production document plus 
 ```ts
 export default defineNuxtConfig({
   routeRules: {
-    "/**": {
+    '/**': {
       headers: {
-        "origin-agent-cluster": "?1",
-        "permissions-policy": "tools=(self)",
-      },
-    },
-  },
+        'origin-agent-cluster': '?1',
+        'permissions-policy': 'tools=(self)'
+      }
+    }
+  }
 });
 ```
 

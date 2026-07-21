@@ -17,23 +17,30 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "build": "pnpm -w -r --filter \"./packages/**\" --stream run build",
-    "clean": "pnpm -w -r --filter \"./packages/**\" --stream run clean",
-    "dev:demo": "pnpm build && pnpm --filter demo dev",
-    "dev:prepare": "pnpm --filter demo deps:prepare",
+    "clean": "pnpm -r --if-present --stream run clean",
+    "clean:modules": "pnpm -r --if-present --stream run clean:modules && rimraf node_modules",
+    "build": "pnpm -r --filter \"./packages/**\" --stream run build",
+    "dev:demo": "pnpm --filter demo dev",
+    "dev:prepare": "pnpm --filter demo prepare:deps",
     "build:demo": "pnpm --filter demo build",
-    "vercel-build": "pnpm clean && pnpm build && pnpm dev:prepare && pnpm build:demo",
+    "vercel-build": "pnpm build && pnpm dev:prepare && pnpm build:demo",
+    "build:all": "pnpm build && pnpm dev:prepare && pnpm build:demo",
+    "ci": "pnpm format:check && pnpm lint && pnpm build:all && pnpm test:all",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --lockfile-only",
-    "changeset:publish": "pnpm clean && pnpm build && changeset publish",
+    "changeset:publish": "pnpm build && changeset publish",
     "release": "pnpm changeset:version && pnpm changeset:publish",
+    "test:all": "pnpm test:unit && pnpm test:e2e",
+    "test:e2e": "pnpm -r --filter \"./packages/**\" --if-present --stream --workspace-concurrency=1 run test:e2e",
+    "test:unit": "pnpm -r --filter \"./packages/**\" --if-present --stream run test:unit",
+    "test:unit:coverage": "pnpm -r --filter \"./packages/**\" --if-present --stream run test:unit:coverage",
+    "typecheck": "pnpm -r --if-present --stream run typecheck",
     "lint": "eslint .",
-    "test": "pnpm --filter @desource/browser-ai-vue test",
-    "typecheck": "pnpm --filter @desource/browser-ai-vue typecheck && pnpm --filter demo deps:prepare && pnpm --filter demo exec nuxt typecheck",
-    "check": "pnpm lint && pnpm test && pnpm typecheck && pnpm build && pnpm build:demo",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\"",
-    "format:check": "prettier --check \"**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\""
+    "format": "prettier --write \"**/*.{svelte,vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\"",
+    "format:check": "prettier --check \"**/*.{svelte,vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\"",
+    "lint:staged": "lint-staged",
+    "prepare": "husky"
   },
   "packageManager": "pnpm@11.10.0",
   "devDependencies": {
@@ -48,11 +55,23 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.9.2",
     "globals": "^17.7.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.1.0",
     "prettier": "^3.9.5",
+    "prettier-plugin-svelte": "^4.1.1",
     "rimraf": "^6.1.3",
     "typescript": "^5.9.3",
     "vite": "~8.0.16",
     "vitest": "^4.1.10",
     "vue-eslint-parser": "^10.4.1"
+  },
+  "lint-staged": {
+    "*.{svelte,vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }

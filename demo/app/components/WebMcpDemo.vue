@@ -3,9 +3,7 @@
     <div class="webmcp-demo__content">
       <header class="webmcp-demo__header">
         <div>
-          <p class="webmcp-demo__eyebrow">
-            Chrome 149+ origin trial / local flag
-          </p>
+          <p class="webmcp-demo__eyebrow">Chrome 149+ origin trial / local flag</p>
           <h2>Agent-ready tools, visible in the page</h2>
         </div>
         <span
@@ -18,17 +16,12 @@
       </header>
 
       <p class="webmcp-demo__intro">
-        This page registers two imperative tools and one declarative form. Tool
-        calls update the same UI the user sees.
+        This page registers two imperative tools and one declarative form. Tool calls update the same UI the user sees.
       </p>
 
-      <div
-        v-if="hasMounted && !isSupported"
-        class="webmcp-demo__notice"
-        role="status"
-      >
-        Enable <code>#enable-webmcp-testing</code>, use a secure origin, and
-        allow the <code>tools</code> permissions policy.
+      <div v-if="hasMounted && !isSupported" class="webmcp-demo__notice" role="status">
+        Enable <code>#enable-webmcp-testing</code>, use a secure origin, and allow the <code>tools</code> permissions
+        policy.
       </div>
       <div v-if="demoError" class="webmcp-demo__notice" role="alert">
         {{ demoError }}
@@ -41,12 +34,8 @@
               <span>Imperative API</span>
               <strong>{{ visibleRegisteredTools.length }} registered</strong>
             </div>
-            <button
-              type="button"
-              :disabled="!browserSupported || isProcessing"
-              @click="toggleTools"
-            >
-              {{ visibleRegisteredTools.length ? "Unregister" : "Register" }}
+            <button type="button" :disabled="!browserSupported || isProcessing" @click="toggleTools">
+              {{ visibleRegisteredTools.length ? 'Unregister' : 'Register' }}
             </button>
           </div>
 
@@ -72,14 +61,7 @@
 
           <form v-bind="formAttributes" @submit="handleFormSubmit">
             <label for="webmcp-note">Note for the page</label>
-            <input
-              id="webmcp-note"
-              v-model="formMessage"
-              v-bind="fieldAttributes"
-              name="note"
-              required
-              type="text"
-            />
+            <input id="webmcp-note" v-model="formMessage" v-bind="fieldAttributes" name="note" required type="text" />
             <button type="submit">Apply note</button>
           </form>
           <p class="webmcp-demo__result">{{ agentEvent }}</p>
@@ -88,11 +70,7 @@
 
       <footer class="webmcp-demo__footer">
         <span>Discoverable tools: {{ discoveredTools.length }}</span>
-        <button
-          type="button"
-          :disabled="!browserSupported || isProcessing"
-          @click="refreshDemoTools"
-        >
+        <button type="button" :disabled="!browserSupported || isProcessing" @click="refreshDemoTools">
           Refresh discovery
         </button>
       </footer>
@@ -106,8 +84,8 @@ import {
   createWebMcpFormAttributes,
   useWebMcp,
   type WebMcpTool,
-  type WebMcpToolInput,
-} from "@desource/browser-ai-vue";
+  type WebMcpToolInput
+} from '@desource/browser-ai-vue';
 
 type AgentSubmitEvent = SubmitEvent & {
   agentInvoked?: boolean;
@@ -116,13 +94,11 @@ type AgentSubmitEvent = SubmitEvent & {
 
 type ToolLifecycleEvent = Event & { toolName?: string };
 
-const message = ref("Browser AI Kit is ready.");
-const formMessage = ref("Ready for an agent-assisted workflow.");
-const lastAction = ref(
-  "Change the field yourself or call set_demo_message from an agent.",
-);
-const agentEvent = ref("The form works for people and agents.");
-const demoError = ref("");
+const message = ref('Browser AI Kit is ready.');
+const formMessage = ref('Ready for an agent-assisted workflow.');
+const lastAction = ref('Change the field yourself or call set_demo_message from an agent.');
+const agentEvent = ref('The form works for people and agents.');
+const demoError = ref('');
 
 const {
   support,
@@ -133,83 +109,72 @@ const {
   refreshSupport,
   registerTools,
   unregisterAll,
-  refreshTools,
+  refreshTools
 } = useWebMcp();
 const statusElement = ref<HTMLElement | null>(null);
 const hasMounted = ref(false);
 const browserSupported = computed(() => hasMounted.value && isSupported.value);
 const supportLabel = computed(() => {
-  if (!hasMounted.value) return "Checking support";
-  return isSupported.value ? "Supported" : support.value.reason;
+  if (!hasMounted.value) return 'Checking support';
+  return isSupported.value ? 'Supported' : support.value.reason;
 });
-const visibleRegisteredTools = computed<WebMcpTool[]>(
-  () => registeredTools.value,
-);
+const visibleRegisteredTools = computed<WebMcpTool[]>(() => registeredTools.value);
 
 const formAttributes = createWebMcpFormAttributes({
-  name: "apply_demo_note",
-  description: "Apply a short note to the visible Browser AI Kit WebMCP demo.",
-  autoSubmit: true,
+  name: 'apply_demo_note',
+  description: 'Apply a short note to the visible Browser AI Kit WebMCP demo.',
+  autoSubmit: true
 });
-const fieldAttributes = createWebMcpFieldAttributes(
-  "The short note to display in the shared WebMCP demo state.",
-);
+const fieldAttributes = createWebMcpFieldAttributes('The short note to display in the shared WebMCP demo state.');
 
 const registerDemoTools = async () => {
   if (!isSupported.value || registeredTools.value.length) return;
 
-  demoError.value = "";
+  demoError.value = '';
   try {
     await registerTools([
       {
-        name: "get_demo_state",
-        description:
-          "Read the current message shown in the Browser AI Kit WebMCP demo.",
-        inputSchema: { type: "object", properties: {} },
+        name: 'get_demo_state',
+        description: 'Read the current message shown in the Browser AI Kit WebMCP demo.',
+        inputSchema: { type: 'object', properties: {} },
         annotations: { readOnlyHint: true },
-        execute: () => ({ message: message.value }),
+        execute: () => ({ message: message.value })
       },
       {
-        name: "set_demo_message",
-        description:
-          "Set the short message shown in the visible Browser AI Kit WebMCP demo.",
+        name: 'set_demo_message',
+        description: 'Set the short message shown in the visible Browser AI Kit WebMCP demo.',
         inputSchema: {
-          type: "object",
+          type: 'object',
           properties: {
             message: {
-              type: "string",
-              description: "A concise message to display in the demo.",
-            },
+              type: 'string',
+              description: 'A concise message to display in the demo.'
+            }
           },
-          required: ["message"],
+          required: ['message']
         },
         annotations: { readOnlyHint: false, untrustedContentHint: true },
         execute: (input: WebMcpToolInput) => {
-          const nextMessage =
-            typeof input.message === "string" ? input.message.trim() : "";
-          if (!nextMessage)
-            throw new TypeError("message must be a non-empty string.");
+          const nextMessage = typeof input.message === 'string' ? input.message.trim() : '';
+          if (!nextMessage) throw new TypeError('message must be a non-empty string.');
           message.value = nextMessage.slice(0, 240);
-          lastAction.value =
-            "The set_demo_message tool updated the visible page state.";
+          lastAction.value = 'The set_demo_message tool updated the visible page state.';
           return { applied: true, message: message.value };
-        },
-      },
+        }
+      }
     ]);
     await refreshTools();
   } catch (error) {
-    demoError.value =
-      error instanceof Error ? error.message : "WebMCP registration failed.";
+    demoError.value = error instanceof Error ? error.message : 'WebMCP registration failed.';
   }
 };
 
 const refreshDemoTools = async () => {
-  demoError.value = "";
+  demoError.value = '';
   try {
     await refreshTools();
   } catch (error) {
-    demoError.value =
-      error instanceof Error ? error.message : "WebMCP discovery failed.";
+    demoError.value = error instanceof Error ? error.message : 'WebMCP discovery failed.';
   }
 };
 
@@ -228,49 +193,42 @@ const handleFormSubmit = (rawEvent: Event) => {
   const note = formMessage.value.trim();
   if (!note) {
     if (event.agentInvoked) {
-      event.respondWith?.(
-        Promise.reject(new TypeError("note must be a non-empty string.")),
-      );
+      event.respondWith?.(Promise.reject(new TypeError('note must be a non-empty string.')));
     }
     return;
   }
 
   message.value = note.slice(0, 240);
   agentEvent.value = event.agentInvoked
-    ? "An agent submitted the declarative tool and updated the page."
-    : "You submitted the same form directly.";
+    ? 'An agent submitted the declarative tool and updated the page.'
+    : 'You submitted the same form directly.';
   if (event.agentInvoked) {
-    event.respondWith?.(
-      Promise.resolve({ applied: true, message: message.value }),
-    );
+    event.respondWith?.(Promise.resolve({ applied: true, message: message.value }));
   }
 };
 
 const handleToolActivated = (event: Event) => {
   const toolEvent = event as ToolLifecycleEvent;
-  agentEvent.value = `Agent activated ${toolEvent.toolName ?? "a declarative tool"}.`;
+  agentEvent.value = `Agent activated ${toolEvent.toolName ?? 'a declarative tool'}.`;
 };
 
 const handleToolCancel = (event: Event) => {
   const toolEvent = event as ToolLifecycleEvent;
-  agentEvent.value = `Agent cancelled ${toolEvent.toolName ?? "the declarative tool"}.`;
+  agentEvent.value = `Agent cancelled ${toolEvent.toolName ?? 'the declarative tool'}.`;
 };
 
 onMounted(async () => {
   hasMounted.value = true;
-  window.addEventListener("toolactivated", handleToolActivated);
-  window.addEventListener("toolcancel", handleToolCancel);
+  window.addEventListener('toolactivated', handleToolActivated);
+  window.addEventListener('toolcancel', handleToolCancel);
   const currentSupport = refreshSupport();
-  statusElement.value?.classList.toggle(
-    "webmcp-demo__status--ready",
-    currentSupport.supported,
-  );
+  statusElement.value?.classList.toggle('webmcp-demo__status--ready', currentSupport.supported);
   await registerDemoTools();
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("toolactivated", handleToolActivated);
-  window.removeEventListener("toolcancel", handleToolCancel);
+  window.removeEventListener('toolactivated', handleToolActivated);
+  window.removeEventListener('toolcancel', handleToolCancel);
 });
 </script>
 

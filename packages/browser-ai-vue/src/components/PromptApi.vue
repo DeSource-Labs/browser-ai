@@ -17,24 +17,18 @@
           <span
             class="prompt-api__availability"
             :class="{
-              'prompt-api__availability--available':
-                availability === 'available',
-              'prompt-api__availability--downloadable':
-                availability === 'downloadable',
-              'prompt-api__availability--downloading':
-                availability === 'downloading',
-              'prompt-api__availability--unavailable':
-                availability === 'unavailable',
+              'prompt-api__availability--available': availability === 'available',
+              'prompt-api__availability--downloadable': availability === 'downloadable',
+              'prompt-api__availability--downloading': availability === 'downloading',
+              'prompt-api__availability--unavailable': availability === 'unavailable'
             }"
           >
-            {{ availability || "unknown" }}
+            {{ availability || 'unknown' }}
           </span>
         </div>
 
         <div class="prompt-api__meta">
-          <span>
-            Tokens: {{ tokensUsedLabel }} used / {{ tokensLeftLabel }} left
-          </span>
+          <span> Tokens: {{ tokensUsedLabel }} used / {{ tokensLeftLabel }} left </span>
           <div
             v-if="isContextLoading"
             class="prompt-api__header-loader"
@@ -56,11 +50,7 @@
         </div>
       </header>
 
-      <ChatHistory
-        :messages="messages"
-        :is-typing="isTyping"
-        :auto-scroll="autoScroll"
-      />
+      <ChatHistory :messages="messages" :is-typing="isTyping" :auto-scroll="autoScroll" />
 
       <PromptInput
         v-model="draft"
@@ -78,76 +68,46 @@
       />
     </div>
 
-    <div
-      v-if="pendingDeleteChat"
-      class="prompt-api__overlay"
-      role="dialog"
-      aria-modal="true"
-    >
+    <div v-if="pendingDeleteChat" class="prompt-api__overlay" role="dialog" aria-modal="true">
       <div class="prompt-api__dialog">
         <h4>Delete chat?</h4>
-        <p>
-          "{{ pendingDeleteChat.title }}" will be removed. You can undo this
-          action for a few seconds.
-        </p>
+        <p>"{{ pendingDeleteChat.title }}" will be removed. You can undo this action for a few seconds.</p>
         <div class="prompt-api__dialog-actions">
-          <button
-            type="button"
-            class="prompt-api__button"
-            @click="cancelDeleteChat"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="prompt-api__button prompt-api__button--danger"
-            @click="confirmDeleteChat"
-          >
+          <button type="button" class="prompt-api__button" @click="cancelDeleteChat">Cancel</button>
+          <button type="button" class="prompt-api__button prompt-api__button--danger" @click="confirmDeleteChat">
             Delete
           </button>
         </div>
       </div>
     </div>
 
-    <div
-      v-if="undoState"
-      class="prompt-api__toast"
-      role="status"
-      aria-live="polite"
-    >
+    <div v-if="undoState" class="prompt-api__toast" role="status" aria-live="polite">
       <span>Chat deleted.</span>
-      <button
-        type="button"
-        class="prompt-api__toast-action"
-        @click="undoDeleteChat"
-      >
-        Undo
-      </button>
+      <button type="button" class="prompt-api__toast-action" @click="undoDeleteChat">Undo</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import ChatHistory from "./ChatHistory.vue";
-import PromptInput from "./PromptInput.vue";
-import ChatSidebar from "./ChatSidebar.vue";
-import type { ChatMessage } from "./ChatHistory.vue";
-import type { PromptAttachment } from "./PromptInput.vue";
-import type { ChatSidebarItem } from "./ChatSidebar.vue";
-import type { AiChatMessage, AiChatRecord } from "../composables/useAiChats";
-import { useAiChats } from "../composables/useAiChats";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import ChatHistory from './ChatHistory.vue';
+import PromptInput from './PromptInput.vue';
+import ChatSidebar from './ChatSidebar.vue';
+import type { ChatMessage } from './ChatHistory.vue';
+import type { PromptAttachment } from './PromptInput.vue';
+import type { ChatSidebarItem } from './ChatSidebar.vue';
+import type { AiChatMessage, AiChatRecord } from '../composables/useAiChats';
+import { useAiChats } from '../composables/useAiChats';
 import {
   usePromptApi,
   type LLMContextRestoreState,
   type LLMContextSummaryMode,
   type LLMContextStrategy,
-  type LLMRestoreSessionOptions,
-} from "../composables/usePromptApi";
+  type LLMRestoreSessionOptions
+} from '../composables/usePromptApi';
 
-type LLMPromptOptions = Omit<LanguageModelPromptOptions, "signal">;
-type PromptProcessingState =
-  "availability" | "create" | "measure" | "prompt" | "";
+type LLMPromptOptions = Omit<LanguageModelPromptOptions, 'signal'>;
+type PromptProcessingState = 'availability' | 'create' | 'measure' | 'prompt' | '';
 
 type PromptOptionsContext = {
   text: string;
@@ -159,14 +119,14 @@ type PromptOptionsContext = {
 type RestoreSessionOverrides = Partial<
   Pick<
     LLMRestoreSessionOptions,
-    | "autoCreate"
-    | "strategy"
-    | "summaryMode"
-    | "budgetRatio"
-    | "summaryChunkBudgetRatio"
-    | "summaryMaxCharacters"
-    | "summaryTimeoutMs"
-    | "summaryBackgroundTimeoutMs"
+    | 'autoCreate'
+    | 'strategy'
+    | 'summaryMode'
+    | 'budgetRatio'
+    | 'summaryChunkBudgetRatio'
+    | 'summaryMaxCharacters'
+    | 'summaryTimeoutMs'
+    | 'summaryBackgroundTimeoutMs'
   >
 >;
 
@@ -176,8 +136,7 @@ interface Props {
   autoCreate?: boolean;
   disposeOnUnmount?: boolean;
   streaming?: boolean;
-  promptOptions?:
-    LLMPromptOptions | ((context: PromptOptionsContext) => LLMPromptOptions);
+  promptOptions?: LLMPromptOptions | ((context: PromptOptionsContext) => LLMPromptOptions);
   systemPrompt?: string;
   initialMessages?: ChatMessage[];
   maxMessages?: number;
@@ -211,23 +170,23 @@ const props = withDefaults(defineProps<Props>(), {
   autoCreate: true,
   disposeOnUnmount: true,
   streaming: true,
-  systemPrompt: "",
+  systemPrompt: '',
   initialMessages: () => [],
   maxMessages: undefined,
   disabled: false,
-  placeholder: "Ask the assistant... ",
+  placeholder: 'Ask the assistant... ',
   sendOnEnter: true,
   allowAttachments: false,
   allowVoice: false,
-  accept: "image/*",
+  accept: 'image/*',
   maxAttachments: undefined,
   clearOnSend: true,
   autoScroll: true,
-  notReadyMessage: "Model is not ready yet. Please try again in a moment.",
-  emptyResponseMessage: "No response received. Try again.",
+  notReadyMessage: 'Model is not ready yet. Please try again in a moment.',
+  emptyResponseMessage: 'No response received. Try again.',
   errorMessage: undefined,
-  contextStrategy: "summarize",
-  contextSummaryMode: "cache-first",
+  contextStrategy: 'summarize',
+  contextSummaryMode: 'cache-first',
   contextBudgetRatio: 0.88,
   contextSummaryChunkBudgetRatio: 0.18,
   contextSummaryMaxCharacters: 0,
@@ -235,51 +194,50 @@ const props = withDefaults(defineProps<Props>(), {
   contextSummaryBackgroundTimeoutMs: 60000,
   autoCompactContext: true,
   contextCompactionThresholdRatio: 0.22,
-  contextCompactionSummaryMode: "eager",
-  contextLoadingMessage:
-    "Restoring previous messages for the local AI session...",
+  contextCompactionSummaryMode: 'eager',
+  contextLoadingMessage: 'Restoring previous messages for the local AI session...'
 });
 
 const emit = defineEmits<{
-  "init-start": [];
-  "init-complete": [];
-  "availability-change": [availability: Availability];
-  "create-start": [];
-  "create-complete": [];
-  "ready-change": [ready: boolean];
-  "processing-change": [state: PromptProcessingState];
-  "download-progress": [progress: number];
-  "context-overflow": [];
-  "context-load-start": [state: LLMContextRestoreState];
-  "context-load-progress": [state: LLMContextRestoreState];
-  "context-load-complete": [state: LLMContextRestoreState];
-  "summary-cache-error": [error: unknown];
-  "usage-change": [
+  'init-start': [];
+  'init-complete': [];
+  'availability-change': [availability: Availability];
+  'create-start': [];
+  'create-complete': [];
+  'ready-change': [ready: boolean];
+  'processing-change': [state: PromptProcessingState];
+  'download-progress': [progress: number];
+  'context-overflow': [];
+  'context-load-start': [state: LLMContextRestoreState];
+  'context-load-progress': [state: LLMContextRestoreState];
+  'context-load-complete': [state: LLMContextRestoreState];
+  'summary-cache-error': [error: unknown];
+  'usage-change': [
     usage: {
       contextUsage: number | null;
       contextWindow: number | null;
       contextWindowAvailable: number | null;
-    },
+    }
   ];
   send: [payload: { text: string; attachments: PromptAttachment[] }];
   voice: [];
-  "prompt-start": [payload: { streaming: boolean; input: LanguageModelPrompt }];
-  "stream-chunk": [payload: { chunk: string; accumulated: string }];
-  "prompt-complete": [payload: { response: string; streaming: boolean }];
+  'prompt-start': [payload: { streaming: boolean; input: LanguageModelPrompt }];
+  'stream-chunk': [payload: { chunk: string; accumulated: string }];
+  'prompt-complete': [payload: { response: string; streaming: boolean }];
   interrupt: [];
   error: [error: unknown];
-  "message-added": [message: ChatMessage];
-  "update:messages": [messages: ChatMessage[]];
-  "update:draft": [draft: string];
-  "update:attachments": [attachments: PromptAttachment[]];
+  'message-added': [message: ChatMessage];
+  'update:messages': [messages: ChatMessage[]];
+  'update:draft': [draft: string];
+  'update:attachments': [attachments: PromptAttachment[]];
   clear: [];
 }>();
 
-const DEFAULT_CHAT_TITLE = "New chat";
+const DEFAULT_CHAT_TITLE = 'New chat';
 const TITLE_MAX_WORDS = 6;
 
-const chatStore = useAiChats("prompt-api");
-const draft = ref("");
+const chatStore = useAiChats('prompt-api');
+const draft = ref('');
 const attachments = ref<PromptAttachment[]>([]);
 const messages = ref<ChatMessage[]>([]);
 
@@ -292,7 +250,7 @@ const isAssistantPending = ref(false);
 const lastContextUsage = ref<number | null>(null);
 const lastContextWindowAvailable = ref<number | null>(null);
 const contextLoadState = ref<LLMContextRestoreState>({
-  phase: "idle",
+  phase: 'idle',
   loadedMessages: 0,
   totalMessages: 0,
   summarizedMessages: 0,
@@ -300,7 +258,7 @@ const contextLoadState = ref<LLMContextRestoreState>({
   measuredTokens: null,
   cachedSummaries: 0,
   createdSummaries: 0,
-  summaryChunks: 0,
+  summaryChunks: 0
 });
 
 const pendingDeleteChatId = ref<string | null>(null);
@@ -329,59 +287,45 @@ const {
   contextUsage,
   contextWindow,
   contextWindowAvailable,
-  interrupt: interruptOperation,
+  interrupt: interruptOperation
 } = usePromptApi({
   onContextOverflow: () => {
     contextOverflowPending.value = true;
-    emit("context-overflow");
-  },
+    emit('context-overflow');
+  }
 });
 
-const isTyping = computed(
-  () =>
-    isAssistantPending.value ||
-    (processing.value === "prompt" && !isHydrating.value),
-);
+const isTyping = computed(() => isAssistantPending.value || (processing.value === 'prompt' && !isHydrating.value));
 const isSidebarDisabled = computed(
-  () =>
-    props.disabled ||
-    isTyping.value ||
-    isSwitchingChat.value ||
-    isHydrating.value,
+  () => props.disabled || isTyping.value || isSwitchingChat.value || isHydrating.value
 );
 const isInputDisabled = computed(() => {
   return (
     props.disabled ||
     isSwitchingChat.value ||
     isHydrating.value ||
-    processing.value === "create" ||
-    availability.value === "unavailable"
+    processing.value === 'create' ||
+    availability.value === 'unavailable'
   );
 });
 const isContextLoading = computed(() => {
-  return (
-    isHydrating.value &&
-    contextLoadState.value.phase !== "idle" &&
-    contextLoadState.value.phase !== "ready"
-  );
+  return isHydrating.value && contextLoadState.value.phase !== 'idle' && contextLoadState.value.phase !== 'ready';
 });
 
 const inputPlaceholder = computed(() => {
   if (isCompactingContext.value) {
-    return "Compressing chat context...";
+    return 'Compressing chat context...';
   }
 
   if (isContextLoading.value) {
-    return "Restoring chat context...";
+    return 'Restoring chat context...';
   }
 
   return props.placeholder;
 });
 
 const activeChatId = computed(() => chatStore.activeChatId.value);
-const activeChatTitle = computed(
-  () => chatStore.activeChat.value?.title ?? DEFAULT_CHAT_TITLE,
-);
+const activeChatTitle = computed(() => chatStore.activeChat.value?.title ?? DEFAULT_CHAT_TITLE);
 const pendingDeleteChat = computed(() => {
   if (!pendingDeleteChatId.value) return null;
   return chatStore.getChatById(pendingDeleteChatId.value);
@@ -389,7 +333,7 @@ const pendingDeleteChat = computed(() => {
 
 const tokensUsedLabel = computed(() => {
   if (isHydrating.value || isCompactingContext.value) {
-    return lastContextUsage.value ?? "—";
+    return lastContextUsage.value ?? '—';
   }
 
   return contextUsage.value ?? lastContextUsage.value ?? 0;
@@ -397,26 +341,22 @@ const tokensUsedLabel = computed(() => {
 
 const tokensLeftLabel = computed(() => {
   if (isHydrating.value || isCompactingContext.value) {
-    return lastContextWindowAvailable.value ?? "—";
+    return lastContextWindowAvailable.value ?? '—';
   }
 
-  return (
-    contextWindowAvailable.value ?? lastContextWindowAvailable.value ?? "—"
-  );
+  return contextWindowAvailable.value ?? lastContextWindowAvailable.value ?? '—';
 });
 
 const contextLoadProgress = computed(() => {
   const total = contextLoadState.value.totalMessages;
   if (!isContextLoading.value) return 0;
-  if (total <= 0) return contextLoadState.value.phase === "creating" ? 70 : 35;
+  if (total <= 0) return contextLoadState.value.phase === 'creating' ? 70 : 35;
 
-  const baseProgress = Math.round(
-    (contextLoadState.value.loadedMessages / total) * 100,
-  );
-  if (contextLoadState.value.phase === "summarizing") {
+  const baseProgress = Math.round((contextLoadState.value.loadedMessages / total) * 100);
+  if (contextLoadState.value.phase === 'summarizing') {
     return Math.min(Math.max(baseProgress, 55), 85);
   }
-  if (contextLoadState.value.phase === "restoring") {
+  if (contextLoadState.value.phase === 'restoring') {
     return 92;
   }
 
@@ -426,9 +366,7 @@ const contextLoadProgress = computed(() => {
 const contextLoadProgressLabel = computed(() => {
   const total = contextLoadState.value.totalMessages;
   if (total <= 0) {
-    return contextLoadState.value.phase === "creating"
-      ? "Starting"
-      : "Checking";
+    return contextLoadState.value.phase === 'creating' ? 'Starting' : 'Checking';
   }
 
   return `${Math.min(contextLoadState.value.loadedMessages, total)} / ${total}`;
@@ -436,37 +374,37 @@ const contextLoadProgressLabel = computed(() => {
 
 const contextLoadingTitle = computed(() => {
   if (isCompactingContext.value) {
-    return "Compressing chat context";
+    return 'Compressing chat context';
   }
 
-  if (contextLoadState.value.phase === "summarizing") {
-    return "Summarizing older messages";
+  if (contextLoadState.value.phase === 'summarizing') {
+    return 'Summarizing older messages';
   }
-  if (contextLoadState.value.phase === "restoring") {
-    return "Starting local AI session";
+  if (contextLoadState.value.phase === 'restoring') {
+    return 'Starting local AI session';
   }
-  if (contextLoadState.value.phase === "measuring") {
-    return "Fitting chat history";
+  if (contextLoadState.value.phase === 'measuring') {
+    return 'Fitting chat history';
   }
-  if (contextLoadState.value.phase === "creating") {
-    return "Preparing local AI";
+  if (contextLoadState.value.phase === 'creating') {
+    return 'Preparing local AI';
   }
-  return "Restoring chat context";
+  return 'Restoring chat context';
 });
 
 const contextLoadingDescription = computed(() => {
   if (isCompactingContext.value) {
-    return "Compressing older turns into a fresh local AI session so future prompts keep more useful context.";
+    return 'Compressing older turns into a fresh local AI session so future prompts keep more useful context.';
   }
 
-  if (contextLoadState.value.phase === "summarizing") {
-    return "Older messages are being compressed into a short memory so the latest turns stay available.";
+  if (contextLoadState.value.phase === 'summarizing') {
+    return 'Older messages are being compressed into a short memory so the latest turns stay available.';
   }
-  if (contextLoadState.value.phase === "measuring") {
-    return "Checking how much of this chat fits in the browser model context window.";
+  if (contextLoadState.value.phase === 'measuring') {
+    return 'Checking how much of this chat fits in the browser model context window.';
   }
-  if (contextLoadState.value.phase === "restoring") {
-    return "Loading the selected history into a fresh local browser AI session.";
+  if (contextLoadState.value.phase === 'restoring') {
+    return 'Loading the selected history into a fresh local browser AI session.';
   }
   return props.contextLoadingMessage;
 });
@@ -476,81 +414,71 @@ const contextFitLabel = computed(() => {
     return `${contextLoadState.value.summarizedMessages} older messages summarized to fit context.`;
   }
 
-  return "Older context trimmed to fit the model window.";
+  return 'Older context trimmed to fit the model window.';
 });
 
 const chatItems = computed<ChatSidebarItem[]>(() => {
   return chatStore.chats.value.map((chat) => {
-    const previewSource =
-      chat.messages[chat.messages.length - 1]?.content || "";
-    const preview = previewSource.replace(/\s+/g, " ").trim().slice(0, 70);
+    const previewSource = chat.messages[chat.messages.length - 1]?.content || '';
+    const preview = previewSource.replace(/\s+/g, ' ').trim().slice(0, 70);
     return {
       id: chat.id,
       title: chat.title,
       updatedAt: chat.updatedAt,
-      preview: preview || undefined,
+      preview: preview || undefined
     };
   });
 });
 
 const generateMessageId = () => {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random()}`;
 };
 
 const normalizeProcessingState = (state: string): PromptProcessingState => {
-  if (state === "new-session") {
-    return "create";
+  if (state === 'new-session') {
+    return 'create';
   }
   return state as PromptProcessingState;
 };
 
-const resolvePromptOptions = (
-  text: string,
-  selectedAttachments: PromptAttachment[],
-): LLMPromptOptions | undefined => {
-  if (typeof props.promptOptions === "function") {
+const resolvePromptOptions = (text: string, selectedAttachments: PromptAttachment[]): LLMPromptOptions | undefined => {
+  if (typeof props.promptOptions === 'function') {
     return props.promptOptions({
       text,
       attachments: selectedAttachments,
       messages: messages.value,
-      streaming: props.streaming,
+      streaming: props.streaming
     });
   }
   return props.promptOptions;
 };
 
 const resolveErrorMessage = (error: unknown) => {
-  if (typeof props.errorMessage === "function") {
+  if (typeof props.errorMessage === 'function') {
     return props.errorMessage(error);
   }
-  if (typeof props.errorMessage === "string" && props.errorMessage.length > 0) {
+  if (typeof props.errorMessage === 'string' && props.errorMessage.length > 0) {
     return props.errorMessage;
   }
-  return "Something went wrong while sending your message.";
+  return 'Something went wrong while sending your message.';
 };
 
 const hasExpectedInputType = (
-  expectedInputs: LanguageModelCreateCoreOptions["expectedInputs"],
-  type: LanguageModelMessageType,
+  expectedInputs: LanguageModelCreateCoreOptions['expectedInputs'],
+  type: LanguageModelMessageType
 ) => {
   return expectedInputs?.some((item) => item.type === type) ?? false;
 };
 
 const resolveModelOptions = (): LanguageModelCreateCoreOptions => {
   const options: LanguageModelCreateCoreOptions = {
-    ...(props.modelOptions ?? {}),
+    ...(props.modelOptions ?? {})
   };
 
-  if (
-    props.allowAttachments &&
-    !hasExpectedInputType(options.expectedInputs, "image")
-  ) {
-    options.expectedInputs = [
-      ...(options.expectedInputs ?? [{ type: "text" }]),
-      { type: "image" },
-    ];
+  if (props.allowAttachments && !hasExpectedInputType(options.expectedInputs, 'image')) {
+    options.expectedInputs = [...(options.expectedInputs ?? [{ type: 'text' }]), { type: 'image' }];
   }
 
   return options;
@@ -558,7 +486,7 @@ const resolveModelOptions = (): LanguageModelCreateCoreOptions => {
 
 const buildPromptInput = async (
   userContent: string,
-  selectedAttachments: PromptAttachment[],
+  selectedAttachments: PromptAttachment[]
 ): Promise<LanguageModelPrompt> => {
   if (!selectedAttachments.length) {
     return userContent;
@@ -566,22 +494,22 @@ const buildPromptInput = async (
 
   const content: LanguageModelMessageContent[] = [
     {
-      type: "text",
-      value: userContent || "Describe the attached image.",
+      type: 'text',
+      value: userContent || 'Describe the attached image.'
     },
     ...selectedAttachments
-      .filter((attachment) => attachment.type.startsWith("image/"))
+      .filter((attachment) => attachment.type.startsWith('image/'))
       .map((attachment) => ({
-        type: "image" as const,
-        value: attachment.file,
-      })),
+        type: 'image' as const,
+        value: attachment.file
+      }))
   ];
 
   return [
     {
-      role: "user",
-      content,
-    },
+      role: 'user',
+      content
+    }
   ];
 };
 
@@ -589,14 +517,12 @@ const cloneAttachments = (items: PromptAttachment[]) => {
   return items.map((item) => ({ ...item }));
 };
 
-const createMessageAttachments = (
-  items: PromptAttachment[],
-): ChatMessage["attachments"] => {
+const createMessageAttachments = (items: PromptAttachment[]): ChatMessage['attachments'] => {
   return items.map((item) => ({
     id: generateMessageId(),
     url: URL.createObjectURL(item.file),
     name: item.name,
-    type: item.type,
+    type: item.type
   }));
 };
 
@@ -612,7 +538,7 @@ const toStoredMessages = (items: ChatMessage[]): AiChatMessage[] => {
     id: message.id,
     role: message.role,
     content: message.content,
-    timestamp: message.timestamp ?? Date.now(),
+    timestamp: message.timestamp ?? Date.now()
   }));
 };
 
@@ -621,18 +547,14 @@ const fromStoredMessages = (items: AiChatMessage[]): ChatMessage[] => {
     id: message.id,
     role: message.role,
     content: message.content,
-    timestamp: message.timestamp,
+    timestamp: message.timestamp
   }));
 };
 
-const queuePersistMessages = (
-  chatId: string,
-  nextMessages: ChatMessage[],
-  immediate = false,
-) => {
+const queuePersistMessages = (chatId: string, nextMessages: ChatMessage[], immediate = false) => {
   persistPayload = {
     chatId,
-    messages: nextMessages.map((message) => ({ ...message })),
+    messages: nextMessages.map((message) => ({ ...message }))
   };
 
   const flush = () => {
@@ -640,10 +562,7 @@ const queuePersistMessages = (
     persistPayload = null;
 
     if (!payload) return;
-    void chatStore.updateMessages(
-      payload.chatId,
-      toStoredMessages(payload.messages),
-    );
+    void chatStore.updateMessages(payload.chatId, toStoredMessages(payload.messages));
   };
 
   if (immediate) {
@@ -671,15 +590,11 @@ const setMessages = (
     persist?: boolean;
     chatId?: string;
     immediatePersist?: boolean;
-  } = {},
+  } = {}
 ) => {
-  const {
-    persist = true,
-    chatId = chatStore.activeChatId.value,
-    immediatePersist = false,
-  } = options;
+  const { persist = true, chatId = chatStore.activeChatId.value, immediatePersist = false } = options;
   messages.value = applyMessageLimit(next);
-  emit("update:messages", messages.value);
+  emit('update:messages', messages.value);
 
   if (persist && chatId) {
     queuePersistMessages(chatId, messages.value, immediatePersist);
@@ -692,10 +607,10 @@ const addMessage = (
     persist?: boolean;
     chatId?: string;
     immediatePersist?: boolean;
-  } = {},
+  } = {}
 ) => {
   setMessages([...messages.value, message], options);
-  emit("message-added", message);
+  emit('message-added', message);
 };
 
 const updateMessageContent = (
@@ -705,7 +620,7 @@ const updateMessageContent = (
     persist?: boolean;
     chatId?: string;
     immediatePersist?: boolean;
-  } = {},
+  } = {}
 ) => {
   const next = messages.value.map((message) => {
     if (message.id !== messageId) {
@@ -713,7 +628,7 @@ const updateMessageContent = (
     }
     return {
       ...message,
-      content,
+      content
     };
   });
 
@@ -723,73 +638,71 @@ const updateMessageContent = (
 const interruptPrompt = () => {
   isAssistantPending.value = false;
   interruptOperation();
-  emit("interrupt");
+  emit('interrupt');
 };
 
 const clearConversation = () => {
   setMessages([], { immediatePersist: true });
-  emit("clear");
+  emit('clear');
 };
 
 const runInit = async () => {
-  emit("init-start");
+  emit('init-start');
   try {
     await init(resolveModelOptions());
-    emit("init-complete");
+    emit('init-complete');
   } catch (error) {
-    emit("error", error);
+    emit('error', error);
     throw error;
   }
 };
 
 const runCreate = async (
   createOptions: {
-    initialPrompts?: LanguageModelCreateOptions["initialPrompts"];
-  } = {},
+    initialPrompts?: LanguageModelCreateOptions['initialPrompts'];
+  } = {}
 ) => {
-  emit("create-start");
+  emit('create-start');
   try {
     await create(createOptions);
-    emit("create-complete");
+    emit('create-complete');
   } catch (error) {
-    emit("error", error);
+    emit('error', error);
     throw error;
   }
 };
 
 const cloneContextLoadState = (): LLMContextRestoreState => ({
-  ...contextLoadState.value,
+  ...contextLoadState.value
 });
 
 const setContextLoadState = (
   patch: Partial<LLMContextRestoreState>,
-  event: "start" | "progress" | "complete" | null = "progress",
+  event: 'start' | 'progress' | 'complete' | null = 'progress'
 ) => {
   contextLoadState.value = {
     ...contextLoadState.value,
-    ...patch,
+    ...patch
   };
 
   const payload = cloneContextLoadState();
-  if (event === "start") {
-    emit("context-load-start", payload);
-  } else if (event === "complete") {
-    emit("context-load-complete", payload);
-  } else if (event === "progress") {
-    emit("context-load-progress", payload);
+  if (event === 'start') {
+    emit('context-load-start', payload);
+  } else if (event === 'complete') {
+    emit('context-load-complete', payload);
+  } else if (event === 'progress') {
+    emit('context-load-progress', payload);
   }
 };
 
 const buildInitialPrompts = (historyMessages: ChatMessage[]) => {
-  const initialPrompts: Array<
-    LanguageModelSystemMessage | LanguageModelMessage
-  > = [];
+  const initialPrompts: Array<LanguageModelSystemMessage | LanguageModelMessage> = [];
   const systemPrompt = props.systemPrompt.trim();
 
   if (systemPrompt) {
     initialPrompts.push({
-      role: "system",
-      content: systemPrompt,
+      role: 'system',
+      content: systemPrompt
     });
   }
 
@@ -798,7 +711,7 @@ const buildInitialPrompts = (historyMessages: ChatMessage[]) => {
     .forEach((message) => {
       initialPrompts.push({
         role: message.role,
-        content: message.content,
+        content: message.content
       });
     });
 
@@ -810,7 +723,7 @@ const buildMessageMetadata = (historyMessages: ChatMessage[]) => {
     .filter((message) => message.content.trim().length > 0)
     .map((message) => ({
       id: message.id,
-      timestamp: message.timestamp,
+      timestamp: message.timestamp
     }));
 };
 
@@ -819,7 +732,7 @@ const createSessionFromMessages = async (
   currentSwitchVersion: number,
   allowDownloadCreate = false,
   chatId = chatStore.activeChatId.value,
-  restoreOverrides: RestoreSessionOverrides = {},
+  restoreOverrides: RestoreSessionOverrides = {}
 ) => {
   isHydrating.value = true;
 
@@ -828,23 +741,15 @@ const createSessionFromMessages = async (
     const result = await restoreSession(buildInitialPrompts(historyMessages), {
       modelOptions: resolveModelOptions(),
       allowDownloadCreate,
-      autoCreate:
-        restoreOverrides.autoCreate ??
-        (props.autoCreate || allowDownloadCreate),
+      autoCreate: restoreOverrides.autoCreate ?? (props.autoCreate || allowDownloadCreate),
       strategy: restoreOverrides.strategy ?? props.contextStrategy,
       summaryMode: restoreOverrides.summaryMode ?? props.contextSummaryMode,
       budgetRatio: restoreOverrides.budgetRatio ?? props.contextBudgetRatio,
-      summaryChunkBudgetRatio:
-        restoreOverrides.summaryChunkBudgetRatio ??
-        props.contextSummaryChunkBudgetRatio,
-      summaryMaxCharacters:
-        restoreOverrides.summaryMaxCharacters ??
-        props.contextSummaryMaxCharacters,
-      summaryTimeoutMs:
-        restoreOverrides.summaryTimeoutMs ?? props.contextSummaryTimeoutMs,
+      summaryChunkBudgetRatio: restoreOverrides.summaryChunkBudgetRatio ?? props.contextSummaryChunkBudgetRatio,
+      summaryMaxCharacters: restoreOverrides.summaryMaxCharacters ?? props.contextSummaryMaxCharacters,
+      summaryTimeoutMs: restoreOverrides.summaryTimeoutMs ?? props.contextSummaryTimeoutMs,
       summaryBackgroundTimeoutMs:
-        restoreOverrides.summaryBackgroundTimeoutMs ??
-        props.contextSummaryBackgroundTimeoutMs,
+        restoreOverrides.summaryBackgroundTimeoutMs ?? props.contextSummaryBackgroundTimeoutMs,
       messageMetadata: buildMessageMetadata(historyMessages),
       summaryCache: targetChat?.summaries ?? [],
       onSummaryCacheUpdate: async (summaries) => {
@@ -853,22 +758,22 @@ const createSessionFromMessages = async (
         }
         await chatStore.updateSummaries(chatId, summaries);
       },
-      onSummaryCacheError: (error) => emit("summary-cache-error", error),
+      onSummaryCacheError: (error) => emit('summary-cache-error', error),
       shouldContinue: () => currentSwitchVersion === switchVersion,
-      onInitStart: () => emit("init-start"),
-      onInitComplete: () => emit("init-complete"),
-      onCreateStart: () => emit("create-start"),
-      onCreateComplete: () => emit("create-complete"),
+      onInitStart: () => emit('init-start'),
+      onInitComplete: () => emit('init-complete'),
+      onCreateStart: () => emit('create-start'),
+      onCreateComplete: () => emit('create-complete'),
       onStateChange: (state, event) => {
         contextLoadState.value = state;
-        if (event === "start") {
-          emit("context-load-start", state);
-        } else if (event === "complete") {
-          emit("context-load-complete", state);
+        if (event === 'start') {
+          emit('context-load-start', state);
+        } else if (event === 'complete') {
+          emit('context-load-complete', state);
         } else {
-          emit("context-load-progress", state);
+          emit('context-load-progress', state);
         }
-      },
+      }
     });
 
     if (currentSwitchVersion !== switchVersion) return false;
@@ -876,8 +781,8 @@ const createSessionFromMessages = async (
     contextPartiallyLoaded.value = result.partiallyLoaded;
     return result.ready;
   } catch (error) {
-    setContextLoadState({ phase: "error" });
-    emit("error", error);
+    setContextLoadState({ phase: 'error' });
+    emit('error', error);
     return false;
   } finally {
     if (currentSwitchVersion === switchVersion) {
@@ -897,11 +802,7 @@ const getCompactionThresholdTokens = () => {
 };
 
 const shouldCompactBeforePrompt = () => {
-  if (
-    !props.autoCompactContext ||
-    !isReady.value ||
-    isCompactingContext.value
-  ) {
+  if (!props.autoCompactContext || !isReady.value || isCompactingContext.value) {
     return false;
   }
   if (contextWindowAvailable.value == null || messages.value.length <= 1) {
@@ -916,11 +817,7 @@ const shouldCompactBeforePrompt = () => {
   return lastAutoCompactMessageCount !== messages.value.length;
 };
 
-const compactActiveChatContext = async (
-  chatId: string,
-  force = false,
-  sourceMessagesOverride?: ChatMessage[],
-) => {
+const compactActiveChatContext = async (chatId: string, force = false, sourceMessagesOverride?: ChatMessage[]) => {
   if (!props.autoCompactContext || isCompactingContext.value) {
     return false;
   }
@@ -939,10 +836,7 @@ const compactActiveChatContext = async (
     sourceMessages = fromStoredMessages(target.messages);
   }
 
-  if (
-    sourceMessages.filter((message) => message.content.trim().length > 0)
-      .length <= 1
-  ) {
+  if (sourceMessages.filter((message) => message.content.trim().length > 0).length <= 1) {
     return false;
   }
 
@@ -951,17 +845,11 @@ const compactActiveChatContext = async (
   contextOverflowPending.value = false;
 
   try {
-    const ready = await createSessionFromMessages(
-      sourceMessages,
-      currentSwitchVersion,
-      false,
-      chatId,
-      {
-        autoCreate: true,
-        strategy: "summarize",
-        summaryMode: props.contextCompactionSummaryMode,
-      },
-    );
+    const ready = await createSessionFromMessages(sourceMessages, currentSwitchVersion, false, chatId, {
+      autoCreate: true,
+      strategy: 'summarize',
+      summaryMode: props.contextCompactionSummaryMode
+    });
 
     if (ready && currentSwitchVersion === switchVersion) {
       lastAutoCompactMessageCount =
@@ -985,7 +873,7 @@ const switchToChat = async (chatId: string) => {
   switchVersion += 1;
   const currentSwitchVersion = switchVersion;
 
-  if (processing.value === "prompt") {
+  if (processing.value === 'prompt') {
     interruptPrompt();
   }
 
@@ -999,18 +887,13 @@ const switchToChat = async (chatId: string) => {
 
   chatStore.selectChat(chatId);
 
-  draft.value = "";
+  draft.value = '';
   attachments.value = [];
   setMessages(fromStoredMessages(target.messages), { persist: false });
 
   try {
     if (props.autoInit) {
-      await createSessionFromMessages(
-        messages.value,
-        currentSwitchVersion,
-        false,
-        chatId,
-      );
+      await createSessionFromMessages(messages.value, currentSwitchVersion, false, chatId);
     }
   } catch {
     // Errors are already emitted
@@ -1025,12 +908,12 @@ const createAndSwitchChat = async () => {
   switchVersion += 1;
   const currentSwitchVersion = switchVersion;
 
-  if (processing.value === "prompt") {
+  if (processing.value === 'prompt') {
     interruptPrompt();
   }
 
   chatStore.clearActiveChat();
-  draft.value = "";
+  draft.value = '';
   attachments.value = [];
   isCompactingContext.value = false;
   isAssistantPending.value = false;
@@ -1075,8 +958,7 @@ const showUndoToast = (chat: AiChatRecord) => {
 const confirmDeleteChat = async () => {
   if (!pendingDeleteChatId.value) return;
 
-  const wasActiveChat =
-    chatStore.activeChatId.value === pendingDeleteChatId.value;
+  const wasActiveChat = chatStore.activeChatId.value === pendingDeleteChatId.value;
   const removed = await chatStore.deleteChat(pendingDeleteChatId.value);
   pendingDeleteChatId.value = null;
 
@@ -1111,31 +993,27 @@ const undoDeleteChat = async () => {
 };
 
 const sanitizeGeneratedTitle = (rawTitle: string, fallback: string) => {
-  const normalized = rawTitle
-    .replace(/["'`]/g, "")
-    .replace(/\s+/g, " ")
-    .replace(/\n/g, " ")
-    .trim();
+  const normalized = rawTitle.replace(/["'`]/g, '').replace(/\s+/g, ' ').replace(/\n/g, ' ').trim();
 
   if (!normalized) {
     return fallback;
   }
 
-  const words = normalized.split(" ").filter(Boolean);
+  const words = normalized.split(' ').filter(Boolean);
   if (words.length === 0) {
     return fallback;
   }
 
-  return words.slice(0, TITLE_MAX_WORDS).join(" ");
+  return words.slice(0, TITLE_MAX_WORDS).join(' ');
 };
 
 const fallbackTitleFromPrompt = (input: string) => {
-  const normalized = input.replace(/\s+/g, " ").trim();
+  const normalized = input.replace(/\s+/g, ' ').trim();
   if (!normalized) {
     return DEFAULT_CHAT_TITLE;
   }
 
-  return normalized.split(" ").slice(0, TITLE_MAX_WORDS).join(" ");
+  return normalized.split(' ').slice(0, TITLE_MAX_WORDS).join(' ');
 };
 
 const generateChatTitle = async (firstPrompt: string) => {
@@ -1143,21 +1021,21 @@ const generateChatTitle = async (firstPrompt: string) => {
 
   try {
     const status = await checkAvailability(props.modelOptions ?? {});
-    if (status !== "available") {
+    if (status !== 'available') {
       return fallback;
     }
 
     const title = await promptWithTemporarySession(
       [
         {
-          role: "user",
-          content: `Create a concise chat title in the same language as the input. Use 4 to 6 words. Return only the title text.\n\n${firstPrompt}`,
-        },
+          role: 'user',
+          content: `Create a concise chat title in the same language as the input. Use 4 to 6 words. Return only the title text.\n\n${firstPrompt}`
+        }
       ],
       {
         modelOptions: props.modelOptions ?? {},
-        timeoutMs: 8000,
-      },
+        timeoutMs: 8000
+      }
     );
 
     return sanitizeGeneratedTitle(title, fallback);
@@ -1193,10 +1071,10 @@ const maybeGenerateTitleForChat = (chatId: string, promptText: string) => {
 
 const isAbortError = (error: unknown): boolean => {
   if (error instanceof DOMException) {
-    return error.name === "AbortError";
+    return error.name === 'AbortError';
   }
   if (error instanceof Error) {
-    return error.name === "AbortError";
+    return error.name === 'AbortError';
   }
   return false;
 };
@@ -1212,23 +1090,20 @@ const handleSend = async () => {
   const historyBeforeSend = messages.value.map((message) => ({ ...message }));
   const shouldCompactHistoryBeforePrompt = shouldCompactBeforePrompt();
   const selectedAttachments = cloneAttachments(attachments.value);
-  emit("send", { text, attachments: selectedAttachments });
+  emit('send', { text, attachments: selectedAttachments });
 
   let currentChatId = chatStore.activeChatId.value;
   if (!currentChatId) {
-    const created = await chatStore.createChat(
-      DEFAULT_CHAT_TITLE,
-      toStoredMessages(historyBeforeSend),
-    );
+    const created = await chatStore.createChat(DEFAULT_CHAT_TITLE, toStoredMessages(historyBeforeSend));
     currentChatId = created.id;
   }
 
   const userMessage: ChatMessage = {
     id: generateMessageId(),
-    role: "user",
-    content: text || "Describe the attached image.",
+    role: 'user',
+    content: text || 'Describe the attached image.',
     timestamp: Date.now(),
-    attachments: createMessageAttachments(selectedAttachments),
+    attachments: createMessageAttachments(selectedAttachments)
   };
 
   addMessage(userMessage, { chatId: currentChatId });
@@ -1237,25 +1112,23 @@ const handleSend = async () => {
   addMessage(
     {
       id: assistantMessageId,
-      role: "assistant",
-      content: "",
-      timestamp: Date.now(),
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now()
     },
     {
-      persist: false,
-    },
+      persist: false
+    }
   );
   isAssistantPending.value = true;
 
-  const userMessageCount = messages.value.filter(
-    (message) => message.role === "user",
-  ).length;
+  const userMessageCount = messages.value.filter((message) => message.role === 'user').length;
   if (userMessageCount === 1) {
     maybeGenerateTitleForChat(currentChatId, userMessage.content);
   }
 
   if (props.clearOnSend) {
-    draft.value = "";
+    draft.value = '';
     attachments.value = [];
   }
 
@@ -1264,29 +1137,21 @@ const handleSend = async () => {
   }
 
   if (!isReady.value) {
-    const ready = await createSessionFromMessages(
-      historyBeforeSend,
-      switchVersion,
-      true,
-      currentChatId,
-    );
+    const ready = await createSessionFromMessages(historyBeforeSend, switchVersion, true, currentChatId);
     if (!ready || !isReady.value) {
       updateMessageContent(assistantMessageId, props.notReadyMessage, {
-        persist: false,
+        persist: false
       });
       isAssistantPending.value = false;
       return;
     }
   }
 
-  const input = await buildPromptInput(
-    userMessage.content,
-    selectedAttachments,
-  );
+  const input = await buildPromptInput(userMessage.content, selectedAttachments);
   const options = resolvePromptOptions(text, selectedAttachments);
-  emit("prompt-start", {
+  emit('prompt-start', {
     streaming: props.streaming,
-    input,
+    input
   });
 
   try {
@@ -1294,14 +1159,14 @@ const handleSend = async () => {
       const stream = promptStreaming(input, options);
       isAssistantPending.value = false;
       const reader = stream.getReader();
-      let accumulated = "";
+      let accumulated = '';
       let renderFrame: number | null = null;
-      let pendingContent = "";
+      let pendingContent = '';
 
       const renderPendingContent = () => {
         renderFrame = null;
         updateMessageContent(assistantMessageId, pendingContent, {
-          persist: false,
+          persist: false
         });
       };
       const scheduleRender = (content: string) => {
@@ -1326,9 +1191,9 @@ const handleSend = async () => {
           accumulated += value;
           scheduleRender(accumulated);
 
-          emit("stream-chunk", {
+          emit('stream-chunk', {
             chunk: value,
-            accumulated,
+            accumulated
           });
         }
       } finally {
@@ -1339,12 +1204,12 @@ const handleSend = async () => {
       const response = accumulated || props.emptyResponseMessage;
       updateMessageContent(assistantMessageId, response, {
         chatId: currentChatId,
-        immediatePersist: true,
+        immediatePersist: true
       });
 
-      emit("prompt-complete", {
+      emit('prompt-complete', {
         response,
-        streaming: true,
+        streaming: true
       });
 
       if (contextOverflowPending.value) {
@@ -1359,12 +1224,12 @@ const handleSend = async () => {
 
     updateMessageContent(assistantMessageId, output, {
       chatId: currentChatId,
-      immediatePersist: true,
+      immediatePersist: true
     });
 
-    emit("prompt-complete", {
+    emit('prompt-complete', {
       response: output,
-      streaming: false,
+      streaming: false
     });
 
     if (contextOverflowPending.value) {
@@ -1374,15 +1239,15 @@ const handleSend = async () => {
     isAssistantPending.value = false;
 
     if (isAbortError(error)) {
-      emit("interrupt");
+      emit('interrupt');
       return;
     }
 
     updateMessageContent(assistantMessageId, resolveErrorMessage(error), {
-      persist: false,
+      persist: false
     });
 
-    emit("error", error);
+    emit('error', error);
 
     if (contextOverflowPending.value) {
       await compactActiveChatContext(currentChatId, true);
@@ -1391,7 +1256,7 @@ const handleSend = async () => {
 };
 
 const handleVoice = () => {
-  emit("voice");
+  emit('voice');
 };
 
 const handleRenameChat = async (chatId: string, title: string) => {
@@ -1401,65 +1266,59 @@ const handleRenameChat = async (chatId: string, title: string) => {
 watch(
   draft,
   (value) => {
-    emit("update:draft", value);
+    emit('update:draft', value);
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
   attachments,
   (value) => {
-    emit("update:attachments", cloneAttachments(value));
+    emit('update:attachments', cloneAttachments(value));
   },
-  { deep: true, immediate: true },
+  { deep: true, immediate: true }
 );
 
 watch(
   availability,
   (value) => {
     if (!value) return;
-    emit("availability-change", value);
+    emit('availability-change', value);
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
   isReady,
   (value) => {
-    emit("ready-change", value);
+    emit('ready-change', value);
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
   processing,
   (value) => {
-    emit("processing-change", normalizeProcessingState(value));
+    emit('processing-change', normalizeProcessingState(value));
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
   downloadProgress,
   (value) => {
-    emit("download-progress", value);
+    emit('download-progress', value);
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
-  [
-    contextUsage,
-    contextWindow,
-    contextWindowAvailable,
-    isHydrating,
-    isCompactingContext,
-  ],
+  [contextUsage, contextWindow, contextWindowAvailable, isHydrating, isCompactingContext],
   ([usage, window, available, hydrating, compacting]) => {
-    emit("usage-change", {
+    emit('usage-change', {
       contextUsage: usage,
       contextWindow: window,
-      contextWindowAvailable: available,
+      contextWindowAvailable: available
     });
 
     if (!hydrating && !compacting) {
@@ -1471,11 +1330,11 @@ watch(
       }
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 onMounted(async () => {
-  emit("update:messages", messages.value);
+  emit('update:messages', messages.value);
 
   await chatStore.loadChats();
 
@@ -1507,23 +1366,18 @@ onBeforeUnmount(() => {
   if (persistPayload) {
     const payload = persistPayload;
     persistPayload = null;
-    void chatStore.updateMessages(
-      payload.chatId,
-      toStoredMessages(payload.messages),
-    );
+    void chatStore.updateMessages(payload.chatId, toStoredMessages(payload.messages));
   }
 
   messages.value.forEach((message) => {
-    message.attachments?.forEach((attachment) =>
-      URL.revokeObjectURL(attachment.url),
-    );
+    message.attachments?.forEach((attachment) => URL.revokeObjectURL(attachment.url));
   });
 
   if (!props.disposeOnUnmount) {
     return;
   }
 
-  if (processing.value === "prompt") {
+  if (processing.value === 'prompt') {
     interruptPrompt();
   }
 
@@ -1538,7 +1392,7 @@ defineExpose({
   dispose,
   send: handleSend,
   createChat: createAndSwitchChat,
-  selectChat: switchToChat,
+  selectChat: switchToChat
 });
 </script>
 
@@ -1566,13 +1420,7 @@ defineExpose({
   padding: 0.7rem 0.85rem;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 0.9rem;
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(124, 92, 228, 0.09),
-      transparent 36%
-    ),
-    rgba(5, 8, 17, 0.62);
+  background: radial-gradient(circle at 100% 0%, rgba(124, 92, 228, 0.09), transparent 36%), rgba(5, 8, 17, 0.62);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.045);
   display: flex;
   flex-direction: column;

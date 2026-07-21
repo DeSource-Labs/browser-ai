@@ -1,16 +1,11 @@
 <template>
   <div class="translator">
     <div class="translator__workspace">
-      <section
-        class="translator__pane translator__pane--input"
-        aria-label="Translator source input"
-      >
+      <section class="translator__pane translator__pane--input" aria-label="Translator source input">
         <div class="translator__toolbar">
           <div class="translator__toolbar-main">
             <span class="translator__label">Source</span>
-            <span class="translator__config"
-              >{{ sourceLanguageLabel }} to {{ targetLanguageLabel }}</span
-            >
+            <span class="translator__config">{{ sourceLanguageLabel }} to {{ targetLanguageLabel }}</span>
           </div>
 
           <div class="translator__toolbar-actions">
@@ -18,12 +13,9 @@
               class="translator__status"
               :class="{
                 'translator__status--available': availability === 'available',
-                'translator__status--downloadable':
-                  availability === 'downloadable',
-                'translator__status--downloading':
-                  availability === 'downloading',
-                'translator__status--unavailable':
-                  availability === 'unavailable',
+                'translator__status--downloadable': availability === 'downloadable',
+                'translator__status--downloading': availability === 'downloading',
+                'translator__status--unavailable': availability === 'unavailable'
               }"
             >
               <span class="translator__status-dot"></span>
@@ -36,38 +28,22 @@
               <div class="translator__settings-panel">
                 <div class="translator__toggles">
                   <label class="translator__toggle">
-                    <input
-                      v-model="stripHtmlInput"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
                     <span>Strip HTML</span>
                   </label>
 
                   <label class="translator__toggle">
-                    <input
-                      v-model="chunkLargeInput"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="chunkLargeInput" type="checkbox" :disabled="isBusy" />
                     <span>Auto chunk long text</span>
                   </label>
 
                   <label class="translator__toggle">
-                    <input
-                      v-model="streamOutput"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="streamOutput" type="checkbox" :disabled="isBusy" />
                     <span>Stream output</span>
                   </label>
 
                   <label class="translator__toggle">
-                    <input
-                      v-model="autoTranslateInput"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="autoTranslateInput" type="checkbox" :disabled="isBusy" />
                     <span>Auto translate</span>
                   </label>
                 </div>
@@ -79,43 +55,21 @@
         <div class="translator__language-bar">
           <label>
             <span>From</span>
-            <select
-              v-model="selectedSourceLanguage"
-              :disabled="isBusy"
-              @change="handleLanguageSelection"
-            >
+            <select v-model="selectedSourceLanguage" :disabled="isBusy" @change="handleLanguageSelection">
               <option value="" disabled>Choose source</option>
-              <option
-                v-for="language in normalizedLanguageOptions"
-                :key="language.code"
-                :value="language.code"
-              >
+              <option v-for="language in normalizedLanguageOptions" :key="language.code" :value="language.code">
                 {{ language.name }}
               </option>
             </select>
           </label>
 
-          <button
-            type="button"
-            :disabled="isBusy || !canSwapLanguages"
-            @click="swapLanguages"
-          >
-            Swap
-          </button>
+          <button type="button" :disabled="isBusy || !canSwapLanguages" @click="swapLanguages">Swap</button>
 
           <label>
             <span>To</span>
-            <select
-              v-model="selectedTargetLanguage"
-              :disabled="isBusy"
-              @change="handleLanguageSelection"
-            >
+            <select v-model="selectedTargetLanguage" :disabled="isBusy" @change="handleLanguageSelection">
               <option value="" disabled>Choose target</option>
-              <option
-                v-for="language in normalizedLanguageOptions"
-                :key="language.code"
-                :value="language.code"
-              >
+              <option v-for="language in normalizedLanguageOptions" :key="language.code" :value="language.code">
                 {{ language.name }}
               </option>
             </select>
@@ -123,19 +77,10 @@
         </div>
 
         <div class="translator__editor">
-          <textarea
-            v-model="sourceText"
-            :disabled="disabled"
-            :placeholder="placeholder"
-          ></textarea>
+          <textarea v-model="sourceText" :disabled="disabled" :placeholder="placeholder"></textarea>
         </div>
 
-        <div
-          v-if="isProcessing"
-          class="translator__progress"
-          role="status"
-          aria-live="polite"
-        >
+        <div v-if="isProcessing" class="translator__progress" role="status" aria-live="polite">
           <span :style="{ width: `${progressPercent}%` }"></span>
         </div>
 
@@ -145,57 +90,36 @@
 
         <div class="translator__footer">
           <div class="translator__meta">
-            <span
-              >{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens |
-              {{ sourceText.length }} chars</span
-            >
+            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="lastResult?.chunked">Chunked</span>
             <span v-if="lastResult?.bypassed">Same language</span>
             <span v-if="autoTranslateInput && hasLanguagePair">Auto</span>
             <span v-if="!hasLanguagePair">Select languages first</span>
             <span v-if="pendingAutoTranslate">Queued</span>
-            <span v-if="downloadProgress > 0 && downloadProgress < 100">
-              Downloading {{ downloadProgress }}%
-            </span>
+            <span v-if="downloadProgress > 0 && downloadProgress < 100"> Downloading {{ downloadProgress }}% </span>
           </div>
 
-          <button
-            v-if="showPrepareButton"
-            type="button"
-            :disabled="!canPreparePair"
-            @click="handlePreparePair"
-          >
+          <button v-if="showPrepareButton" type="button" :disabled="!canPreparePair" @click="handlePreparePair">
             {{ prepareButtonLabel }}
           </button>
         </div>
       </section>
 
-      <section
-        class="translator__pane translator__pane--output"
-        aria-live="polite"
-      >
+      <section class="translator__pane translator__pane--output" aria-live="polite">
         <div class="translator__toolbar">
           <div class="translator__toolbar-main">
             <span class="translator__label">{{ targetLanguageLabel }}</span>
             <span class="translator__config">{{ outputMetaLabel }}</span>
           </div>
 
-          <button
-            v-if="translatedText"
-            class="translator__ghost-button"
-            type="button"
-            @click="copyTranslation"
-          >
+          <button v-if="translatedText" class="translator__ghost-button" type="button" @click="copyTranslation">
             Copy
           </button>
         </div>
 
         <div class="translator__output">
-          <MarkdownRenderer
-            v-if="translatedText && renderMarkdown"
-            :content="translatedText"
-          />
+          <MarkdownRenderer v-if="translatedText && renderMarkdown" :content="translatedText" />
           <pre v-else-if="translatedText">{{ translatedText }}</pre>
           <p v-else>{{ emptyOutputMessage }}</p>
         </div>
@@ -205,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   TRANSLATOR_LANGUAGE_OPTIONS,
   getTranslatorLanguageName,
@@ -213,11 +137,11 @@ import {
   type TranslatorCreate,
   type TranslatorLanguageOption,
   type TranslatorProgressState,
-  type TranslatorResult,
-} from "../composables/useTranslator";
-import { useSyncedString } from "../composables/useSyncedString";
-import { copyText, formatTokenCount } from "../utils/display";
-import MarkdownRenderer from "./MarkdownRenderer.vue";
+  type TranslatorResult
+} from '../composables/useTranslator';
+import { useSyncedString } from '../composables/useSyncedString';
+import { copyText, formatTokenCount } from '../utils/display';
+import MarkdownRenderer from './MarkdownRenderer.vue';
 
 interface Props {
   modelValue?: string;
@@ -231,33 +155,33 @@ interface Props {
   autoTranslate?: boolean;
   debounceMs?: number;
   stripHtml?: boolean;
-  chunking?: "auto" | "never";
+  chunking?: 'auto' | 'never';
   stream?: boolean;
   renderMarkdown?: boolean;
   disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: "",
-  placeholder: "Paste text to translate locally...",
-  emptyOutputMessage: "Translation will appear here.",
-  sourceLanguage: "",
-  targetLanguage: "",
+  modelValue: '',
+  placeholder: 'Paste text to translate locally...',
+  emptyOutputMessage: 'Translation will appear here.',
+  sourceLanguage: '',
+  targetLanguage: '',
   languageOptions: undefined,
   autoInit: true,
   autoCreate: true,
   autoTranslate: true,
   debounceMs: 650,
   stripHtml: true,
-  chunking: "auto",
+  chunking: 'auto',
   stream: true,
   renderMarkdown: true,
-  disabled: false,
+  disabled: false
 });
 
 const emit = defineEmits<{
-  "update:modelValue": [value: string];
-  "availability-change": [availability: Availability];
+  'update:modelValue': [value: string];
+  'availability-change': [availability: Availability];
   progress: [state: TranslatorProgressState];
   translate: [result: TranslatorResult];
   error: [error: unknown];
@@ -276,23 +200,23 @@ const {
   interrupt,
   translateWithDetails,
   translateStreamingToText,
-  dispose,
+  dispose
 } = useTranslator({
   sourceLanguage: props.sourceLanguage,
-  targetLanguage: props.targetLanguage,
+  targetLanguage: props.targetLanguage
 });
 
 const sourceText = useSyncedString(
   () => props.modelValue,
-  (value) => emit("update:modelValue", value),
+  (value) => emit('update:modelValue', value)
 );
-const translatedText = ref("");
-const errorMessage = ref("");
+const translatedText = ref('');
+const errorMessage = ref('');
 const selectedSourceLanguage = ref(props.sourceLanguage);
 const selectedTargetLanguage = ref(props.targetLanguage);
 const stripHtmlInput = ref(props.stripHtml);
 const streamOutput = ref(props.stream);
-const chunkLargeInput = ref(props.chunking === "auto");
+const chunkLargeInput = ref(props.chunking === 'auto');
 const autoTranslateInput = ref(props.autoTranslate);
 const pendingAutoTranslate = ref(false);
 const translationVersion = ref(0);
@@ -300,20 +224,14 @@ let autoTranslateTimer: ReturnType<typeof setTimeout> | undefined;
 let availabilityRequestId = 0;
 
 const normalizedLanguageOptions = computed(() => {
-  return props.languageOptions?.length
-    ? props.languageOptions
-    : TRANSLATOR_LANGUAGE_OPTIONS;
+  return props.languageOptions?.length ? props.languageOptions : TRANSLATOR_LANGUAGE_OPTIONS;
 });
 
 const sourceLanguageLabel = computed(() =>
-  selectedSourceLanguage.value
-    ? getTranslatorLanguageName(selectedSourceLanguage.value)
-    : "Choose source",
+  selectedSourceLanguage.value ? getTranslatorLanguageName(selectedSourceLanguage.value) : 'Choose source'
 );
 const targetLanguageLabel = computed(() =>
-  selectedTargetLanguage.value
-    ? getTranslatorLanguageName(selectedTargetLanguage.value)
-    : "Choose target",
+  selectedTargetLanguage.value ? getTranslatorLanguageName(selectedTargetLanguage.value) : 'Choose target'
 );
 
 const hasLanguagePair = computed(() => {
@@ -326,26 +244,26 @@ const canSwapLanguages = computed(() => {
 
 const createOptions = computed<TranslatorCreate>(() => ({
   sourceLanguage: selectedSourceLanguage.value,
-  targetLanguage: selectedTargetLanguage.value,
+  targetLanguage: selectedTargetLanguage.value
 }));
 
 const operationalStatusLabel = computed(() => {
-  if (!hasLanguagePair.value) return "Choose languages";
+  if (!hasLanguagePair.value) return 'Choose languages';
   if (downloadProgress.value > 0 && downloadProgress.value < 100) {
     return `${downloadProgress.value}%`;
   }
-  if (availability.value === "available") return "Ready";
-  if (availability.value === "downloadable") return "Download pack";
-  if (availability.value === "downloading") return "Downloading";
-  if (availability.value === "unavailable") return "Unavailable";
-  return "Checking";
+  if (availability.value === 'available') return 'Ready';
+  if (availability.value === 'downloadable') return 'Download pack';
+  if (availability.value === 'downloading') return 'Downloading';
+  if (availability.value === 'unavailable') return 'Unavailable';
+  return 'Checking';
 });
 
 const outputMetaLabel = computed(() => {
   if (!translatedText.value) {
     return hasLanguagePair.value
       ? `${sourceLanguageLabel.value} to ${targetLanguageLabel.value}`
-      : "Select a language pair";
+      : 'Select a language pair';
   }
   return `${translatedText.value.length.toLocaleString()} chars`;
 });
@@ -357,42 +275,28 @@ const canTranslate = computed(() => {
     !props.disabled &&
     !isProcessing.value &&
     hasLanguagePair.value &&
-    availability.value !== "unavailable" &&
-    availability.value !== "downloadable" &&
-    availability.value !== "downloading" &&
+    availability.value !== 'unavailable' &&
+    availability.value !== 'downloadable' &&
+    availability.value !== 'downloading' &&
     sourceText.value.trim().length > 0
   );
 });
 
 const canPreparePair = computed(() => {
-  return (
-    !props.disabled &&
-    !isProcessing.value &&
-    hasLanguagePair.value &&
-    availability.value !== "unavailable"
-  );
+  return !props.disabled && !isProcessing.value && hasLanguagePair.value && availability.value !== 'unavailable';
 });
 
 const showPrepareButton = computed(() => {
   if (!hasLanguagePair.value) return false;
-  if (
-    availability.value === "downloadable" ||
-    availability.value === "downloading"
-  )
-    return true;
+  if (availability.value === 'downloadable' || availability.value === 'downloading') return true;
   return !autoTranslateInput.value;
 });
 
 const prepareButtonLabel = computed(() => {
-  if (isProcessing.value && progressState.value.phase === "creating")
-    return "Downloading";
-  if (
-    availability.value === "downloadable" ||
-    availability.value === "downloading"
-  )
-    return "Download pack";
-  if (autoTranslateInput.value) return "Prepare";
-  return isProcessing.value ? "Translating" : "Translate";
+  if (isProcessing.value && progressState.value.phase === 'creating') return 'Downloading';
+  if (availability.value === 'downloadable' || availability.value === 'downloading') return 'Download pack';
+  if (autoTranslateInput.value) return 'Prepare';
+  return isProcessing.value ? 'Translating' : 'Translate';
 });
 
 const inputUsageLabel = computed(() => formatTokenCount(inputUsage.value));
@@ -400,29 +304,26 @@ const inputQuotaLabel = computed(() => formatTokenCount(inputQuota.value));
 
 const progressLabel = computed(() => {
   const state = progressState.value;
-  if (state.phase === "measuring") return "Measuring input";
-  if (state.phase === "chunking") return "Preparing chunks";
-  if (state.phase === "translating") {
+  if (state.phase === 'measuring') return 'Measuring input';
+  if (state.phase === 'chunking') return 'Preparing chunks';
+  if (state.phase === 'translating') {
     if (state.totalChunks > 1) {
       return `Translating ${state.currentChunk} / ${state.totalChunks}`;
     }
-    return streamOutput.value ? "Streaming translation" : "Translating text";
+    return streamOutput.value ? 'Streaming translation' : 'Translating text';
   }
-  return "";
+  return '';
 });
 
 const progressPercent = computed(() => {
   const state = progressState.value;
-  if (state.phase === "measuring") return 18;
-  if (state.phase === "chunking") return 34;
-  if (state.phase === "translating" && state.totalChunks > 0) {
-    return Math.max(
-      44,
-      Math.round((state.processedChunks / state.totalChunks) * 88),
-    );
+  if (state.phase === 'measuring') return 18;
+  if (state.phase === 'chunking') return 34;
+  if (state.phase === 'translating' && state.totalChunks > 0) {
+    return Math.max(44, Math.round((state.processedChunks / state.totalChunks) * 88));
   }
-  if (state.phase === "translating") return 68;
-  return state.phase === "ready" ? 100 : 8;
+  if (state.phase === 'translating') return 68;
+  return state.phase === 'ready' ? 100 : 8;
 });
 
 const clearAutoTranslateTimer = () => {
@@ -434,8 +335,8 @@ const clearAutoTranslateTimer = () => {
 
 const isAbortError = (error: unknown) => {
   return (
-    (error instanceof DOMException && error.name === "AbortError") ||
-    (error instanceof Error && error.name === "AbortError")
+    (error instanceof DOMException && error.name === 'AbortError') ||
+    (error instanceof Error && error.name === 'AbortError')
   );
 };
 
@@ -448,13 +349,13 @@ const scheduleAutoTranslate = () => {
   }
 
   if (!sourceText.value.trim()) {
-    translatedText.value = "";
-    errorMessage.value = "";
+    translatedText.value = '';
+    errorMessage.value = '';
     pendingAutoTranslate.value = false;
     return;
   }
 
-  if (!hasLanguagePair.value || availability.value !== "available") {
+  if (!hasLanguagePair.value || availability.value !== 'available') {
     pendingAutoTranslate.value = false;
     return;
   }
@@ -469,7 +370,7 @@ const scheduleAutoTranslate = () => {
     () => {
       void handleTranslate();
     },
-    Math.max(0, props.debounceMs),
+    Math.max(0, props.debounceMs)
   );
 };
 
@@ -480,16 +381,16 @@ const handleTranslate = async () => {
   const input = sourceText.value;
 
   try {
-    translatedText.value = "";
-    errorMessage.value = "";
+    translatedText.value = '';
+    errorMessage.value = '';
     pendingAutoTranslate.value = false;
 
     const options = {
       createOptions: createOptions.value,
       autoCreate: props.autoCreate,
       stripHtml: stripHtmlInput.value,
-      chunking: chunkLargeInput.value ? ("auto" as const) : ("never" as const),
-      onProgress: (state: TranslatorProgressState) => emit("progress", state),
+      chunking: chunkLargeInput.value ? ('auto' as const) : ('never' as const),
+      onProgress: (state: TranslatorProgressState) => emit('progress', state)
     };
 
     if (streamOutput.value) {
@@ -498,10 +399,9 @@ const handleTranslate = async () => {
         translatedText.value = accumulated;
       });
       if (requestVersion !== translationVersion.value) return;
-      translatedText.value =
-        lastResult.value?.translation || translatedText.value;
+      translatedText.value = lastResult.value?.translation || translatedText.value;
       if (lastResult.value) {
-        emit("translate", lastResult.value);
+        emit('translate', lastResult.value);
       }
       return;
     }
@@ -509,17 +409,14 @@ const handleTranslate = async () => {
     const result = await translateWithDetails(input, options);
     if (requestVersion !== translationVersion.value) return;
     translatedText.value = result.translation;
-    emit("translate", result);
+    emit('translate', result);
   } catch (error) {
     if (requestVersion !== translationVersion.value || isAbortError(error)) {
       return;
     }
 
-    errorMessage.value =
-      error instanceof Error
-        ? error.message
-        : "Unable to translate this input.";
-    emit("error", error);
+    errorMessage.value = error instanceof Error ? error.message : 'Unable to translate this input.';
+    emit('error', error);
   }
 };
 
@@ -537,18 +434,15 @@ const requestCurrentAvailability = async (options: TranslatorCreate) => {
 const handlePreparePair = async () => {
   if (!canPreparePair.value) return;
 
-  if (availability.value === "available" && !autoTranslateInput.value) {
+  if (availability.value === 'available' && !autoTranslateInput.value) {
     await handleTranslate();
     return;
   }
 
   try {
-    errorMessage.value = "";
+    errorMessage.value = '';
 
-    if (
-      availability.value === "downloadable" ||
-      availability.value === "downloading"
-    ) {
+    if (availability.value === 'downloadable' || availability.value === 'downloading') {
       await create(createOptions.value);
     } else {
       await requestCurrentAvailability(createOptions.value);
@@ -556,11 +450,8 @@ const handlePreparePair = async () => {
 
     scheduleAutoTranslate();
   } catch (error) {
-    errorMessage.value =
-      error instanceof Error
-        ? error.message
-        : "Unable to prepare this language pair.";
-    emit("error", error);
+    errorMessage.value = error instanceof Error ? error.message : 'Unable to prepare this language pair.';
+    emit('error', error);
   }
 };
 
@@ -575,24 +466,21 @@ const swapLanguages = () => {
 
   if (translatedText.value) {
     sourceText.value = translatedText.value;
-    translatedText.value = "";
+    translatedText.value = '';
   }
 };
 
 const handleLanguageSelection = () => {
   availabilityRequestId += 1;
   translationVersion.value += 1;
-  translatedText.value = "";
-  errorMessage.value = "";
+  translatedText.value = '';
+  errorMessage.value = '';
   pendingAutoTranslate.value = false;
 };
 
 watch(sourceText, () => {
   translationVersion.value += 1;
-  if (
-    isProcessing.value &&
-    ["measuring", "chunking", "translating"].includes(progressState.value.phase)
-  ) {
+  if (isProcessing.value && ['measuring', 'chunking', 'translating'].includes(progressState.value.phase)) {
     interrupt();
   }
   scheduleAutoTranslate();
@@ -602,32 +490,32 @@ watch(
   () => props.sourceLanguage,
   (value) => {
     selectedSourceLanguage.value = value;
-  },
+  }
 );
 
 watch(
   () => props.targetLanguage,
   (value) => {
     selectedTargetLanguage.value = value;
-  },
+  }
 );
 
 watch(
   () => props.autoTranslate,
   (value) => {
     autoTranslateInput.value = value;
-  },
+  }
 );
 
 watch(
   availability,
   (value) => {
     if (value) {
-      emit("availability-change", value);
+      emit('availability-change', value);
     }
     scheduleAutoTranslate();
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
@@ -637,7 +525,7 @@ watch(
     if (!props.autoInit || !hasLanguagePair.value) return;
     await requestCurrentAvailability(options);
   },
-  { deep: true },
+  { deep: true }
 );
 
 watch([stripHtmlInput, chunkLargeInput, autoTranslateInput], () => {
@@ -955,11 +843,7 @@ onBeforeUnmount(() => {
 .translator__footer button {
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.09)
-  );
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
   color: var(--color-primary, #fff);
   font-weight: 800;
   cursor: pointer;
@@ -1005,11 +889,7 @@ onBeforeUnmount(() => {
   padding: 2rem;
   border: 1px dashed rgba(167, 139, 250, 0.16);
   border-radius: 0.75rem;
-  background: radial-gradient(
-    circle at center,
-    rgba(124, 92, 228, 0.08),
-    transparent 62%
-  );
+  background: radial-gradient(circle at center, rgba(124, 92, 228, 0.08), transparent 62%);
   text-align: center;
 }
 

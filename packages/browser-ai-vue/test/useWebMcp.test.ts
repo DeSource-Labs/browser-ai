@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createWebMcpFieldAttributes,
   createWebMcpFormAttributes,
   getWebMcpSupport,
   useWebMcp,
-  type WebMcpTool,
-} from "../src/composables/useWebMcp";
+  type WebMcpTool
+} from '../src/composables/useWebMcp';
 
 class FakeModelContext extends EventTarget {
   readonly tools = new Map<string, WebMcpTool>();
@@ -13,14 +13,14 @@ class FakeModelContext extends EventTarget {
   async registerTool(tool: WebMcpTool, options: { signal?: AbortSignal } = {}) {
     this.tools.set(tool.name, tool);
     options.signal?.addEventListener(
-      "abort",
+      'abort',
       () => {
         this.tools.delete(tool.name);
-        this.dispatchEvent(new Event("toolchange"));
+        this.dispatchEvent(new Event('toolchange'));
       },
-      { once: true },
+      { once: true }
     );
-    this.dispatchEvent(new Event("toolchange"));
+    this.dispatchEvent(new Event('toolchange'));
   }
 
   async getTools() {
@@ -29,9 +29,9 @@ class FakeModelContext extends EventTarget {
       description: tool.description,
       inputSchema: JSON.stringify(tool.inputSchema ?? {}),
       name: tool.name,
-      origin: "https://example.test",
+      origin: 'https://example.test',
       title: tool.title,
-      window: globalThis.window,
+      window: globalThis.window
     }));
   }
 
@@ -40,20 +40,20 @@ class FakeModelContext extends EventTarget {
   }
 }
 
-describe("useWebMcp", () => {
+describe('useWebMcp', () => {
   let modelContext: FakeModelContext;
 
   beforeEach(() => {
     modelContext = new FakeModelContext();
-    vi.stubGlobal("window", {
+    vi.stubGlobal('window', {
       isSecureContext: true,
-      originAgentCluster: true,
+      originAgentCluster: true
     });
-    vi.stubGlobal("document", {
+    vi.stubGlobal('document', {
       modelContext,
       permissionsPolicy: {
-        allowsFeature: (name: string) => name === "tools",
-      },
+        allowsFeature: (name: string) => name === 'tools'
+      }
     });
   });
 
@@ -61,27 +61,27 @@ describe("useWebMcp", () => {
     vi.unstubAllGlobals();
   });
 
-  it("reports support and manages tool lifecycle with AbortSignal", async () => {
+  it('reports support and manages tool lifecycle with AbortSignal', async () => {
     expect(getWebMcpSupport()).toMatchObject({
       supported: true,
       secureContext: true,
       originIsolated: true,
-      permissionAllowed: true,
+      permissionAllowed: true
     });
 
     const webMcp = useWebMcp();
     const unregister = await webMcp.registerTool({
-      name: "add_numbers",
-      description: "Add two numbers.",
+      name: 'add_numbers',
+      description: 'Add two numbers.',
       inputSchema: {
-        type: "object",
+        type: 'object',
         properties: {
-          a: { type: "number" },
-          b: { type: "number" },
-        },
+          a: { type: 'number' },
+          b: { type: 'number' }
+        }
       },
       annotations: { readOnlyHint: true },
-      execute: ({ a, b }) => Number(a) + Number(b),
+      execute: ({ a, b }) => Number(a) + Number(b)
     });
 
     const [tool] = await webMcp.refreshTools();
@@ -93,39 +93,39 @@ describe("useWebMcp", () => {
     webMcp.dispose();
   });
 
-  it("creates declarative form and field attributes", () => {
+  it('creates declarative form and field attributes', () => {
     expect(
       createWebMcpFormAttributes({
-        name: "submit_note",
-        description: "Submit a note.",
-        autoSubmit: true,
-      }),
+        name: 'submit_note',
+        description: 'Submit a note.',
+        autoSubmit: true
+      })
     ).toEqual({
-      toolname: "submit_note",
-      tooldescription: "Submit a note.",
-      toolautosubmit: true,
+      toolname: 'submit_note',
+      tooldescription: 'Submit a note.',
+      toolautosubmit: true
     });
-    expect(createWebMcpFieldAttributes("The note body.")).toEqual({
-      toolparamdescription: "The note body.",
+    expect(createWebMcpFieldAttributes('The note body.')).toEqual({
+      toolparamdescription: 'The note body.'
     });
     expect(() =>
       createWebMcpFormAttributes({
-        name: "bad name",
-        description: "Invalid.",
-      }),
+        name: 'bad name',
+        description: 'Invalid.'
+      })
     ).toThrow(TypeError);
   });
 
-  it("updates registered state when an external lifetime signal aborts", async () => {
+  it('updates registered state when an external lifetime signal aborts', async () => {
     const lifetime = new AbortController();
     const webMcp = useWebMcp();
     await webMcp.registerTool(
       {
-        name: "temporary_tool",
-        description: "A temporary test tool.",
-        execute: () => "ok",
+        name: 'temporary_tool',
+        description: 'A temporary test tool.',
+        execute: () => 'ok'
       },
-      { signal: lifetime.signal },
+      { signal: lifetime.signal }
     );
 
     expect(webMcp.registeredTools.value).toHaveLength(1);

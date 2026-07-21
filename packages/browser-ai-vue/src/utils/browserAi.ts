@@ -1,48 +1,41 @@
-import { shallowRef } from "vue";
+import { shallowRef } from 'vue';
 
 export type BrowserAiConstructor<TCoreOptions, TCreateOptions, TInstance> = {
   availability?: (options?: TCoreOptions) => Promise<Availability>;
   create?: (options?: TCreateOptions) => Promise<TInstance>;
 };
 
-export type DownloadProgressCallback = (
-  progress: number,
-  event: ProgressEvent,
-) => void;
+export type DownloadProgressCallback = (progress: number, event: ProgressEvent) => void;
 
-export const createDownloadMonitor = (
-  onProgress: DownloadProgressCallback,
-): CreateMonitorCallback => {
+export const createDownloadMonitor = (onProgress: DownloadProgressCallback): CreateMonitorCallback => {
   return (monitor) => {
-    monitor.addEventListener("downloadprogress", (event) => {
+    monitor.addEventListener('downloadprogress', (event) => {
       onProgress(Math.round(event.loaded * 100), event);
     });
   };
 };
 
 export const safeCheckAvailability = async <TCoreOptions>(
-  ctor:
-    | Pick<BrowserAiConstructor<TCoreOptions, unknown, unknown>, "availability">
-    | undefined,
-  options?: TCoreOptions,
+  ctor: Pick<BrowserAiConstructor<TCoreOptions, unknown, unknown>, 'availability'> | undefined,
+  options?: TCoreOptions
 ) => {
-  if (typeof ctor?.availability !== "function") {
-    return "unavailable" as Availability;
+  if (typeof ctor?.availability !== 'function') {
+    return 'unavailable' as Availability;
   }
 
   try {
     return await ctor.availability(options);
   } catch {
-    return "unavailable" as Availability;
+    return 'unavailable' as Availability;
   }
 };
 
 export const collectTextStream = async (
   stream: ReadableStream<string>,
-  onChunk?: (chunk: string, accumulated: string) => void,
+  onChunk?: (chunk: string, accumulated: string) => void
 ) => {
   const reader = stream.getReader();
-  let accumulated = "";
+  let accumulated = '';
 
   while (true) {
     const { done, value } = await reader.read();
@@ -57,10 +50,10 @@ export const collectTextStream = async (
 
 export const isAbortError = (error: unknown): boolean => {
   if (error instanceof DOMException) {
-    return error.name === "AbortError";
+    return error.name === 'AbortError';
   }
   if (error instanceof Error) {
-    return error.name === "AbortError";
+    return error.name === 'AbortError';
   }
   return false;
 };
@@ -89,6 +82,6 @@ export const useAbortableOperation = () => {
     abortController,
     begin,
     end,
-    interrupt,
+    interrupt
   };
 };

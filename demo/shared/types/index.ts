@@ -1,4 +1,4 @@
-export type SocialMediaKey = "email" | "telegram" | "x" | "linkedin" | "github";
+export type SocialMediaKey = 'email' | 'telegram' | 'x' | 'linkedin' | 'github';
 
 export type SocialMediaItem = {
   type: SocialMediaKey;
@@ -7,25 +7,17 @@ export type SocialMediaItem = {
 
 export type SocialMedia = Record<SocialMediaKey, string>;
 
-export type Library =
-  "vue" | "nuxt" | "react" | "angular" | "svelte" | "typescript";
+export type Library = 'vue' | 'nuxt' | 'react' | 'angular' | 'svelte' | 'typescript';
 
 export type LibItem = {
   id: Library;
   name: string;
-  status: "available" | "planned";
+  status: 'available' | 'planned';
   description: string;
 };
 
 export type Tool =
-  | "prompt-api"
-  | "summarizer"
-  | "writer"
-  | "rewriter"
-  | "translator"
-  | "language-detector"
-  | "proofreader"
-  | "webmcp";
+  'prompt-api' | 'summarizer' | 'writer' | 'rewriter' | 'translator' | 'language-detector' | 'proofreader' | 'webmcp';
 
 export type ToolItem = {
   id: Tool;
@@ -46,7 +38,7 @@ export type ApiGuide = {
   title: string;
   description: string;
   eyebrow: string;
-  workspace: "chat" | "tool" | "webmcp";
+  workspace: 'chat' | 'tool' | 'webmcp';
   mobileWorkspaceHeight?: number;
   examples: ApiUsageExample[];
 };

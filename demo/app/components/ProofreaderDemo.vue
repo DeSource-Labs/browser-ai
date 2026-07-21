@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 const source = ref(
-  "Browser AI Kit make local AI features easier to ship. It handle model downloads, streaming and long documents so your users gets a fast and private experience.",
+  'Browser AI Kit make local AI features easier to ship. It handle model downloads, streaming and long documents so your users gets a fast and private experience.'
 );
 </script>
 

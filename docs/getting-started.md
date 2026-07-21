@@ -39,8 +39,8 @@ Restart Chrome after changing flags. Flags are a development mechanism, not a de
 
 ```vue
 <script setup lang="ts">
-import { Summarizer } from "@desource/browser-ai-vue";
-import "@desource/browser-ai-vue/assets/lib.css";
+import { Summarizer } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 
 <template>
@@ -53,21 +53,21 @@ The starter components already handle supported, downloadable, downloading, read
 ## Start headless
 
 ```ts
-import { useSummarizer } from "@desource/browser-ai-vue";
+import { useSummarizer } from '@desource/browser-ai-vue';
 
 const summarizer = useSummarizer();
 
 await summarizer.init({
-  type: "key-points",
-  format: "markdown",
-  length: "medium",
+  type: 'key-points',
+  format: 'markdown',
+  length: 'medium'
 });
 
 // Keep this call in a click/keyboard handler when availability is downloadable.
 await summarizer.create();
 
 const result = await summarizer.summarizeWithDetails(sourceText, {
-  context: "Prioritize decisions, owners, and deadlines.",
+  context: 'Prioritize decisions, owners, and deadlines.'
 });
 ```
 
@@ -112,12 +112,12 @@ The Nuxt module registers browser-dependent components in client mode and auto-i
 
 ```ts
 export default defineNuxtConfig({
-  modules: ["@desource/browser-ai-nuxt"],
+  modules: ['@desource/browser-ai-nuxt'],
   browserAi: {
     css: true,
     component: true,
-    helpers: true,
-  },
+    helpers: true
+  }
 });
 ```
 

@@ -6,9 +6,7 @@
         Error {{ error.statusCode }}<br />
         <span>{{ error.statusMessage }}</span>
       </h1>
-      <button class="error-button" href="/" @click.prevent="handleError">
-        Home
-      </button>
+      <button class="error-button" href="/" @click.prevent="handleError">Home</button>
     </section>
   </main>
 </template>
@@ -25,7 +23,7 @@ const { error } = defineProps<{
   };
 }>();
 
-const handleError = () => clearError({ redirect: "/" });
+const handleError = () => clearError({ redirect: '/' });
 </script>
 
 <style scoped>

@@ -3,8 +3,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { renderMarkdown } from "../utils/markdown";
+import { computed } from 'vue';
+import { renderMarkdown } from '../utils/markdown';
 
 interface Props {
   content: string;

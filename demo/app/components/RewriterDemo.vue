@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 const source = ref(
-  "Our library makes it easier for people who build applications with Vue to use all of the different artificial intelligence features that are already available inside the Chrome browser without having to write all of the complicated lifecycle code themselves.",
+  'Our library makes it easier for people who build applications with Vue to use all of the different artificial intelligence features that are already available inside the Chrome browser without having to write all of the complicated lifecycle code themselves.'
 );
 </script>
 

@@ -7,9 +7,8 @@
       <p class="docs-kicker">Browser AI Kit documentation</p>
       <h1>Build the local AI feature<br />users expect.</h1>
       <p>
-        Start with a complete interface or compose your own. The same typed
-        lifecycle handles readiness, downloads, streaming, long input, context,
-        cancellation, and cleanup.
+        Start with a complete interface or compose your own. The same typed lifecycle handles readiness, downloads,
+        streaming, long input, context, cancellation, and cleanup.
       </p>
       <div class="docs-hero__actions">
         <a class="docs-button docs-button--primary" href="#install">
@@ -33,12 +32,7 @@
           <a href="#privacy">Privacy and fallback</a>
           <a href="#faq">FAQ</a>
         </nav>
-        <a
-          class="docs-sidebar__github"
-          :href="Links.coreRepo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <a class="docs-sidebar__github" :href="Links.coreRepo" target="_blank" rel="noopener noreferrer">
           Read source on GitHub →
         </a>
       </aside>
@@ -46,22 +40,17 @@
       <article class="docs-content">
         <section id="overview" class="doc-section doc-intro">
           <p class="docs-kicker">Overview</p>
-          <h2>
-            Chrome provides the model.<br />The kit provides the product layer.
-          </h2>
+          <h2>Chrome provides the model.<br />The kit provides the product layer.</h2>
           <p>
-            Browser AI Kit wraps Chrome's built-in AI APIs in Vue-native state
-            and optional interfaces. It does not proxy prompts through a server
-            or flatten every capability into one generic abstraction. Prompt,
-            Summarizer, Writer, Rewriter, Translator, Language Detector,
-            Proofreader, and WebMCP keep their distinct strengths.
+            Browser AI Kit wraps Chrome's built-in AI APIs in Vue-native state and optional interfaces. It does not
+            proxy prompts through a server or flatten every capability into one generic abstraction. Prompt, Summarizer,
+            Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP keep their distinct strengths.
           </p>
           <div class="callout callout--note">
             <span aria-hidden="true">i</span>
             <p>
-              The library is production-oriented; the browser APIs are still
-              evolving. Always keep an unsupported state and a non-AI path for
-              essential work.
+              The library is production-oriented; the browser APIs are still evolving. Always keep an unsupported state
+              and a non-AI path for essential work.
             </p>
           </div>
           <div class="principle-grid">
@@ -77,8 +66,8 @@
           <p class="docs-kicker">Installation</p>
           <h2>Choose the framework boundary.</h2>
           <p>
-            Both packages expose the same runtime behavior. Nuxt adds
-            auto-imports and client-only registration around the Vue core.
+            Both packages expose the same runtime behavior. Nuxt adds auto-imports and client-only registration around
+            the Vue core.
           </p>
           <div class="install-grid">
             <div class="install-card">
@@ -88,13 +77,8 @@
               </div>
               <h3>Vue</h3>
               <p>Components and composables for Vue 3.4.33 or newer.</p>
-              <CodeBlock
-                label="Terminal"
-                code="npm install @desource/browser-ai-vue"
-              />
-              <a :href="DocLinks.vue" target="_blank" rel="noopener noreferrer">
-                npm package guide →
-              </a>
+              <CodeBlock label="Terminal" code="npm install @desource/browser-ai-vue" />
+              <a :href="DocLinks.vue" target="_blank" rel="noopener noreferrer"> npm package guide → </a>
             </div>
             <div class="install-card">
               <div>
@@ -103,24 +87,14 @@
               </div>
               <h3>Nuxt</h3>
               <p>Module integration for Nuxt 3.17+ and Nuxt 4.</p>
-              <CodeBlock
-                label="Terminal"
-                code="npm install @desource/browser-ai-nuxt"
-              />
-              <a
-                :href="DocLinks.nuxt"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                npm package guide →
-              </a>
+              <CodeBlock label="Terminal" code="npm install @desource/browser-ai-nuxt" />
+              <a :href="DocLinks.nuxt" target="_blank" rel="noopener noreferrer"> npm package guide → </a>
             </div>
           </div>
           <div class="roadmap-note">
             <strong>React, Angular, and Svelte are next.</strong>
-            The public roadmap also includes a framework-neutral TypeScript
-            core. Each adapter will use its framework's native state and
-            lifecycle conventions.
+            The public roadmap also includes a framework-neutral TypeScript core. Each adapter will use its framework's
+            native state and lifecycle conventions.
             <a
               href="https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md"
               target="_blank"
@@ -135,17 +109,15 @@
           <p class="docs-kicker">Vue quick start</p>
           <h2>Use the full interface.</h2>
           <p>
-            Import the stylesheet once, then render a component. The Prompt API
-            interface includes saved chats, streaming, attachments supported by
-            Chrome, stop controls, download UX, and context recovery.
+            Import the stylesheet once, then render a component. The Prompt API interface includes saved chats,
+            streaming, attachments supported by Chrome, stop controls, download UX, and context recovery.
           </p>
           <CodeBlock label="PromptExperience.vue" :code="vueComponentCode" />
 
           <h3 class="doc-subheading">Or own every pixel.</h3>
           <p>
-            Composables expose reactive state and direct operations. A native
-            session lives in a shallow ref, avoiding expensive traversal while
-            the rest of your UI updates.
+            Composables expose reactive state and direct operations. A native session lives in a shallow ref, avoiding
+            expensive traversal while the rest of your UI updates.
           </p>
           <CodeBlock label="useLocalPrompt.ts" :code="vueComposableCode" />
         </section>
@@ -154,15 +126,11 @@
           <p class="docs-kicker">Nuxt quick start</p>
           <h2>One module, no browser globals on the server.</h2>
           <p>
-            Components are registered in client mode. Composables, helpers,
-            language options, and public types are auto-imported.
+            Components are registered in client mode. Composables, helpers, language options, and public types are
+            auto-imported.
           </p>
           <CodeBlock label="nuxt.config.ts" :code="nuxtCode" />
-          <div
-            class="option-table"
-            role="table"
-            aria-label="Nuxt module options"
-          >
+          <div class="option-table" role="table" aria-label="Nuxt module options">
             <div class="option-table__head" role="row">
               <span role="columnheader">Option</span>
               <span role="columnheader">Default</span>
@@ -180,9 +148,8 @@
           <p class="docs-kicker">Browser lifecycle</p>
           <h2>Availability is part of the interface.</h2>
           <p>
-            Chrome decides whether a capability is ready, needs local resources,
-            is already downloading, or is unavailable on the current profile.
-            Check again when the feature starts; model state can change.
+            Chrome decides whether a capability is ready, needs local resources, is already downloading, or is
+            unavailable on the current profile. Check again when the feature starts; model state can change.
           </p>
           <div class="state-grid">
             <div v-for="state in availabilityStates" :key="state.name">
@@ -194,21 +161,16 @@
           <div class="callout callout--warning">
             <span aria-hidden="true">!</span>
             <p>
-              When an API is <code>downloadable</code>, call
-              <code>create()</code> from a genuine click or keyboard action.
-              Programmatic clicks and page-load effects do not satisfy Chrome's
-              activation requirement.
+              When an API is <code>downloadable</code>, call <code>create()</code> from a genuine click or keyboard
+              action. Programmatic clicks and page-load effects do not satisfy Chrome's activation requirement.
             </p>
           </div>
 
-          <h3 class="doc-subheading">
-            Long work stays measurable and cancellable.
-          </h3>
+          <h3 class="doc-subheading">Long work stays measurable and cancellable.</h3>
           <p>
-            Specialized composables measure the browser's real quota and apply a
-            strategy that fits the task: recursive summary rollups, ordered
-            translation chunks, optional-context fitting, confidence merging, or
-            normalized proofreader ranges.
+            Specialized composables measure the browser's real quota and apply a strategy that fits the task: recursive
+            summary rollups, ordered translation chunks, optional-context fitting, confidence merging, or normalized
+            proofreader ranges.
           </p>
           <CodeBlock label="Summarizer example" :code="longInputCode" />
         </section>
@@ -227,8 +189,8 @@
             </NuxtLink>
           </div>
           <p class="docs-caption">
-            Every example calls the native API in this browser profile. No demo
-            response is mocked and no hosted model is used as a fallback.
+            Every example calls the native API in this browser profile. No demo response is mocked and no hosted model
+            is used as a fallback.
           </p>
         </section>
 
@@ -236,27 +198,22 @@
           <p class="docs-kicker">WebMCP</p>
           <h2>Make your application legible to browser agents.</h2>
           <p>
-            Register imperative tools, annotate existing forms, discover tools,
-            execute them manually during development, and observe lifecycle
-            changes through one composable.
+            Register imperative tools, annotate existing forms, discover tools, execute them manually during
+            development, and observe lifecycle changes through one composable.
           </p>
           <CodeBlock label="useCartTools.ts" :code="webMcpCode" />
           <div class="callout callout--warning">
             <span aria-hidden="true">!</span>
             <p>
-              Schemas guide the caller; they do not authorize it. Validate every
-              input and re-check authentication and authorization inside
+              Schemas guide the caller; they do not authorize it. Validate every input and re-check authentication and
+              authorization inside
               <code>execute</code>.
             </p>
           </div>
           <h3 class="doc-subheading">Production headers</h3>
-          <CodeBlock
-            label="HTTP response"
-            code="Origin-Agent-Cluster: ?1\nPermissions-Policy: tools=(self)"
-          />
+          <CodeBlock label="HTTP response" code="Origin-Agent-Cluster: ?1\nPermissions-Policy: tools=(self)" />
           <p class="docs-caption">
-            WebMCP is experimental and currently requires Chrome's testing flag
-            or origin-trial availability.
+            WebMCP is experimental and currently requires Chrome's testing flag or origin-trial availability.
             <a
               href="https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md"
               target="_blank"
@@ -271,9 +228,8 @@
           <p class="docs-kicker">Privacy and fallback</p>
           <h2>Be precise about where data goes.</h2>
           <p>
-            Browser AI Kit does not send prompts, outputs, or telemetry to
-            DeSource Labs. Built-in model execution remains inside Chrome, which
-            owns the model files and resource lifecycle.
+            Browser AI Kit does not send prompts, outputs, or telemetry to DeSource Labs. Built-in model execution
+            remains inside Chrome, which owns the model files and resource lifecycle.
           </p>
           <div class="privacy-flow" aria-label="Local inference data flow">
             <span>Your interface</span>
@@ -283,14 +239,12 @@
             <span>Chrome model</span>
           </div>
           <p>
-            Your own application code, extensions, monitoring software, and
-            WebMCP tools can still transmit information. Audit those paths and
-            never put secrets in client-side prompts or tool descriptions.
+            Your own application code, extensions, monitoring software, and WebMCP tools can still transmit information.
+            Audit those paths and never put secrets in client-side prompts or tool descriptions.
           </p>
           <p>
-            If local AI is unavailable, keep the manual workflow, explain how to
-            retry, or offer a hosted model only after disclosing that content
-            will leave the device. Do not silently cross that privacy boundary.
+            If local AI is unavailable, keep the manual workflow, explain how to retry, or offer a hosted model only
+            after disclosing that content will leave the device. Do not silently cross that privacy boundary.
           </p>
         </section>
 
@@ -299,9 +253,7 @@
           <h2>Before you ship.</h2>
           <div class="faq-list">
             <details v-for="item in faq" :key="item.question">
-              <summary>
-                {{ item.question }}<span aria-hidden="true">+</span>
-              </summary>
+              <summary>{{ item.question }}<span aria-hidden="true">+</span></summary>
               <p>{{ item.answer }}</p>
             </details>
           </div>
@@ -311,12 +263,9 @@
           <p class="docs-kicker">Next step</p>
           <h2>Run the real API.</h2>
           <p>
-            The example directory detects capabilities in this Chrome profile
-            and lets you test every available surface.
+            The example directory detects capabilities in this Chrome profile and lets you test every available surface.
           </p>
-          <NuxtLink class="docs-button docs-button--primary" to="/#apis">
-            Open interactive examples →
-          </NuxtLink>
+          <NuxtLink class="docs-button docs-button--primary" to="/#apis"> Open interactive examples → </NuxtLink>
         </section>
       </article>
     </main>
@@ -326,40 +275,40 @@
 </template>
 
 <script setup lang="ts">
-import type { Tool } from "~~/shared/types";
+import type { Tool } from '~~/shared/types';
 
 useSeoMeta({
-  title: "Documentation — Browser AI Kit",
+  title: 'Documentation — Browser AI Kit',
   description:
-    "Install and ship Chrome built-in AI in Vue and Nuxt with production lifecycle, long-input, Prompt API, and WebMCP guidance.",
+    'Install and ship Chrome built-in AI in Vue and Nuxt with production lifecycle, long-input, Prompt API, and WebMCP guidance.'
 });
 
 useHead({
-  script: [{ src: "/marketing.js", defer: true }],
+  script: [{ src: '/marketing.js', defer: true }]
 });
 
 const principles = [
   {
-    icon: "⌁",
-    title: "On-device by design",
-    body: "No package-owned inference endpoint, credentials, or usage meter.",
+    icon: '⌁',
+    title: 'On-device by design',
+    body: 'No package-owned inference endpoint, credentials, or usage meter.'
   },
   {
-    icon: "↯",
-    title: "Fast framework state",
-    body: "Shallow native sessions and frame-coalesced streaming protect interaction latency.",
+    icon: '↯',
+    title: 'Fast framework state',
+    body: 'Shallow native sessions and frame-coalesced streaming protect interaction latency.'
   },
   {
-    icon: "◇",
-    title: "Composable by default",
-    body: "Use the interface, the headless state, or direct native-shaped operations.",
-  },
+    icon: '◇',
+    title: 'Composable by default',
+    body: 'Use the interface, the headless state, or direct native-shaped operations.'
+  }
 ];
 
 const vueComponentCode = `<script setup lang="ts">
 import { PromptApi } from "@desource/browser-ai-vue";
 import "@desource/browser-ai-vue/assets/lib.css";
-<${"/"}script>
+<${'/'}script>
 
 <template>
   <PromptApi
@@ -419,70 +368,70 @@ const unregister = await webMcp.registerTool({
 });`;
 
 const nuxtOptions = [
-  { name: "css", default: "true", purpose: "Include the component stylesheet" },
-  { name: "component", default: "true", purpose: "Register client components" },
+  { name: 'css', default: 'true', purpose: 'Include the component stylesheet' },
+  { name: 'component', default: 'true', purpose: 'Register client components' },
   {
-    name: "helpers",
-    default: "true",
-    purpose: "Auto-import helpers and types",
-  },
+    name: 'helpers',
+    default: 'true',
+    purpose: 'Auto-import helpers and types'
+  }
 ];
 
 const availabilityStates = [
-  { name: "available", action: "Enable the action and prepare a session." },
+  { name: 'available', action: 'Enable the action and prepare a session.' },
   {
-    name: "downloadable",
-    action: "Explain the local download and wait for a user action.",
+    name: 'downloadable',
+    action: 'Explain the local download and wait for a user action.'
   },
-  { name: "downloading", action: "Show progress and keep the page active." },
+  { name: 'downloading', action: 'Show progress and keep the page active.' },
   {
-    name: "unavailable",
-    action: "Keep the essential workflow usable without AI.",
-  },
+    name: 'unavailable',
+    action: 'Keep the essential workflow usable without AI.'
+  }
 ];
 
 const apiMarks: Record<Tool, string> = {
-  "prompt-api": "P",
-  summarizer: "S",
-  writer: "W",
-  rewriter: "R",
-  translator: "T",
-  "language-detector": "L",
-  proofreader: "Pr",
-  webmcp: "M",
+  'prompt-api': 'P',
+  summarizer: 'S',
+  writer: 'W',
+  rewriter: 'R',
+  translator: 'T',
+  'language-detector': 'L',
+  proofreader: 'Pr',
+  webmcp: 'M'
 };
 
 const faq = [
   {
-    question: "Does Browser AI Kit work in every browser?",
+    question: 'Does Browser AI Kit work in every browser?',
     answer:
-      "No. It intentionally targets Chrome's built-in AI surfaces. Support also varies by Chrome version, platform, device, region, language, profile policy, and model state.",
+      "No. It intentionally targets Chrome's built-in AI surfaces. Support also varies by Chrome version, platform, device, region, language, profile policy, and model state."
   },
   {
-    question: "Does it cost anything per request?",
+    question: 'Does it cost anything per request?',
     answer:
-      "The kit has no request fee and uses no DeSource Labs inference service. Local inference still consumes the user's device resources, and your own hosting or optional cloud fallback may have costs.",
+      "The kit has no request fee and uses no DeSource Labs inference service. Local inference still consumes the user's device resources, and your own hosting or optional cloud fallback may have costs."
   },
   {
-    question: "Will it work offline?",
+    question: 'Will it work offline?',
     answer:
-      "A ready local model can run without an inference network request, but Chrome may need network access to install or update the model or a language pack. Chrome can also remove resources under storage pressure.",
+      'A ready local model can run without an inference network request, but Chrome may need network access to install or update the model or a language pack. Chrome can also remove resources under storage pressure.'
   },
   {
-    question: "Can I replace the provided interface?",
+    question: 'Can I replace the provided interface?',
     answer:
-      "Yes. Components are optional. Every capability has a composable for a completely custom interface, and the composables preserve familiar native operations.",
+      'Yes. Components are optional. Every capability has a composable for a completely custom interface, and the composables preserve familiar native operations.'
   },
   {
     question: "Is it production-ready if Chrome's APIs are experimental?",
     answer:
-      "The library handles production concerns and is tested against the documented and verified runtime surface. Your product must still feature-detect, present an unsupported state, and accept that browser behavior can evolve.",
+      'The library handles production concerns and is tested against the documented and verified runtime surface. Your product must still feature-detect, present an unsupported state, and accept that browser behavior can evolve.'
   },
   {
-    question: "Is the native browser API a better choice?",
+    question: 'Is the native browser API a better choice?',
     answer:
-      "For a small one-off call, it can be. The kit is valuable when download UX, streaming, long inputs, persisted context, cancellation, SSR, cleanup, or several APIs would otherwise be rebuilt in your application.",
-  },
+      'For a small one-off call, it can be. The kit is valuable when download UX, streaming, long inputs, persisted context, cancellation, SSR, cleanup, or several APIs would otherwise be rebuilt in your application.'
+  }
 ];
 </script>
 
@@ -506,15 +455,11 @@ const faq = [
 .docs-hero::before {
   position: absolute;
   inset: 1rem 4% 0;
-  content: "";
+  content: '';
   z-index: -1;
   pointer-events: none;
   opacity: 0.65;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.16) 1px,
-    transparent 1px
-  );
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
   background-size: 30px 30px;
   mask-image: radial-gradient(ellipse at center, #000 0%, transparent 68%);
 }
@@ -838,11 +783,7 @@ const faq = [
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.72rem;
-  background: linear-gradient(
-    145deg,
-    rgba(122, 92, 230, 0.4),
-    rgba(67, 127, 206, 0.15)
-  );
+  background: linear-gradient(145deg, rgba(122, 92, 230, 0.4), rgba(67, 127, 206, 0.15));
   font-size: 0.8rem;
   font-weight: 850;
 }
@@ -1126,13 +1067,7 @@ const faq = [
   padding: clamp(2rem, 5vw, 3.75rem);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.2rem;
-  background:
-    radial-gradient(
-      circle at 100% 0,
-      rgba(118, 89, 230, 0.16),
-      transparent 45%
-    ),
-    rgba(7, 10, 22, 0.7);
+  background: radial-gradient(circle at 100% 0, rgba(118, 89, 230, 0.16), transparent 45%), rgba(7, 10, 22, 0.7);
 }
 
 .docs-next::after {
@@ -1141,7 +1076,7 @@ const faq = [
   height: 260px;
   right: -100px;
   bottom: -150px;
-  content: "";
+  content: '';
   pointer-events: none;
   border: 1px solid rgba(167, 139, 250, 0.17);
   border-radius: 50%;

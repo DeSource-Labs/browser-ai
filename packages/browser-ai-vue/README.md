@@ -31,8 +31,8 @@ Vue 3.4.33 or newer is required.
 
 ```vue
 <script setup lang="ts">
-import { PromptApi } from "@desource/browser-ai-vue";
-import "@desource/browser-ai-vue/assets/lib.css";
+import { PromptApi } from '@desource/browser-ai-vue';
+import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 
 <template>
@@ -50,7 +50,7 @@ For a custom interface, use the same renderer directly:
 
 ```vue
 <script setup lang="ts">
-import { MarkdownRenderer } from "@desource/browser-ai-vue";
+import { MarkdownRenderer } from '@desource/browser-ai-vue';
 
 defineProps<{ answer: string }>();
 </script>
@@ -66,23 +66,23 @@ Every UI component is powered by a public composable. Native sessions are held i
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
-import { usePromptApi } from "@desource/browser-ai-vue";
+import { ref } from 'vue';
+import { usePromptApi } from '@desource/browser-ai-vue';
 
-const input = ref("");
-const output = ref("");
+const input = ref('');
+const output = ref('');
 const ai = usePromptApi();
 
 async function start() {
   await ai.init({
-    expectedInputs: [{ type: "text", languages: ["en"] }],
-    expectedOutputs: [{ type: "text", languages: ["en"] }],
+    expectedInputs: [{ type: 'text', languages: ['en'] }],
+    expectedOutputs: [{ type: 'text', languages: ['en'] }]
   });
   await ai.create();
 }
 
 async function send() {
-  output.value = "";
+  output.value = '';
   const stream = ai.promptStreaming(input.value);
   for await (const chunk of stream) {
     output.value += chunk;
@@ -96,22 +96,19 @@ Call `create()` from a genuine click or key action when `availability` is `downl
 ## Structured output
 
 ```ts
-const result = await ai.promptJson<{ sentiment: "positive" | "negative" }>(
-  "Classify: The update fixed everything.",
-  {
-    responseConstraint: {
-      type: "object",
-      properties: {
-        sentiment: {
-          type: "string",
-          enum: ["positive", "negative"],
-        },
-      },
-      required: ["sentiment"],
-      additionalProperties: false,
+const result = await ai.promptJson<{ sentiment: 'positive' | 'negative' }>('Classify: The update fixed everything.', {
+  responseConstraint: {
+    type: 'object',
+    properties: {
+      sentiment: {
+        type: 'string',
+        enum: ['positive', 'negative']
+      }
     },
-  },
-);
+    required: ['sentiment'],
+    additionalProperties: false
+  }
+});
 ```
 
 `promptJson()` uses the browser's constrained-output support and parses the result into the supplied TypeScript type. Lower-level `prompt()`, `promptStreaming()`, `append()`, `clone()`, and usage measurement remain available.
@@ -121,16 +118,16 @@ const result = await ai.promptJson<{ sentiment: "positive" | "negative" }>(
 The specialized composables use each native API's quota measurement instead of guessing with character limits:
 
 ```ts
-import { useSummarizer } from "@desource/browser-ai-vue";
+import { useSummarizer } from '@desource/browser-ai-vue';
 
 const summarizer = useSummarizer();
 const result = await summarizer.summarizeWithDetails(article, {
   createOptions: {
-    type: "key-points",
-    format: "markdown",
-    length: "medium",
+    type: 'key-points',
+    format: 'markdown',
+    length: 'medium'
   },
-  context: "Focus on decisions and unresolved risks.",
+  context: 'Focus on decisions and unresolved risks.'
 });
 ```
 
@@ -139,24 +136,24 @@ When one request cannot fit, Summarizer creates measured chunks and recursive ro
 ## WebMCP
 
 ```ts
-import { useWebMcp } from "@desource/browser-ai-vue";
+import { useWebMcp } from '@desource/browser-ai-vue';
 
 const webMcp = useWebMcp();
 
 const unregister = await webMcp.registerTool({
-  name: "get_order_status",
-  description: "Return the status of an order visible to the signed-in user.",
+  name: 'get_order_status',
+  description: 'Return the status of an order visible to the signed-in user.',
   inputSchema: {
-    type: "object",
-    properties: { orderId: { type: "string" } },
-    required: ["orderId"],
-    additionalProperties: false,
+    type: 'object',
+    properties: { orderId: { type: 'string' } },
+    required: ['orderId'],
+    additionalProperties: false
   },
   annotations: { readOnlyHint: true },
   execute: async ({ orderId }) => {
     // Re-check authorization here; tool descriptions are not a security boundary.
     return orders.getVisibleOrder(String(orderId));
-  },
+  }
 });
 
 unregister();

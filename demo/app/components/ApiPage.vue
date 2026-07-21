@@ -34,7 +34,7 @@
           class="api-page__workspace"
           :class="`api-page__workspace--${workspace}`"
           :style="{
-            '--api-workspace-mobile-height': `${mobileWorkspaceHeight ?? 0}px`,
+            '--api-workspace-mobile-height': `${mobileWorkspaceHeight ?? 0}px`
           }"
         >
           <slot />
@@ -46,8 +46,8 @@
           <p>Use it in your product</p>
           <h2 id="usage-title">Start complete. Customize when you need to.</h2>
           <span>
-            Components provide the fastest production path. Composables expose
-            the same lifecycle for a UI that is entirely yours.
+            Components provide the fastest production path. Composables expose the same lifecycle for a UI that is
+            entirely yours.
           </span>
         </div>
 
@@ -72,22 +72,22 @@
 </template>
 
 <script setup lang="ts">
-import type { ApiGuide } from "#shared/types";
+import type { ApiGuide } from '#shared/types';
 
 const props = defineProps<ApiGuide>();
 const router = useRouter();
 
 useSeoMeta({
   title: () => `${props.title} playground · Browser AI Kit`,
-  description: () => props.description,
+  description: () => props.description
 });
 
 const goBack = () => {
-  if (typeof window !== "undefined" && window.history.length > 1) {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
     router.back();
     return;
   }
-  void navigateTo("/#apis");
+  void navigateTo('/#apis');
 };
 </script>
 

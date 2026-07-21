@@ -1,58 +1,45 @@
-import "./styles/writing-tool.css";
+import './styles/writing-tool.css';
 
-export { useAiChats } from "./composables/useAiChats";
+export { useAiChats } from './composables/useAiChats';
 
-export { usePromptApi } from "./composables/usePromptApi";
+export { usePromptApi } from './composables/usePromptApi';
 
-export { useSummarizer } from "./composables/useSummarizer";
+export { useSummarizer } from './composables/useSummarizer';
 
-export { useWriter } from "./composables/useWriter";
+export { useWriter } from './composables/useWriter';
 
-export { useRewriter } from "./composables/useRewriter";
+export { useRewriter } from './composables/useRewriter';
 
-export {
-  useTranslator,
-  TRANSLATOR_LANGUAGE_OPTIONS,
-  getTranslatorLanguageName,
-} from "./composables/useTranslator";
+export { useTranslator, TRANSLATOR_LANGUAGE_OPTIONS, getTranslatorLanguageName } from './composables/useTranslator';
 
 export {
   useLanguageDetector,
   LANGUAGE_DETECTOR_LANGUAGE_OPTIONS,
-  getLanguageDetectorLanguageName,
-} from "./composables/useLanguageDetector";
+  getLanguageDetectorLanguageName
+} from './composables/useLanguageDetector';
 
-export {
-  useProofreader,
-  PROOFREADER_LANGUAGE_OPTIONS,
-  getProofreaderLanguageName,
-} from "./composables/useProofreader";
+export { useProofreader, PROOFREADER_LANGUAGE_OPTIONS, getProofreaderLanguageName } from './composables/useProofreader';
 
 export {
   useWebMcp,
   getWebMcpSupport,
   createWebMcpFormAttributes,
-  createWebMcpFieldAttributes,
-} from "./composables/useWebMcp";
+  createWebMcpFieldAttributes
+} from './composables/useWebMcp';
 
-export { default as ChatHistory } from "./components/ChatHistory.vue";
-export { default as ChatSidebar } from "./components/ChatSidebar.vue";
-export { default as LanguageDetector } from "./components/LanguageDetector.vue";
-export { default as MarkdownRenderer } from "./components/MarkdownRenderer.vue";
-export { default as Proofreader } from "./components/Proofreader.vue";
-export { default as PromptApi } from "./components/PromptApi.vue";
-export { default as PromptInput } from "./components/PromptInput.vue";
-export { default as Rewriter } from "./components/Rewriter.vue";
-export { default as Summarizer } from "./components/Summarizer.vue";
-export { default as Translator } from "./components/Translator.vue";
-export { default as Writer } from "./components/Writer.vue";
+export { default as ChatHistory } from './components/ChatHistory.vue';
+export { default as ChatSidebar } from './components/ChatSidebar.vue';
+export { default as LanguageDetector } from './components/LanguageDetector.vue';
+export { default as MarkdownRenderer } from './components/MarkdownRenderer.vue';
+export { default as Proofreader } from './components/Proofreader.vue';
+export { default as PromptApi } from './components/PromptApi.vue';
+export { default as PromptInput } from './components/PromptInput.vue';
+export { default as Rewriter } from './components/Rewriter.vue';
+export { default as Summarizer } from './components/Summarizer.vue';
+export { default as Translator } from './components/Translator.vue';
+export { default as Writer } from './components/Writer.vue';
 
-export type {
-  AiChatMessage,
-  AiChatRecord,
-  AiChatSummaryRecord,
-  AiChatTool,
-} from "./composables/useAiChats";
+export type { AiChatMessage, AiChatRecord, AiChatSummaryRecord, AiChatTool } from './composables/useAiChats';
 
 export type {
   LLMAvailability,
@@ -73,8 +60,8 @@ export type {
   LLMRestoreSessionResult,
   LLMTemporaryPromptOptions,
   LLMStructuredPromptOptions,
-  UsePromptApiOptions,
-} from "./composables/usePromptApi";
+  UsePromptApiOptions
+} from './composables/usePromptApi';
 
 export type {
   WebMcpDiscoveredTool,
@@ -86,8 +73,8 @@ export type {
   WebMcpSupportState,
   WebMcpTool,
   WebMcpToolAnnotations,
-  WebMcpToolInput,
-} from "./composables/useWebMcp";
+  WebMcpToolInput
+} from './composables/useWebMcp';
 
 export type {
   SummarizerAvailability,
@@ -99,8 +86,8 @@ export type {
   SummarizerProgressState,
   SummarizerResult,
   SummarizerRunNativeOptions,
-  SummarizerRunOptions,
-} from "./composables/useSummarizer";
+  SummarizerRunOptions
+} from './composables/useSummarizer';
 
 export type {
   RewriterAvailability,
@@ -114,8 +101,8 @@ export type {
   RewriterProgressState,
   RewriterResult,
   RewriterRunNativeOptions,
-  RewriterRunOptions,
-} from "./composables/useRewriter";
+  RewriterRunOptions
+} from './composables/useRewriter';
 
 export type {
   LanguageDetectorAvailability,
@@ -132,8 +119,8 @@ export type {
   LanguageDetectorResult,
   LanguageDetectorRunNativeOptions,
   LanguageDetectorRunOptions,
-  NormalizedLanguageDetectionResult,
-} from "./composables/useLanguageDetector";
+  NormalizedLanguageDetectionResult
+} from './composables/useLanguageDetector';
 
 export type {
   NormalizedProofreadCorrection,
@@ -151,8 +138,8 @@ export type {
   ProofreaderResult,
   ProofreaderRunNativeOptions,
   ProofreaderRunOptions,
-  ProofreaderTextSegment,
-} from "./composables/useProofreader";
+  ProofreaderTextSegment
+} from './composables/useProofreader';
 
 export type {
   TranslatorAvailability,
@@ -168,8 +155,8 @@ export type {
   TranslatorProgressState,
   TranslatorResult,
   TranslatorRunNativeOptions,
-  TranslatorRunOptions,
-} from "./composables/useTranslator";
+  TranslatorRunOptions
+} from './composables/useTranslator';
 
 export type {
   WriterAvailability,
@@ -183,11 +170,11 @@ export type {
   WriterProgressState,
   WriterResult,
   WriterRunNativeOptions,
-  WriterRunOptions,
-} from "./composables/useWriter";
+  WriterRunOptions
+} from './composables/useWriter';
 
-export type { ChatAttachment, ChatMessage } from "./components/ChatHistory.vue";
+export type { ChatAttachment, ChatMessage } from './components/ChatHistory.vue';
 
-export type { ChatSidebarItem } from "./components/ChatSidebar.vue";
+export type { ChatSidebarItem } from './components/ChatSidebar.vue';
 
-export type { PromptAttachment } from "./components/PromptInput.vue";
+export type { PromptAttachment } from './components/PromptInput.vue';

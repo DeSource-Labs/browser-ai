@@ -1,10 +1,6 @@
 <template>
   <div class="dropdown">
-    <button
-      class="dropdown__trigger"
-      @click="isOpen = !isOpen"
-      @blur="handleBlur"
-    >
+    <button class="dropdown__trigger" @click="isOpen = !isOpen" @blur="handleBlur">
       <span class="dropdown__label">{{ selectedLabel }}</span>
       <svg
         class="dropdown__icon"
@@ -48,11 +44,11 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  label: "Select...",
+  label: 'Select...'
 });
 
 const emit = defineEmits<{
-  "update:modelValue": [value: string];
+  'update:modelValue': [value: string];
 }>();
 
 const isOpen = ref(false);
@@ -63,7 +59,7 @@ const selectedLabel = computed(() => {
 });
 
 const selectItem = (id: string) => {
-  emit("update:modelValue", id);
+  emit('update:modelValue', id);
   isOpen.value = false;
 };
 

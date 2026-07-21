@@ -7,26 +7,24 @@ import {
   type WritingAssistantProgressPhase,
   type WritingAssistantProgressState,
   type WritingAssistantResult,
-  type WritingAssistantRunOptions,
-} from "./useWritingAssistant";
+  type WritingAssistantRunOptions
+} from './useWritingAssistant';
 
 export type RewriterAvailability = Availability;
-export type RewriterProcessingState =
-  WritingAssistantProcessingState<"rewrite">;
+export type RewriterProcessingState = WritingAssistantProcessingState<'rewrite'>;
 export type RewriterCreateCore = RewriterCreateCoreOptions;
-export type RewriterCreate = Omit<RewriterCreateOptions, "signal" | "monitor">;
-export type RewriterRunNativeOptions = Omit<RewriterRewriteOptions, "signal">;
+export type RewriterCreate = Omit<RewriterCreateOptions, 'signal' | 'monitor'>;
+export type RewriterRunNativeOptions = Omit<RewriterRewriteOptions, 'signal'>;
 export type RewriterFitStrategy = WritingAssistantFitStrategy;
-export type RewriterProgressPhase = WritingAssistantProgressPhase<"rewriting">;
-export type RewriterProgressState = WritingAssistantProgressState<"rewriting">;
+export type RewriterProgressPhase = WritingAssistantProgressPhase<'rewriting'>;
+export type RewriterProgressState = WritingAssistantProgressState<'rewriting'>;
 export type RewriterResult = WritingAssistantResult;
 export type RewriterRunOptions = WritingAssistantRunOptions<
   RewriterCreate,
   RewriterRunNativeOptions,
   RewriterProgressState
 >;
-export type RewriterBatchItem =
-  WritingAssistantBatchItem<RewriterRunNativeOptions>;
+export type RewriterBatchItem = WritingAssistantBatchItem<RewriterRunNativeOptions>;
 export type RewriterBatchOptions = WritingAssistantBatchOptions<
   RewriterCreate,
   RewriterRunNativeOptions,
@@ -41,9 +39,7 @@ const getRewriter = () => {
   return (globalThis as GlobalWithRewriter).Rewriter;
 };
 
-const getCreateCoreOptions = (
-  options: RewriterCreate = {},
-): RewriterCreateCoreOptions => {
+const getCreateCoreOptions = (options: RewriterCreate = {}): RewriterCreateCoreOptions => {
   const { sharedContext: _sharedContext, ...coreOptions } = options;
   return coreOptions;
 };
@@ -54,24 +50,22 @@ export function useRewriter() {
     RewriterCreate,
     RewriterCreateCoreOptions,
     RewriterRunNativeOptions,
-    "rewriting",
-    "rewrite",
+    'rewriting',
+    'rewrite',
     RewriterProgressState
   >({
     getConstructor: getRewriter,
     getCreateCoreOptions,
     getDefaultCreateOptions: () => ({}),
-    activePhase: "rewriting",
-    operationState: "rewrite",
-    unavailableMessage: "Rewriter is unavailable with the provided options.",
-    uninitializedMessage:
-      "Rewriter is not initialized. Call create() first or enable autoCreate.",
-    unsupportedMessage: "Rewriter is not available in this browser context.",
+    activePhase: 'rewriting',
+    operationState: 'rewrite',
+    unavailableMessage: 'Rewriter is unavailable with the provided options.',
+    uninitializedMessage: 'Rewriter is not initialized. Call create() first or enable autoCreate.',
+    unsupportedMessage: 'Rewriter is not available in this browser context.',
     budgetExceededMessage: (usage, budget) =>
       `Rewriter input uses ${usage} tokens, which exceeds the configured budget of ${budget}. Shorten the text/context or enable context fitting.`,
     run: (rewriter, input, options) => rewriter.rewrite(input, options),
-    runStreaming: (rewriter, input, options) =>
-      rewriter.rewriteStreaming(input, options),
+    runStreaming: (rewriter, input, options) => rewriter.rewriteStreaming(input, options)
   });
 
   return {
@@ -100,6 +94,6 @@ export function useRewriter() {
     rewriteStreaming: assistant.runStreaming,
     rewriteStreamingToText: assistant.runStreamingToText,
     rewriteMany: assistant.runMany,
-    interrupt: assistant.interrupt,
+    interrupt: assistant.interrupt
   };
 }

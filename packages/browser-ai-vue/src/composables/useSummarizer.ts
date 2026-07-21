@@ -1,41 +1,21 @@
-import { computed, ref, shallowRef } from "vue";
+import { computed, ref, shallowRef } from 'vue';
 import {
   collectTextStream,
   createDownloadMonitor,
   isAbortError,
   safeCheckAvailability,
-  useAbortableOperation,
-} from "../utils/browserAi";
-import {
-  buildMeasuredTextChunks,
-  normalizeSummaryInput,
-  stripHtmlForSummary,
-  type TextChunk,
-} from "../utils/text";
+  useAbortableOperation
+} from '../utils/browserAi';
+import { buildMeasuredTextChunks, normalizeSummaryInput, stripHtmlForSummary, type TextChunk } from '../utils/text';
 
 export type SummarizerAvailability = Availability;
-export type SummarizerProcessingState =
-  "availability" | "create" | "measure" | "summarize" | "";
+export type SummarizerProcessingState = 'availability' | 'create' | 'measure' | 'summarize' | '';
 export type SummarizerCreateCore = SummarizerCreateCoreOptions;
-export type SummarizerCreate = Omit<
-  SummarizerCreateOptions,
-  "signal" | "monitor"
->;
-export type SummarizerRunNativeOptions = Omit<
-  SummarizerSummarizeOptions,
-  "signal"
->;
+export type SummarizerCreate = Omit<SummarizerCreateOptions, 'signal' | 'monitor'>;
+export type SummarizerRunNativeOptions = Omit<SummarizerSummarizeOptions, 'signal'>;
 
 export type SummarizerProgressPhase =
-  | "idle"
-  | "checking"
-  | "creating"
-  | "measuring"
-  | "chunking"
-  | "summarizing"
-  | "rolling-up"
-  | "ready"
-  | "error";
+  'idle' | 'checking' | 'creating' | 'measuring' | 'chunking' | 'summarizing' | 'rolling-up' | 'ready' | 'error';
 
 export interface SummarizerProgressState {
   phase: SummarizerProgressPhase;
@@ -71,7 +51,7 @@ export interface SummarizerRunOptions extends SummarizerRunNativeOptions {
   createOptions?: SummarizerCreate;
   autoCreate?: boolean;
   stripHtml?: boolean;
-  chunking?: "auto" | "never";
+  chunking?: 'auto' | 'never';
   chunkBudgetRatio?: number;
   maxRollupRounds?: number;
   onProgress?: (state: SummarizerProgressState) => void;
@@ -89,26 +69,22 @@ const getSummarizer = () => {
 };
 
 const createEmptyProgressState = (): SummarizerProgressState => ({
-  phase: "idle",
+  phase: 'idle',
   inputUsage: null,
   inputQuota: null,
   processedChunks: 0,
   totalChunks: 0,
   currentChunk: 0,
   outputLength: 0,
-  chunked: false,
+  chunked: false
 });
 
-const getCreateCoreOptions = (
-  options: SummarizerCreate = {},
-): SummarizerCreateCoreOptions => {
+const getCreateCoreOptions = (options: SummarizerCreate = {}): SummarizerCreateCoreOptions => {
   const { sharedContext: _sharedContext, ...coreOptions } = options;
   return coreOptions;
 };
 
-const getNativeSummarizeOptions = (
-  options: SummarizerRunOptions = {},
-): SummarizerRunNativeOptions => {
+const getNativeSummarizeOptions = (options: SummarizerRunOptions = {}): SummarizerRunNativeOptions => {
   const {
     createOptions: _createOptions,
     autoCreate: _autoCreate,
@@ -131,24 +107,22 @@ export function useSummarizer() {
   const summarizer = shallowRef<Summarizer | null>(null);
   const availability = ref<Availability | null>(null);
   const createOptions = ref<SummarizerCreate | null>(null);
-  const processing = ref<SummarizerProcessingState>("");
+  const processing = ref<SummarizerProcessingState>('');
   const downloadProgress = ref(0);
   const inputUsage = ref<number | null>(null);
   const inputQuota = ref<number | null>(null);
-  const output = ref("");
+  const output = ref('');
   const error = ref<unknown>(null);
-  const progressState = ref<SummarizerProgressState>(
-    createEmptyProgressState(),
-  );
+  const progressState = ref<SummarizerProgressState>(createEmptyProgressState());
   const lastResult = ref<SummarizerResult | null>(null);
 
   const operation = useAbortableOperation();
 
   const isReady = computed(() => {
-    return summarizer.value !== null && availability.value === "available";
+    return summarizer.value !== null && availability.value === 'available';
   });
 
-  const isProcessing = computed(() => processing.value !== "");
+  const isProcessing = computed(() => processing.value !== '');
 
   const inputQuotaAvailable = computed(() => {
     if (inputQuota.value == null || inputUsage.value == null) {
@@ -164,31 +138,27 @@ export function useSummarizer() {
 
   const setProgressState = (
     patch: Partial<SummarizerProgressState>,
-    onProgress?: SummarizerRunOptions["onProgress"],
+    onProgress?: SummarizerRunOptions['onProgress']
   ) => {
     progressState.value = {
       ...progressState.value,
-      ...patch,
+      ...patch
     };
     onProgress?.({ ...progressState.value });
   };
 
-  const checkAvailability = async (
-    options: SummarizerCreateCoreOptions = {},
-  ) => {
+  const checkAvailability = async (options: SummarizerCreateCoreOptions = {}) => {
     return safeCheckAvailability(getSummarizer(), options);
   };
 
-  const requestAvailability = async (
-    options: SummarizerCreateCoreOptions = {},
-  ) => {
-    processing.value = "availability";
-    setProgressState({ phase: "checking" });
+  const requestAvailability = async (options: SummarizerCreateCoreOptions = {}) => {
+    processing.value = 'availability';
+    setProgressState({ phase: 'checking' });
     try {
       availability.value = await checkAvailability(options);
       return availability.value;
     } finally {
-      processing.value = "";
+      processing.value = '';
     }
   };
 
@@ -197,8 +167,8 @@ export function useSummarizer() {
     createOptions.value = options;
     const status = await requestAvailability(options);
 
-    if (status === "unavailable") {
-      throw new Error("Summarizer is unavailable with the provided options.");
+    if (status === 'unavailable') {
+      throw new Error('Summarizer is unavailable with the provided options.');
     }
 
     return status;
@@ -206,20 +176,20 @@ export function useSummarizer() {
 
   const create = async (options: SummarizerCreate = {}) => {
     const SummarizerConstructor = getSummarizer();
-    if (typeof SummarizerConstructor?.create !== "function") {
-      throw new Error("Summarizer is not available in this browser context.");
+    if (typeof SummarizerConstructor?.create !== 'function') {
+      throw new Error('Summarizer is not available in this browser context.');
     }
 
     const coreOptions = getCreateCoreOptions(options);
     createOptions.value = options;
 
     availability.value = await checkAvailability(coreOptions);
-    if (availability.value === "unavailable") {
-      throw new Error("Summarizer is unavailable with the provided options.");
+    if (availability.value === 'unavailable') {
+      throw new Error('Summarizer is unavailable with the provided options.');
     }
 
-    processing.value = "create";
-    setProgressState({ phase: "creating" });
+    processing.value = 'create';
+    setProgressState({ phase: 'creating' });
     const signal = operation.begin();
     destroy();
     downloadProgress.value = 0;
@@ -232,15 +202,15 @@ export function useSummarizer() {
       summarizer.value = await SummarizerConstructor.create({
         ...options,
         signal,
-        monitor,
+        monitor
       });
-      availability.value = "available";
+      availability.value = 'available';
       downloadProgress.value = 100;
       updateModelProps(summarizer.value);
       return summarizer.value;
     } finally {
       operation.end(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
@@ -257,20 +227,17 @@ export function useSummarizer() {
     createOptions.value = null;
     downloadProgress.value = 0;
     inputUsage.value = null;
-    output.value = "";
+    output.value = '';
     lastResult.value = null;
     progressState.value = createEmptyProgressState();
-    processing.value = "";
+    processing.value = '';
   };
 
   const interrupt = () => {
     operation.interrupt();
   };
 
-  const ensureSummarizer = async (
-    options?: SummarizerCreate,
-    autoCreate = true,
-  ) => {
+  const ensureSummarizer = async (options?: SummarizerCreate, autoCreate = true) => {
     if (options) {
       return create(options);
     }
@@ -280,9 +247,7 @@ export function useSummarizer() {
     }
 
     if (!autoCreate) {
-      throw new Error(
-        "Summarizer is not initialized. Call create() first or enable autoCreate.",
-      );
+      throw new Error('Summarizer is not initialized. Call create() first or enable autoCreate.');
     }
 
     return create(createOptions.value ?? {});
@@ -292,51 +257,38 @@ export function useSummarizer() {
     instance: Summarizer,
     input: string,
     options: SummarizerRunNativeOptions | undefined,
-    signal: AbortSignal,
+    signal: AbortSignal
   ) => {
     const usage = await instance.measureInputUsage(input, {
       ...options,
-      signal,
+      signal
     });
     inputUsage.value = usage;
     return usage;
   };
 
-  const measureInputUsage = async (
-    input: string,
-    options: SummarizerRunOptions = {},
-  ) => {
-    const instance = await ensureSummarizer(
-      options.createOptions,
-      options.autoCreate !== false,
-    );
-    const normalized = options.stripHtml
-      ? stripHtmlForSummary(input)
-      : normalizeSummaryInput(input);
+  const measureInputUsage = async (input: string, options: SummarizerRunOptions = {}) => {
+    const instance = await ensureSummarizer(options.createOptions, options.autoCreate !== false);
+    const normalized = options.stripHtml ? stripHtmlForSummary(input) : normalizeSummaryInput(input);
     const nativeOptions = getNativeSummarizeOptions(options);
 
-    processing.value = "measure";
-    setProgressState({ phase: "measuring", inputQuota: instance.inputQuota });
+    processing.value = 'measure';
+    setProgressState({ phase: 'measuring', inputQuota: instance.inputQuota });
     const signal = operation.begin();
 
     try {
-      const usage = await measureInputUsageInternal(
-        instance,
-        normalized,
-        nativeOptions,
-        signal,
-      );
+      const usage = await measureInputUsageInternal(instance, normalized, nativeOptions, signal);
       setProgressState(
         {
           inputUsage: usage,
-          inputQuota: instance.inputQuota,
+          inputQuota: instance.inputQuota
         },
-        options.onProgress,
+        options.onProgress
       );
       return usage;
     } finally {
       operation.end(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
@@ -344,7 +296,7 @@ export function useSummarizer() {
     instance: Summarizer,
     input: string,
     options: SummarizerRunNativeOptions | undefined,
-    signal: AbortSignal,
+    signal: AbortSignal
   ) => {
     try {
       return await measureInputUsageInternal(instance, input, options, signal);
@@ -363,23 +315,22 @@ export function useSummarizer() {
     instance: Summarizer,
     options: SummarizerRunNativeOptions | undefined,
     signal: AbortSignal,
-    onProgress?: SummarizerRunOptions["onProgress"],
+    onProgress?: SummarizerRunOptions['onProgress']
   ) => {
     return buildMeasuredTextChunks({
       input,
       budget,
-      measure: (candidate) =>
-        measureWithSignal(instance, candidate, options, signal),
+      measure: (candidate) => measureWithSignal(instance, candidate, options, signal),
       onProgress: (chunks) =>
         setProgressState(
           {
-            phase: "chunking",
+            phase: 'chunking',
             processedChunks: chunks.length,
             totalChunks: Math.max(chunks.length + 1, 1),
-            chunked: true,
+            chunked: true
           },
-          onProgress,
-        ),
+          onProgress
+        )
     });
   };
 
@@ -387,17 +338,12 @@ export function useSummarizer() {
     instance: Summarizer,
     chunk: TextChunk,
     options: SummarizerRunNativeOptions | undefined,
-    signal: AbortSignal,
+    signal: AbortSignal
   ): Promise<SummarizerChunkResult> => {
-    const usage = await measureWithSignal(
-      instance,
-      chunk.text,
-      options,
-      signal,
-    );
+    const usage = await measureWithSignal(instance, chunk.text, options, signal);
     const summary = await instance.summarize(chunk.text, {
       ...options,
-      signal,
+      signal
     });
 
     return {
@@ -406,93 +352,66 @@ export function useSummarizer() {
       summary,
       usage: Number.isFinite(usage) ? usage : null,
       start: chunk.start,
-      end: chunk.end,
+      end: chunk.end
     };
   };
 
   const formatChunkSummaries = (chunks: SummarizerChunkResult[]) => {
-    return chunks
-      .map(
-        (chunk) => `Part ${chunk.index + 1} summary:\n${chunk.summary.trim()}`,
-      )
-      .join("\n\n");
+    return chunks.map((chunk) => `Part ${chunk.index + 1} summary:\n${chunk.summary.trim()}`).join('\n\n');
   };
 
-  const summarizeWithDetails = async (
-    input: string,
-    options: SummarizerRunOptions = {},
-  ): Promise<SummarizerResult> => {
+  const summarizeWithDetails = async (input: string, options: SummarizerRunOptions = {}): Promise<SummarizerResult> => {
     error.value = null;
-    output.value = "";
+    output.value = '';
     lastResult.value = null;
 
-    const instance = await ensureSummarizer(
-      options.createOptions,
-      options.autoCreate !== false,
-    );
-    const normalized = options.stripHtml
-      ? stripHtmlForSummary(input)
-      : normalizeSummaryInput(input);
+    const instance = await ensureSummarizer(options.createOptions, options.autoCreate !== false);
+    const normalized = options.stripHtml ? stripHtmlForSummary(input) : normalizeSummaryInput(input);
     const nativeOptions = getNativeSummarizeOptions(options);
     const signal = operation.begin();
-    const chunkBudgetRatio = clampRatio(
-      options.chunkBudgetRatio,
-      DEFAULT_CHUNK_BUDGET_RATIO,
-    );
-    const maxRollupRounds = Math.max(
-      options.maxRollupRounds ?? DEFAULT_MAX_ROLLUP_ROUNDS,
-      0,
-    );
-    const chunking = options.chunking ?? "auto";
+    const chunkBudgetRatio = clampRatio(options.chunkBudgetRatio, DEFAULT_CHUNK_BUDGET_RATIO);
+    const maxRollupRounds = Math.max(options.maxRollupRounds ?? DEFAULT_MAX_ROLLUP_ROUNDS, 0);
+    const chunking = options.chunking ?? 'auto';
 
-    processing.value = "summarize";
+    processing.value = 'summarize';
 
     try {
       setProgressState(
         {
-          phase: "measuring",
+          phase: 'measuring',
           inputUsage: null,
           inputQuota: instance.inputQuota,
           processedChunks: 0,
           totalChunks: 0,
           currentChunk: 0,
           outputLength: 0,
-          chunked: false,
+          chunked: false
         },
-        options.onProgress,
+        options.onProgress
       );
 
-      const usage = await measureWithSignal(
-        instance,
-        normalized,
-        nativeOptions,
-        signal,
-      );
+      const usage = await measureWithSignal(instance, normalized, nativeOptions, signal);
       inputUsage.value = Number.isFinite(usage) ? usage : null;
       inputQuota.value = instance.inputQuota;
 
       const budget = Math.floor(instance.inputQuota * chunkBudgetRatio);
-      const shouldChunk =
-        chunking !== "never" &&
-        Number.isFinite(usage) &&
-        usage > budget &&
-        budget > 0;
+      const shouldChunk = chunking !== 'never' && Number.isFinite(usage) && usage > budget && budget > 0;
 
       if (!shouldChunk) {
         setProgressState(
           {
-            phase: "summarizing",
+            phase: 'summarizing',
             inputUsage: inputUsage.value,
             inputQuota: instance.inputQuota,
             totalChunks: 1,
-            currentChunk: 1,
+            currentChunk: 1
           },
-          options.onProgress,
+          options.onProgress
         );
 
         const summary = await instance.summarize(normalized, {
           ...nativeOptions,
-          signal,
+          signal
         });
 
         output.value = summary;
@@ -503,56 +422,44 @@ export function useSummarizer() {
           inputQuota: instance.inputQuota,
           chunked: false,
           chunks: [],
-          rollupRounds: 0,
+          rollupRounds: 0
         };
         lastResult.value = result;
         setProgressState(
           {
-            phase: "ready",
+            phase: 'ready',
             outputLength: summary.length,
-            processedChunks: 1,
+            processedChunks: 1
           },
-          options.onProgress,
+          options.onProgress
         );
         return result;
       }
 
-      const chunks = await buildMeasuredChunks(
-        normalized,
-        budget,
-        instance,
-        nativeOptions,
-        signal,
-        options.onProgress,
-      );
+      const chunks = await buildMeasuredChunks(normalized, budget, instance, nativeOptions, signal, options.onProgress);
       const chunkResults: SummarizerChunkResult[] = [];
 
       for (const chunk of chunks) {
         setProgressState(
           {
-            phase: "summarizing",
+            phase: 'summarizing',
             totalChunks: chunks.length,
             currentChunk: chunk.index + 1,
             processedChunks: chunkResults.length,
-            chunked: true,
+            chunked: true
           },
-          options.onProgress,
+          options.onProgress
         );
 
-        const result = await summarizeChunk(
-          instance,
-          chunk,
-          nativeOptions,
-          signal,
-        );
+        const result = await summarizeChunk(instance, chunk, nativeOptions, signal);
         chunkResults.push(result);
         output.value = formatChunkSummaries(chunkResults);
         setProgressState(
           {
             outputLength: output.value.length,
-            processedChunks: chunkResults.length,
+            processedChunks: chunkResults.length
           },
-          options.onProgress,
+          options.onProgress
         );
       }
 
@@ -560,22 +467,17 @@ export function useSummarizer() {
       let rollupRounds = 0;
 
       for (; rollupRounds < maxRollupRounds; rollupRounds += 1) {
-        const rollupUsage = await measureWithSignal(
-          instance,
-          rollupInput,
-          nativeOptions,
-          signal,
-        );
+        const rollupUsage = await measureWithSignal(instance, rollupInput, nativeOptions, signal);
         if (rollupUsage <= budget || rollupRounds === maxRollupRounds - 1) {
           break;
         }
 
         setProgressState(
           {
-            phase: "rolling-up",
-            currentChunk: rollupRounds + 1,
+            phase: 'rolling-up',
+            currentChunk: rollupRounds + 1
           },
-          options.onProgress,
+          options.onProgress
         );
 
         const rollupChunks = await buildMeasuredChunks(
@@ -584,29 +486,27 @@ export function useSummarizer() {
           instance,
           nativeOptions,
           signal,
-          options.onProgress,
+          options.onProgress
         );
         const partials: SummarizerChunkResult[] = [];
         for (const chunk of rollupChunks) {
-          partials.push(
-            await summarizeChunk(instance, chunk, nativeOptions, signal),
-          );
+          partials.push(await summarizeChunk(instance, chunk, nativeOptions, signal));
         }
         rollupInput = formatChunkSummaries(partials);
       }
 
       setProgressState(
         {
-          phase: "rolling-up",
+          phase: 'rolling-up',
           currentChunk: rollupRounds + 1,
-          totalChunks: Math.max(chunkResults.length, 1),
+          totalChunks: Math.max(chunkResults.length, 1)
         },
-        options.onProgress,
+        options.onProgress
       );
 
       const summary = await instance.summarize(rollupInput, {
         ...nativeOptions,
-        signal,
+        signal
       });
 
       output.value = summary;
@@ -617,55 +517,47 @@ export function useSummarizer() {
         inputQuota: instance.inputQuota,
         chunked: true,
         chunks: chunkResults,
-        rollupRounds,
+        rollupRounds
       };
       lastResult.value = result;
       setProgressState(
         {
-          phase: "ready",
+          phase: 'ready',
           outputLength: summary.length,
           processedChunks: chunkResults.length,
           totalChunks: chunkResults.length,
-          chunked: true,
+          chunked: true
         },
-        options.onProgress,
+        options.onProgress
       );
       return result;
     } catch (caughtError) {
       error.value = caughtError;
-      setProgressState({ phase: "error" }, options.onProgress);
+      setProgressState({ phase: 'error' }, options.onProgress);
       throw caughtError;
     } finally {
       operation.end(signal);
-      processing.value = "";
+      processing.value = '';
     }
   };
 
-  const summarize = async (
-    input: string,
-    options: SummarizerRunOptions = {},
-  ) => {
+  const summarize = async (input: string, options: SummarizerRunOptions = {}) => {
     const result = await summarizeWithDetails(input, options);
     return result.summary;
   };
 
-  const summarizeStreaming = (
-    input: string,
-    options: SummarizerRunOptions = {},
-  ): ReadableStream<string> => {
+  const summarizeStreaming = (input: string, options: SummarizerRunOptions = {}): ReadableStream<string> => {
     if (!summarizer.value) {
-      throw new Error("Summarizer is not initialized. Call create() first.");
+      throw new Error('Summarizer is not initialized. Call create() first.');
     }
 
-    const normalized = options.stripHtml
-      ? stripHtmlForSummary(input)
-      : normalizeSummaryInput(input);
+    const normalized = options.stripHtml ? stripHtmlForSummary(input) : normalizeSummaryInput(input);
     const nativeOptions = getNativeSummarizeOptions(options);
-    processing.value = "summarize";
+    processing.value = 'summarize';
     const signal = operation.begin();
     const stream = summarizer.value.summarizeStreaming(normalized, {
       ...nativeOptions,
-      signal,
+      signal
     });
     const reader = stream.getReader();
 
@@ -676,7 +568,7 @@ export function useSummarizer() {
           if (done) {
             controller.close();
             operation.end(signal);
-            processing.value = "";
+            processing.value = '';
             return;
           }
 
@@ -685,24 +577,24 @@ export function useSummarizer() {
         } catch (streamError) {
           error.value = streamError;
           operation.end(signal);
-          processing.value = "";
+          processing.value = '';
           controller.error(streamError);
         }
       },
       cancel(reason) {
         operation.end(signal);
-        processing.value = "";
+        processing.value = '';
         return reader.cancel(reason);
-      },
+      }
     });
   };
 
   const summarizeStreamingToText = async (
     input: string,
     options: SummarizerRunOptions = {},
-    onChunk?: (chunk: string, accumulated: string) => void,
+    onChunk?: (chunk: string, accumulated: string) => void
   ) => {
-    output.value = "";
+    output.value = '';
     const stream = summarizeStreaming(input, options);
     const result = await collectTextStream(stream, onChunk);
     output.value = result;
@@ -734,6 +626,6 @@ export function useSummarizer() {
     summarizeWithDetails,
     summarizeStreaming,
     summarizeStreamingToText,
-    interrupt,
+    interrupt
   };
 }

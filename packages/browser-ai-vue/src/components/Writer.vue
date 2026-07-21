@@ -1,10 +1,7 @@
 <template>
   <div class="writing-tool">
     <div class="writing-tool__workspace">
-      <section
-        class="writing-tool__pane writing-tool__pane--input"
-        aria-label="Writer task input"
-      >
+      <section class="writing-tool__pane writing-tool__pane--input" aria-label="Writer task input">
         <div class="writing-tool__toolbar">
           <div class="writing-tool__toolbar-main">
             <span class="writing-tool__label">Task</span>
@@ -16,12 +13,9 @@
               class="writing-tool__status"
               :class="{
                 'writing-tool__status--available': availability === 'available',
-                'writing-tool__status--downloadable':
-                  availability === 'downloadable',
-                'writing-tool__status--downloading':
-                  availability === 'downloading',
-                'writing-tool__status--unavailable':
-                  availability === 'unavailable',
+                'writing-tool__status--downloadable': availability === 'downloadable',
+                'writing-tool__status--downloading': availability === 'downloading',
+                'writing-tool__status--unavailable': availability === 'unavailable'
               }"
             >
               <span class="writing-tool__status-dot"></span>
@@ -70,29 +64,17 @@
 
                 <div class="writing-tool__toggles">
                   <label class="writing-tool__toggle">
-                    <input
-                      v-model="stripHtmlInput"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
                     <span>Strip HTML</span>
                   </label>
 
                   <label class="writing-tool__toggle">
-                    <input
-                      v-model="showContext"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="showContext" type="checkbox" :disabled="isBusy" />
                     <span>Additional context</span>
                   </label>
 
                   <label class="writing-tool__toggle">
-                    <input
-                      v-model="streamOutput"
-                      type="checkbox"
-                      :disabled="isBusy"
-                    />
+                    <input v-model="streamOutput" type="checkbox" :disabled="isBusy" />
                     <span>Stream output</span>
                   </label>
                 </div>
@@ -102,11 +84,7 @@
         </div>
 
         <div class="writing-tool__editor">
-          <textarea
-            v-model="sourceText"
-            :disabled="disabled || isBusy"
-            :placeholder="placeholder"
-          ></textarea>
+          <textarea v-model="sourceText" :disabled="disabled || isBusy" :placeholder="placeholder"></textarea>
 
           <label v-if="showContext" class="writing-tool__context">
             <span>Additional context</span>
@@ -119,12 +97,7 @@
           </label>
         </div>
 
-        <div
-          v-if="isBusy"
-          class="writing-tool__progress"
-          role="status"
-          aria-live="polite"
-        >
+        <div v-if="isBusy" class="writing-tool__progress" role="status" aria-live="polite">
           <span :style="{ width: `${progressPercent}%` }"></span>
         </div>
 
@@ -134,48 +107,30 @@
 
         <div class="writing-tool__footer">
           <div class="writing-tool__meta">
-            <span
-              >{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens |
-              {{ sourceText.length }} chars</span
-            >
+            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="lastResult?.fitted">Context fitted</span>
-            <span v-if="downloadProgress > 0 && downloadProgress < 100">
-              Downloading {{ downloadProgress }}%
-            </span>
+            <span v-if="downloadProgress > 0 && downloadProgress < 100"> Downloading {{ downloadProgress }}% </span>
           </div>
 
           <button type="button" :disabled="!canWrite" @click="handleWrite">
-            {{ isBusy ? "Writing" : "Write" }}
+            {{ isBusy ? 'Writing' : 'Write' }}
           </button>
         </div>
       </section>
 
-      <section
-        class="writing-tool__pane writing-tool__pane--output"
-        aria-live="polite"
-      >
+      <section class="writing-tool__pane writing-tool__pane--output" aria-live="polite">
         <div class="writing-tool__toolbar">
           <div class="writing-tool__toolbar-main">
             <span class="writing-tool__label">Draft</span>
             <span class="writing-tool__config">{{ outputMetaLabel }}</span>
           </div>
 
-          <button
-            v-if="draft"
-            class="writing-tool__ghost-button"
-            type="button"
-            @click="copyDraft"
-          >
-            Copy
-          </button>
+          <button v-if="draft" class="writing-tool__ghost-button" type="button" @click="copyDraft">Copy</button>
         </div>
 
         <div class="writing-tool__output">
-          <MarkdownRenderer
-            v-if="draft && renderMarkdown && selectedFormat === 'markdown'"
-            :content="draft"
-          />
+          <MarkdownRenderer v-if="draft && renderMarkdown && selectedFormat === 'markdown'" :content="draft" />
           <pre v-else-if="draft">{{ draft }}</pre>
           <p v-else>{{ emptyOutputMessage }}</p>
         </div>
@@ -185,21 +140,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   useWriter,
   type WriterCreate,
   type WriterFitStrategy,
   type WriterProgressState,
-  type WriterResult,
-} from "../composables/useWriter";
-import { useSyncedString } from "../composables/useSyncedString";
-import {
-  copyText,
-  formatAvailability,
-  formatTokenCount,
-} from "../utils/display";
-import MarkdownRenderer from "./MarkdownRenderer.vue";
+  type WriterResult
+} from '../composables/useWriter';
+import { useSyncedString } from '../composables/useSyncedString';
+import { copyText, formatAvailability, formatTokenCount } from '../utils/display';
+import MarkdownRenderer from './MarkdownRenderer.vue';
 
 interface Props {
   modelValue?: string;
@@ -224,31 +175,30 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: "",
-  placeholder: "Describe what you want to write...",
-  contextPlaceholder:
-    "Optional audience, constraints, facts, examples, or source material",
-  emptyOutputMessage: "Generated draft will appear here.",
-  tone: "neutral",
-  format: "markdown",
-  length: "medium",
-  sharedContext: "",
-  context: "",
-  outputLanguage: "",
+  modelValue: '',
+  placeholder: 'Describe what you want to write...',
+  contextPlaceholder: 'Optional audience, constraints, facts, examples, or source material',
+  emptyOutputMessage: 'Generated draft will appear here.',
+  tone: 'neutral',
+  format: 'markdown',
+  length: 'medium',
+  sharedContext: '',
+  context: '',
+  outputLanguage: '',
   expectedInputLanguages: undefined,
   expectedContextLanguages: undefined,
   autoInit: true,
   autoCreate: true,
   stripHtml: true,
-  fitStrategy: "truncate-context",
+  fitStrategy: 'truncate-context',
   stream: true,
   renderMarkdown: true,
-  disabled: false,
+  disabled: false
 });
 
 const emit = defineEmits<{
-  "update:modelValue": [value: string];
-  "availability-change": [availability: Availability];
+  'update:modelValue': [value: string];
+  'availability-change': [availability: Availability];
   progress: [state: WriterProgressState];
   write: [result: WriterResult];
   error: [error: unknown];
@@ -265,15 +215,15 @@ const {
   requestAvailability,
   writeWithDetails,
   writeStreamingToText,
-  dispose,
+  dispose
 } = useWriter();
 
 const sourceText = useSyncedString(
   () => props.modelValue,
-  (value) => emit("update:modelValue", value),
+  (value) => emit('update:modelValue', value)
 );
-const draft = ref("");
-const errorMessage = ref("");
+const draft = ref('');
+const errorMessage = ref('');
 const writeContext = ref(props.context);
 const showContext = ref(Boolean(props.context));
 const stripHtmlInput = ref(props.stripHtml);
@@ -284,25 +234,25 @@ const selectedLength = ref<WriterLength>(props.length);
 const selectedFitStrategy = ref<WriterFitStrategy>(props.fitStrategy);
 
 const toneLabels: Record<WriterTone, string> = {
-  neutral: "Neutral",
-  formal: "Formal",
-  casual: "Casual",
+  neutral: 'Neutral',
+  formal: 'Formal',
+  casual: 'Casual'
 };
 
 const lengthLabels: Record<WriterLength, string> = {
-  short: "Short",
-  medium: "Medium",
-  long: "Long",
+  short: 'Short',
+  medium: 'Medium',
+  long: 'Long'
 };
 
 const formatLabels: Record<WriterFormat, string> = {
-  markdown: "Markdown",
-  "plain-text": "Plain text",
+  markdown: 'Markdown',
+  'plain-text': 'Plain text'
 };
 
 const fitStrategyLabels: Record<WriterFitStrategy, string> = {
-  "truncate-context": "Fit context",
-  error: "Full context",
+  'truncate-context': 'Fit context',
+  error: 'Full context'
 };
 
 const createOptions = computed<WriterCreate>(() => ({
@@ -312,7 +262,7 @@ const createOptions = computed<WriterCreate>(() => ({
   sharedContext: props.sharedContext || undefined,
   outputLanguage: props.outputLanguage || undefined,
   expectedInputLanguages: props.expectedInputLanguages,
-  expectedContextLanguages: props.expectedContextLanguages,
+  expectedContextLanguages: props.expectedContextLanguages
 }));
 
 const coreOptions = computed<WriterCreateCoreOptions>(() => {
@@ -329,8 +279,8 @@ const settingsSummary = computed(() => {
     toneLabels[selectedTone.value],
     lengthLabels[selectedLength.value],
     formatLabels[selectedFormat.value],
-    fitStrategyLabels[selectedFitStrategy.value],
-  ].join(" / ");
+    fitStrategyLabels[selectedFitStrategy.value]
+  ].join(' / ');
 });
 
 const outputMetaLabel = computed(() => {
@@ -342,10 +292,7 @@ const isBusy = computed(() => props.disabled || isProcessing.value);
 
 const canWrite = computed(() => {
   return (
-    !props.disabled &&
-    !isProcessing.value &&
-    availability.value !== "unavailable" &&
-    sourceText.value.trim().length > 0
+    !props.disabled && !isProcessing.value && availability.value !== 'unavailable' && sourceText.value.trim().length > 0
   );
 });
 
@@ -354,27 +301,26 @@ const inputQuotaLabel = computed(() => formatTokenCount(inputQuota.value));
 
 const progressLabel = computed(() => {
   const state = progressState.value;
-  if (state.phase === "measuring") return "Measuring input";
-  if (state.phase === "fitting-context") return "Fitting context";
-  if (state.phase === "writing")
-    return streamOutput.value ? "Streaming draft" : "Writing draft";
-  return "";
+  if (state.phase === 'measuring') return 'Measuring input';
+  if (state.phase === 'fitting-context') return 'Fitting context';
+  if (state.phase === 'writing') return streamOutput.value ? 'Streaming draft' : 'Writing draft';
+  return '';
 });
 
 const progressPercent = computed(() => {
   const state = progressState.value;
-  if (state.phase === "measuring") return 18;
-  if (state.phase === "fitting-context") return 38;
-  if (state.phase === "writing") return 68;
-  return state.phase === "ready" ? 100 : 8;
+  if (state.phase === 'measuring') return 18;
+  if (state.phase === 'fitting-context') return 38;
+  if (state.phase === 'writing') return 68;
+  return state.phase === 'ready' ? 100 : 8;
 });
 
 const handleWrite = async () => {
   if (!canWrite.value) return;
 
   try {
-    draft.value = "";
-    errorMessage.value = "";
+    draft.value = '';
+    errorMessage.value = '';
 
     const options = {
       createOptions: createOptions.value,
@@ -382,33 +328,26 @@ const handleWrite = async () => {
       context: showContext.value ? writeContext.value || undefined : undefined,
       stripHtml: stripHtmlInput.value,
       fitStrategy: selectedFitStrategy.value,
-      onProgress: (state: WriterProgressState) => emit("progress", state),
+      onProgress: (state: WriterProgressState) => emit('progress', state)
     };
 
     if (streamOutput.value) {
-      await writeStreamingToText(
-        sourceText.value,
-        options,
-        (_chunk, accumulated) => {
-          draft.value = accumulated;
-        },
-      );
+      await writeStreamingToText(sourceText.value, options, (_chunk, accumulated) => {
+        draft.value = accumulated;
+      });
       draft.value = lastResult.value?.text || draft.value;
       if (lastResult.value) {
-        emit("write", lastResult.value);
+        emit('write', lastResult.value);
       }
       return;
     }
 
     const result = await writeWithDetails(sourceText.value, options);
     draft.value = result.text;
-    emit("write", result);
+    emit('write', result);
   } catch (error) {
-    errorMessage.value =
-      error instanceof Error
-        ? error.message
-        : "Unable to write from this input.";
-    emit("error", error);
+    errorMessage.value = error instanceof Error ? error.message : 'Unable to write from this input.';
+    emit('error', error);
   }
 };
 
@@ -423,17 +362,17 @@ watch(
     if (value) {
       showContext.value = true;
     }
-  },
+  }
 );
 
 watch(
   availability,
   (value) => {
     if (value) {
-      emit("availability-change", value);
+      emit('availability-change', value);
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
@@ -442,7 +381,7 @@ watch(
     if (!props.autoInit) return;
     await requestAvailability(options);
   },
-  { deep: true },
+  { deep: true }
 );
 
 onMounted(async () => {

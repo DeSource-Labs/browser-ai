@@ -10,11 +10,11 @@
 <script setup lang="ts">
 const starterMessages = [
   {
-    id: "browser-ai-welcome",
-    role: "assistant" as const,
+    id: 'browser-ai-welcome',
+    role: 'assistant' as const,
     content:
-      "I run inside Chrome with no hosted inference endpoint. Ask me to explain an API, draft product copy, or transform some text.",
-  },
+      'I run inside Chrome with no hosted inference endpoint. Ask me to explain an API, draft product copy, or transform some text.'
+  }
 ];
 </script>
 

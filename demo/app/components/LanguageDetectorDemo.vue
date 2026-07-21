@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 const source = ref(
-  "La inteligencia artificial privada puede ejecutarse directamente en el navegador, sin enviar el texto a un servidor de inferencia.",
+  'La inteligencia artificial privada puede ejecutarse directamente en el navegador, sin enviar el texto a un servidor de inferencia.'
 );
 </script>
 

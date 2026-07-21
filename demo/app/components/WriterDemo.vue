@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 const task = ref(
-  "Write a concise launch announcement for developers introducing Browser AI Kit. Lead with private on-device inference, mention the ready-made Vue and Nuxt integrations, and close with an invitation to try the live Chrome demos.",
+  'Write a concise launch announcement for developers introducing Browser AI Kit. Lead with private on-device inference, mention the ready-made Vue and Nuxt integrations, and close with an invitation to try the live Chrome demos.'
 );
 </script>
 

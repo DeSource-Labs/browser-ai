@@ -43,9 +43,14 @@
   },
   "scripts": {
     "dev:prepare": "nuxt prepare",
-    "clean": "rimraf dist .nuxt",
+    "clean": "rimraf dist .nuxt coverage",
+    "clean:modules": "rimraf node_modules",
     "build:internal": "pnpm dev:prepare && nuxt-module-build build",
-    "build": "pnpm clean && pnpm build:internal"
+    "build": "pnpm clean && pnpm build:internal",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "sleep 100",
+    "test:unit:coverage": "sleep 100",
+    "test:e2e": "sleep 100"
   },
   "peerDependencies": {
     "nuxt": "^3.17.0 || ^4.0.0",
@@ -55,9 +60,9 @@
     "@desource/browser-ai-vue": "workspace:*"
   },
   "devDependencies": {
-    "@nuxt/kit": "^4.4.8",
+    "@nuxt/kit": "^4.5.0",
     "@nuxt/module-builder": "^1.0.2",
-    "nuxt": "^4.4.8",
-    "vue": "^3.5.39"
+    "nuxt": "^4.5.0",
+    "vue": "^3.5.40"
   }
 }

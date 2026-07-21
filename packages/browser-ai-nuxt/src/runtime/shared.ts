@@ -143,5 +143,5 @@ export {
   type WebMcpSupportState,
   type WebMcpTool,
   type WebMcpToolAnnotations,
-  type WebMcpToolInput,
-} from "@desource/browser-ai-vue";
+  type WebMcpToolInput
+} from '@desource/browser-ai-vue';

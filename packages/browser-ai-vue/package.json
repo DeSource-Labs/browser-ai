@@ -48,19 +48,22 @@
     "README.md"
   ],
   "scripts": {
-    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "clean": "rimraf dist tsconfig.tsbuildinfo test-results coverage",
+    "clean:modules": "rimraf node_modules",
     "build": "pnpm clean && pnpm build:internal",
     "build:internal": "pnpm build:lib && pnpm build:types",
     "build:lib": "vite build",
     "build:types": "vue-tsc -p tsconfig.json",
     "postbuild": "node scripts/fix-dts.mjs",
     "typecheck": "vue-tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test:e2e": "sleep 100",
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage.enabled --coverage.provider=v8 --coverage.reporter=lcov --coverage.reportsDirectory=coverage"
   },
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@vitejs/plugin-vue": "^6.0.8",
-    "vue": "^3.5.39",
+    "vue": "^3.5.40",
     "vue-tsc": "^3.3.7"
   },
   "dependencies": {

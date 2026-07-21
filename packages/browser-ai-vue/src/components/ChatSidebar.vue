@@ -5,12 +5,7 @@
       <span>{{ chats.length }}</span>
     </div>
 
-    <button
-      type="button"
-      class="chat-sidebar__new"
-      :disabled="disabled"
-      @click="emit('create')"
-    >
+    <button type="button" class="chat-sidebar__new" :disabled="disabled" @click="emit('create')">
       <span aria-hidden="true">＋</span>
       New conversation
     </button>
@@ -26,11 +21,7 @@
         class="chat-sidebar__item"
         :class="{ 'chat-sidebar__item--active': chat.id === activeChatId }"
       >
-        <form
-          v-if="editingChatId === chat.id"
-          class="chat-sidebar__rename"
-          @submit.prevent="saveRename(chat.id)"
-        >
+        <form v-if="editingChatId === chat.id" class="chat-sidebar__rename" @submit.prevent="saveRename(chat.id)">
           <label :for="`rename-${chat.id}`">Conversation name</label>
           <input
             :id="`rename-${chat.id}`"
@@ -47,20 +38,12 @@
         </form>
 
         <template v-else>
-          <button
-            type="button"
-            class="chat-sidebar__item-main"
-            :disabled="disabled"
-            @click="emit('select', chat.id)"
-          >
+          <button type="button" class="chat-sidebar__item-main" :disabled="disabled" @click="emit('select', chat.id)">
             <span class="chat-sidebar__title">{{ chat.title }}</span>
             <span v-if="chat.preview" class="chat-sidebar__preview">
               {{ chat.preview }}
             </span>
-            <time
-              class="chat-sidebar__meta"
-              :datetime="toDateTime(chat.updatedAt)"
-            >
+            <time class="chat-sidebar__meta" :datetime="toDateTime(chat.updatedAt)">
               {{ formatRelativeTime(chat.updatedAt) }}
             </time>
           </button>
@@ -92,8 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
-import { formatRelativeTime, toDateTime } from "../utils/display";
+import { nextTick, ref } from 'vue';
+import { formatRelativeTime, toDateTime } from '../utils/display';
 
 export interface ChatSidebarItem {
   id: string;
@@ -109,7 +92,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  disabled: false,
+  disabled: false
 });
 
 const emit = defineEmits<{
@@ -120,7 +103,7 @@ const emit = defineEmits<{
 }>();
 
 const editingChatId = ref<string | null>(null);
-const renameDraft = ref("");
+const renameDraft = ref('');
 const renameInput = ref<HTMLInputElement[] | null>(null);
 
 const startRename = (chat: ChatSidebarItem) => {
@@ -131,13 +114,13 @@ const startRename = (chat: ChatSidebarItem) => {
 
 const cancelRename = () => {
   editingChatId.value = null;
-  renameDraft.value = "";
+  renameDraft.value = '';
 };
 
 const saveRename = (chatId: string) => {
   const title = renameDraft.value.trim();
   if (!title) return;
-  emit("rename", chatId, title);
+  emit('rename', chatId, title);
   cancelRename();
 };
 </script>
@@ -152,9 +135,7 @@ const saveRename = (chatId: string) => {
   padding: 0.72rem;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 1rem;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(124, 92, 228, 0.08), transparent 34%),
-    rgba(5, 8, 17, 0.62);
+  background: radial-gradient(circle at 0% 0%, rgba(124, 92, 228, 0.08), transparent 34%), rgba(5, 8, 17, 0.62);
 }
 
 .chat-sidebar__heading {
@@ -189,11 +170,7 @@ const saveRename = (chatId: string) => {
   color: #f5f2ff;
   border: 1px solid rgba(167, 139, 250, 0.24);
   border-radius: 0.75rem;
-  background: linear-gradient(
-    135deg,
-    rgba(124, 92, 228, 0.2),
-    rgba(82, 112, 224, 0.14)
-  );
+  background: linear-gradient(135deg, rgba(124, 92, 228, 0.2), rgba(82, 112, 224, 0.14));
   font-size: 0.78rem;
   font-weight: 740;
   cursor: pointer;

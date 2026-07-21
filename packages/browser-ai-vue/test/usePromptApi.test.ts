@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isProxy } from "vue";
-import { usePromptApi } from "../src/composables/usePromptApi";
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { isProxy } from 'vue';
+import { usePromptApi } from '../src/composables/usePromptApi';
 
 class FakeLanguageModel extends EventTarget {
   static availabilityOptions: LanguageModelCreateCoreOptions[] = [];
@@ -8,7 +8,7 @@ class FakeLanguageModel extends EventTarget {
 
   static async availability(options: LanguageModelCreateCoreOptions = {}) {
     this.availabilityOptions.push(options);
-    return "available" as const;
+    return 'available' as const;
   }
 
   static async create(options: LanguageModelCreateOptions = {}) {
@@ -22,21 +22,18 @@ class FakeLanguageModel extends EventTarget {
   readonly topK = 3;
   destroyed = false;
 
-  async prompt(
-    _input: LanguageModelPrompt,
-    options?: LanguageModelPromptOptions,
-  ) {
+  async prompt(_input: LanguageModelPrompt, options?: LanguageModelPromptOptions) {
     if (options?.responseConstraint) return '{"ready":true}';
-    return "response";
+    return 'response';
   }
 
   promptStreaming() {
     return new ReadableStream<string>({
       start(controller) {
-        controller.enqueue("one");
-        controller.enqueue("two");
+        controller.enqueue('one');
+        controller.enqueue('two');
         controller.close();
-      },
+      }
     });
   }
 
@@ -56,62 +53,58 @@ class FakeLanguageModel extends EventTarget {
   }
 }
 
-describe("usePromptApi", () => {
+describe('usePromptApi', () => {
   beforeEach(() => {
     FakeLanguageModel.availabilityOptions = [];
     FakeLanguageModel.createOptions = [];
-    vi.stubGlobal("LanguageModel", FakeLanguageModel);
+    vi.stubGlobal('LanguageModel', FakeLanguageModel);
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("keeps samplingMode mutually exclusive with raw sampling parameters", async () => {
+  it('keeps samplingMode mutually exclusive with raw sampling parameters', async () => {
     const ai = usePromptApi();
-    await ai.init({ samplingMode: "balanced" });
+    await ai.init({ samplingMode: 'balanced' });
     await ai.create({ topK: 2, temperature: 0.4 });
 
     expect(FakeLanguageModel.createOptions.at(-1)).toMatchObject({
       topK: 2,
-      temperature: 0.4,
+      temperature: 0.4
     });
-    expect(FakeLanguageModel.createOptions.at(-1)).not.toHaveProperty(
-      "samplingMode",
-    );
+    expect(FakeLanguageModel.createOptions.at(-1)).not.toHaveProperty('samplingMode');
 
     ai.dispose();
   });
 
-  it("lets a create-time sampling mode replace raw defaults", async () => {
+  it('lets a create-time sampling mode replace raw defaults', async () => {
     const ai = usePromptApi();
     await ai.init({ topK: 2, temperature: 0.4 });
-    await ai.create({ samplingMode: "creative" });
+    await ai.create({ samplingMode: 'creative' });
 
     expect(FakeLanguageModel.createOptions.at(-1)).toMatchObject({
-      samplingMode: "creative",
+      samplingMode: 'creative'
     });
-    expect(FakeLanguageModel.createOptions.at(-1)).not.toHaveProperty("topK");
-    expect(FakeLanguageModel.createOptions.at(-1)).not.toHaveProperty(
-      "temperature",
-    );
+    expect(FakeLanguageModel.createOptions.at(-1)).not.toHaveProperty('topK');
+    expect(FakeLanguageModel.createOptions.at(-1)).not.toHaveProperty('temperature');
 
     ai.dispose();
   });
 
-  it("keeps native sessions shallow and supports structured output and cloning", async () => {
+  it('keeps native sessions shallow and supports structured output and cloning', async () => {
     const ai = usePromptApi();
     await ai.create();
 
     expect(isProxy(ai.session.value)).toBe(false);
     await expect(
-      ai.promptJson<{ ready: boolean }>("Status?", {
+      ai.promptJson<{ ready: boolean }>('Status?', {
         responseConstraint: {
-          type: "object",
-          properties: { ready: { type: "boolean" } },
-          required: ["ready"],
-        },
-      }),
+          type: 'object',
+          properties: { ready: { type: 'boolean' } },
+          required: ['ready']
+        }
+      })
     ).resolves.toEqual({ ready: true });
 
     const clonedSession = await ai.clone();
@@ -120,16 +113,16 @@ describe("usePromptApi", () => {
     ai.dispose();
   });
 
-  it("forwards native streaming chunks and clears processing state", async () => {
+  it('forwards native streaming chunks and clears processing state', async () => {
     const ai = usePromptApi();
     await ai.create();
 
     const chunks: string[] = [];
-    for await (const chunk of ai.promptStreaming("Stream")) {
+    for await (const chunk of ai.promptStreaming('Stream')) {
       chunks.push(chunk);
     }
 
-    expect(chunks).toEqual(["one", "two"]);
+    expect(chunks).toEqual(['one', 'two']);
     expect(ai.isProcessing.value).toBe(false);
     ai.dispose();
   });

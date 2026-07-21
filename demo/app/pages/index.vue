@@ -18,18 +18,15 @@
             <span>without the browser plumbing.</span>
           </h1>
           <p class="hero__lede">
-            Production-ready components and composables for Chrome's Prompt API,
-            writing tools, translation, Proofreader, and WebMCP. No inference
-            server. No API key. No deep-reactivity slowdown.
+            Production-ready components and composables for Chrome's Prompt API, writing tools, translation,
+            Proofreader, and WebMCP. No inference server. No API key. No deep-reactivity slowdown.
           </p>
           <div class="hero__actions">
             <NuxtLink class="button button--primary" to="/#apis">
               Try the live APIs
               <span aria-hidden="true">→</span>
             </NuxtLink>
-            <NuxtLink class="button button--secondary" to="/docs">
-              Read the docs
-            </NuxtLink>
+            <NuxtLink class="button button--secondary" to="/docs"> Read the docs </NuxtLink>
           </div>
           <ul class="hero__proof" aria-label="Project qualities">
             <li><span>✓</span> MIT licensed</li>
@@ -46,18 +43,14 @@
             <span class="live-pill"><i /> Ready</span>
           </div>
           <div class="hero__chat">
-            <div class="hero__message hero__message--user">
-              Turn this release note into three customer benefits.
-            </div>
+            <div class="hero__message hero__message--user">Turn this release note into three customer benefits.</div>
             <div class="hero__message hero__message--assistant">
               <span class="spark" aria-hidden="true">✦</span>
               <div>
-                <strong>Clearer decisions.</strong> Structured output keeps
-                every response predictable. <br /><br />
-                <strong>Faster workflows.</strong> Streaming local inference
-                responds without a network round trip. <br /><br />
-                <strong>Private by default.</strong> Content stays inside the
-                browser's built-in model.
+                <strong>Clearer decisions.</strong> Structured output keeps every response predictable. <br /><br />
+                <strong>Faster workflows.</strong> Streaming local inference responds without a network round trip.
+                <br /><br />
+                <strong>Private by default.</strong> Content stays inside the browser's built-in model.
               </div>
             </div>
           </div>
@@ -74,23 +67,18 @@
       </section>
 
       <div class="trust-strip" aria-label="Supported capabilities">
-        <span>Prompt API</span><i /> <span>Structured output</span><i />
-        <span>Long-input handling</span><i /> <span>WebMCP</span><i />
+        <span>Prompt API</span><i /> <span>Structured output</span><i /> <span>Long-input handling</span><i />
+        <span>WebMCP</span><i />
         <span>Vue + Nuxt</span>
       </div>
 
       <section id="why" class="content-section why-section">
         <div class="section-heading">
-          <p class="section-kicker">
-            A production layer, not another model SDK
-          </p>
-          <h2>
-            The native API is powerful.<br />The lifecycle is the hard part.
-          </h2>
+          <p class="section-kicker">A production layer, not another model SDK</p>
+          <h2>The native API is powerful.<br />The lifecycle is the hard part.</h2>
           <p>
-            Chrome provides the model. Browser AI Kit handles the states and
-            limits that turn a browser experiment into a feature people can
-            depend on.
+            Chrome provides the model. Browser AI Kit handles the states and limits that turn a browser experiment into
+            a feature people can depend on.
           </p>
         </div>
 
@@ -100,8 +88,8 @@
             <div class="benefit-card__icon" aria-hidden="true">◫</div>
             <h3>Every browser state has a product state.</h3>
             <p>
-              Feature detection, downloads, progress, cancellation, quotas,
-              context overflow, failure, and cleanup are reactive and typed.
+              Feature detection, downloads, progress, cancellation, quotas, context overflow, failure, and cleanup are
+              reactive and typed.
             </p>
             <div class="state-row" aria-hidden="true">
               <span>Available</span>
@@ -115,8 +103,8 @@
             <div class="benefit-card__icon" aria-hidden="true">↯</div>
             <h3>Responsive while the model works.</h3>
             <p>
-              Native sessions stay outside deep reactivity. Stream rendering is
-              frame-coalesced so typing remains crisp during local inference.
+              Native sessions stay outside deep reactivity. Stream rendering is frame-coalesced so typing remains crisp
+              during local inference.
             </p>
           </article>
 
@@ -125,8 +113,8 @@
             <div class="benefit-card__icon" aria-hidden="true">∞</div>
             <h3>Long input is a supported path.</h3>
             <p>
-              Measure real browser quotas, split at safe boundaries, and merge
-              with API-specific strategies instead of arbitrary character caps.
+              Measure real browser quotas, split at safe boundaries, and merge with API-specific strategies instead of
+              arbitrary character caps.
             </p>
           </article>
 
@@ -135,8 +123,8 @@
             <div class="benefit-card__icon" aria-hidden="true">◇</div>
             <h3>Choose the interface level that fits.</h3>
             <p>
-              Start with accessible components, move to composables for a fully
-              custom UI, and keep direct access to familiar native operations.
+              Start with accessible components, move to composables for a fully custom UI, and keep direct access to
+              familiar native operations.
             </p>
             <div class="layer-row" aria-hidden="true">
               <span>Components</span>
@@ -151,14 +139,11 @@
 
       <section class="content-section install-section">
         <div class="install-section__copy">
-          <p class="section-kicker">
-            From install to local response in minutes
-          </p>
+          <p class="section-kicker">From install to local response in minutes</p>
           <h2>Small API. Serious defaults.</h2>
           <p>
-            Drop in a complete chat interface or keep the UI entirely yours.
-            Browser AI Kit stays close to Chrome's vocabulary, so the native
-            documentation and your application code still line up.
+            Drop in a complete chat interface or keep the UI entirely yours. Browser AI Kit stays close to Chrome's
+            vocabulary, so the native documentation and your application code still line up.
           </p>
           <div class="package-switch" role="group" aria-label="Package example">
             <button
@@ -172,10 +157,7 @@
               {{ item.name }}
             </button>
           </div>
-          <CodeBlock
-            :label="`${selectedPackage === 'vue' ? 'Vue' : 'Nuxt'} quick start`"
-            :code="packageCode"
-          />
+          <CodeBlock :label="`${selectedPackage === 'vue' ? 'Vue' : 'Nuxt'} quick start`" :code="packageCode" />
         </div>
 
         <div class="comparison-card">
@@ -184,19 +166,14 @@
             <span>Native</span>
             <span>Kit</span>
           </div>
-          <div
-            v-for="row in comparisonRows"
-            :key="row.label"
-            class="comparison-card__row"
-          >
+          <div v-for="row in comparisonRows" :key="row.label" class="comparison-card__row">
             <span>{{ row.label }}</span>
             <span class="comparison-card__native">{{ row.native }}</span>
             <span class="comparison-card__kit">{{ row.kit }}</span>
           </div>
           <p>
-            Calling the native API directly is a good fit for one-off tasks. The
-            kit earns its place when lifecycle, persistence, SSR, or long
-            content matters.
+            Calling the native API directly is a good fit for one-off tasks. The kit earns its place when lifecycle,
+            persistence, SSR, or long content matters.
           </p>
         </div>
       </section>
@@ -208,9 +185,8 @@
             <h2>Eight surfaces.<br />One consistent experience.</h2>
           </div>
           <p>
-            Availability below is detected from this Chrome profile. Open an
-            example to test the real local API—there is no mocked response or
-            hosted fallback behind these demos.
+            Availability below is detected from this Chrome profile. Open an example to test the real local API—there is
+            no mocked response or hosted fallback behind these demos.
           </p>
         </div>
         <Tools />
@@ -223,8 +199,8 @@
             <h2>Native to your framework.<br />Consistent underneath.</h2>
           </div>
           <p>
-            Vue and Nuxt are ready today. React, Angular, Svelte, and a
-            framework-neutral TypeScript core are on the public roadmap.
+            Vue and Nuxt are ready today. React, Angular, Svelte, and a framework-neutral TypeScript core are on the
+            public roadmap.
           </p>
         </div>
 
@@ -239,17 +215,13 @@
             rel="noopener noreferrer"
           >
             <div class="framework-card__head">
-              <span class="framework-card__monogram">{{
-                frameworkMarks[item.id]
-              }}</span>
+              <span class="framework-card__monogram">{{ frameworkMarks[item.id] }}</span>
               <span class="framework-card__status">{{ item.status }}</span>
             </div>
             <h3>{{ item.name }}</h3>
             <p>{{ item.description }}</p>
             <span class="framework-card__link">
-              {{
-                item.status === "available" ? "Package guide" : "View roadmap"
-              }}
+              {{ item.status === 'available' ? 'Package guide' : 'View roadmap' }}
               →
             </span>
           </a>
@@ -264,19 +236,13 @@
             <span class="privacy-lock">⌾</span>
           </div>
           <div>
-            <p class="section-kicker">
-              A privacy boundary users can understand
-            </p>
+            <p class="section-kicker">A privacy boundary users can understand</p>
             <h2>No inference endpoint hiding in the fine print.</h2>
             <p>
-              The library does not send prompts, outputs, or telemetry to
-              DeSource Labs. Chrome owns model execution and storage. If your
-              app adds a hosted fallback, that becomes a separate product and
-              consent decision.
+              The library does not send prompts, outputs, or telemetry to DeSource Labs. Chrome owns model execution and
+              storage. If your app adds a hosted fallback, that becomes a separate product and consent decision.
             </p>
-            <NuxtLink class="text-link" to="/docs#privacy">
-              Read the privacy and fallback guide →
-            </NuxtLink>
+            <NuxtLink class="text-link" to="/docs#privacy"> Read the privacy and fallback guide → </NuxtLink>
           </div>
         </div>
       </section>
@@ -285,19 +251,14 @@
         <p class="section-kicker">Open source and ready to build on</p>
         <h2>Make the browser the AI runtime.</h2>
         <p>
-          Start with the package guide, run every API against your local Chrome
-          profile, or help shape the next framework integration.
+          Start with the package guide, run every API against your local Chrome profile, or help shape the next
+          framework integration.
         </p>
         <div class="hero__actions final-cta__actions">
           <NuxtLink class="button button--primary" to="/docs">
             Start building <span aria-hidden="true">→</span>
           </NuxtLink>
-          <a
-            class="button button--secondary"
-            :href="Links.coreRepo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a class="button button--secondary" :href="Links.coreRepo" target="_blank" rel="noopener noreferrer">
             View on GitHub
           </a>
         </div>
@@ -309,32 +270,31 @@
 </template>
 
 <script setup lang="ts">
-import type { Library } from "~~/shared/types";
+import type { Library } from '~~/shared/types';
 
 useSeoMeta({
-  title: "Browser AI Kit — Chrome built-in AI for Vue and Nuxt",
+  title: 'Browser AI Kit — Chrome built-in AI for Vue and Nuxt',
   description:
-    "Ship private, on-device AI in Vue and Nuxt with production-ready components, composables, long-input handling, and WebMCP tools.",
+    'Ship private, on-device AI in Vue and Nuxt with production-ready components, composables, long-input handling, and WebMCP tools.'
 });
 
 useHead({
-  script: [{ src: "/marketing.js", defer: true }],
+  script: [{ src: '/marketing.js', defer: true }]
 });
 
-const selectedPackage = ref<"vue" | "nuxt">("vue");
+const selectedPackage = ref<'vue' | 'nuxt'>('vue');
 const availablePackages = LibItems.filter(
-  (item): item is (typeof LibItems)[number] & { id: "vue" | "nuxt" } =>
-    item.id === "vue" || item.id === "nuxt",
+  (item): item is (typeof LibItems)[number] & { id: 'vue' | 'nuxt' } => item.id === 'vue' || item.id === 'nuxt'
 );
 
 const packageCode = computed(() =>
-  selectedPackage.value === "vue"
+  selectedPackage.value === 'vue'
     ? `npm install @desource/browser-ai-vue
 
 <script setup lang="ts">
 import { PromptApi } from "@desource/browser-ai-vue";
 import "@desource/browser-ai-vue/assets/lib.css";
-<${"/"}script>
+<${'/'}script>
 
 <template>
   <PromptApi context-strategy="summarize" />
@@ -346,24 +306,24 @@ export default defineNuxtConfig({
   modules: ["@desource/browser-ai-nuxt"],
 });
 
-// PromptApi and usePromptApi are now auto-imported.`,
+// PromptApi and usePromptApi are now auto-imported.`
 );
 
 const comparisonRows = [
-  { label: "Download and readiness UX", native: "Build it", kit: "Included" },
-  { label: "Measured long input", native: "Build it", kit: "Included" },
-  { label: "Prompt context recovery", native: "Build it", kit: "Included" },
-  { label: "Nuxt SSR safety", native: "Manual", kit: "Included" },
-  { label: "Accessible starter UI", native: "None", kit: "Included" },
+  { label: 'Download and readiness UX', native: 'Build it', kit: 'Included' },
+  { label: 'Measured long input', native: 'Build it', kit: 'Included' },
+  { label: 'Prompt context recovery', native: 'Build it', kit: 'Included' },
+  { label: 'Nuxt SSR safety', native: 'Manual', kit: 'Included' },
+  { label: 'Accessible starter UI', native: 'None', kit: 'Included' }
 ];
 
 const frameworkMarks: Record<Library, string> = {
-  vue: "V",
-  nuxt: "N",
-  react: "R",
-  angular: "A",
-  svelte: "S",
-  typescript: "TS",
+  vue: 'V',
+  nuxt: 'N',
+  react: 'R',
+  angular: 'A',
+  svelte: 'S',
+  typescript: 'TS'
 };
 </script>
 
@@ -396,15 +356,11 @@ const frameworkMarks: Record<Library, string> = {
 .hero::before {
   position: absolute;
   inset: 2rem -8vw 0;
-  content: "";
+  content: '';
   pointer-events: none;
   opacity: 0.7;
   background:
-    radial-gradient(
-      circle 280px at var(--pointer-x) var(--pointer-y),
-      rgba(130, 107, 255, 0.16),
-      transparent 72%
-    ),
+    radial-gradient(circle 280px at var(--pointer-x) var(--pointer-y), rgba(130, 107, 255, 0.16), transparent 72%),
     radial-gradient(circle, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
   background-size:
     auto,
@@ -418,13 +374,7 @@ const frameworkMarks: Record<Library, string> = {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    #000 18%,
-    #000 70%,
-    transparent
-  );
+  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 70%, transparent);
 }
 
 .hero__beam-field i {
@@ -433,13 +383,7 @@ const frameworkMarks: Record<Library, string> = {
   width: 1px;
   height: 130%;
   opacity: 0.34;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(163, 144, 255, 0.75),
-    rgba(94, 234, 212, 0.2),
-    transparent
-  );
+  background: linear-gradient(to bottom, transparent, rgba(163, 144, 255, 0.75), rgba(94, 234, 212, 0.2), transparent);
   box-shadow: 0 0 22px 2px rgba(130, 107, 255, 0.15);
   transform: rotate(24deg) translate3d(0, -12%, 0);
   animation: beam-scan 9s ease-in-out infinite alternate;
@@ -480,11 +424,7 @@ const frameworkMarks: Record<Library, string> = {
   height: 520px;
   right: -17%;
   top: 5%;
-  background: radial-gradient(
-    circle,
-    rgba(124, 91, 255, 0.23),
-    transparent 68%
-  );
+  background: radial-gradient(circle, rgba(124, 91, 255, 0.23), transparent 68%);
   animation: glow-breathe 8s ease-in-out infinite alternate;
 }
 
@@ -579,14 +519,9 @@ const frameworkMarks: Record<Library, string> = {
 .button::after {
   position: absolute;
   inset: 0;
-  content: "";
+  content: '';
   pointer-events: none;
-  background: linear-gradient(
-    110deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.18),
-    transparent 70%
-  );
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.18), transparent 70%);
   transform: translate3d(-120%, 0, 0);
   transition: transform 520ms ease;
 }
@@ -663,13 +598,9 @@ const frameworkMarks: Record<Library, string> = {
 .hero__product::after {
   position: absolute;
   inset: 0;
-  content: "";
+  content: '';
   pointer-events: none;
-  background: linear-gradient(
-    130deg,
-    rgba(255, 255, 255, 0.045),
-    transparent 30%
-  );
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.045), transparent 30%);
 }
 
 .hero__product-top,
@@ -890,9 +821,7 @@ const frameworkMarks: Record<Library, string> = {
   flex-direction: column;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.15rem;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 70%),
-    rgba(7, 10, 22, 0.62);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), transparent 70%), rgba(7, 10, 22, 0.62);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
   transition:
     transform 220ms ease,
@@ -1109,11 +1038,7 @@ const frameworkMarks: Record<Library, string> = {
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 0.8rem;
-  background: linear-gradient(
-    145deg,
-    rgba(122, 92, 230, 0.34),
-    rgba(67, 127, 206, 0.14)
-  );
+  background: linear-gradient(145deg, rgba(122, 92, 230, 0.34), rgba(67, 127, 206, 0.14));
   font-size: 0.8rem;
   font-weight: 850;
 }
@@ -1152,13 +1077,7 @@ const frameworkMarks: Record<Library, string> = {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.4rem;
-  background:
-    radial-gradient(
-      circle at 18% 50%,
-      rgba(92, 75, 196, 0.18),
-      transparent 35%
-    ),
-    rgba(7, 10, 22, 0.68);
+  background: radial-gradient(circle at 18% 50%, rgba(92, 75, 196, 0.18), transparent 35%), rgba(7, 10, 22, 0.68);
 }
 
 .privacy-card__visual {

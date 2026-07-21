@@ -1,30 +1,21 @@
 <template>
   <div class="language-detector">
     <div class="language-detector__workspace">
-      <section
-        class="language-detector__pane language-detector__pane--input"
-        aria-label="Language detector input"
-      >
+      <section class="language-detector__pane language-detector__pane--input" aria-label="Language detector input">
         <div class="language-detector__toolbar">
           <div class="language-detector__toolbar-main">
             <span class="language-detector__label">Input</span>
-            <span class="language-detector__config">{{
-              expectedLanguagesLabel
-            }}</span>
+            <span class="language-detector__config">{{ expectedLanguagesLabel }}</span>
           </div>
 
           <div class="language-detector__toolbar-actions">
             <span
               class="language-detector__status"
               :class="{
-                'language-detector__status--available':
-                  availability === 'available',
-                'language-detector__status--downloadable':
-                  availability === 'downloadable',
-                'language-detector__status--downloading':
-                  availability === 'downloading',
-                'language-detector__status--unavailable':
-                  availability === 'unavailable',
+                'language-detector__status--available': availability === 'available',
+                'language-detector__status--downloadable': availability === 'downloadable',
+                'language-detector__status--downloading': availability === 'downloading',
+                'language-detector__status--unavailable': availability === 'unavailable'
               }"
             >
               <span class="language-detector__status-dot"></span>
@@ -35,15 +26,9 @@
               <summary>Settings</summary>
 
               <div class="language-detector__settings-panel">
-                <label
-                  class="language-detector__field language-detector__field--wide"
-                >
+                <label class="language-detector__field language-detector__field--wide">
                   <span>Expected languages</span>
-                  <input
-                    v-model="expectedLanguagesText"
-                    :disabled="isBusy"
-                    placeholder="en, fr, de"
-                  />
+                  <input v-model="expectedLanguagesText" :disabled="isBusy" placeholder="en, fr, de" />
                 </label>
 
                 <label class="language-detector__field">
@@ -78,11 +63,7 @@
                 </label>
 
                 <label class="language-detector__toggle">
-                  <input
-                    v-model="stripHtmlInput"
-                    type="checkbox"
-                    :disabled="isBusy"
-                  />
+                  <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
                   <span>Strip HTML</span>
                 </label>
               </div>
@@ -91,19 +72,10 @@
         </div>
 
         <div class="language-detector__editor">
-          <textarea
-            v-model="sourceText"
-            :disabled="disabled || isBusy"
-            :placeholder="placeholder"
-          ></textarea>
+          <textarea v-model="sourceText" :disabled="disabled || isBusy" :placeholder="placeholder"></textarea>
         </div>
 
-        <div
-          v-if="isBusy"
-          class="language-detector__progress"
-          role="status"
-          aria-live="polite"
-        >
+        <div v-if="isBusy" class="language-detector__progress" role="status" aria-live="polite">
           <span :style="{ width: `${progressPercent}%` }"></span>
         </div>
 
@@ -113,29 +85,21 @@
 
         <div class="language-detector__footer">
           <div class="language-detector__meta">
-            <span
-              >{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens |
-              {{ sourceText.length }} chars</span
-            >
+            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
             <span>{{ Math.round(minimumConfidence * 100) }}% threshold</span>
             <span v-if="progressLabel">{{ progressLabel }}</span>
             <span v-if="lastResult?.chunked">Chunked</span>
             <span v-if="lastResult?.sampled">Sampled</span>
-            <span v-if="downloadProgress > 0 && downloadProgress < 100">
-              Downloading {{ downloadProgress }}%
-            </span>
+            <span v-if="downloadProgress > 0 && downloadProgress < 100"> Downloading {{ downloadProgress }}% </span>
           </div>
 
           <button type="button" :disabled="!canDetect" @click="handleDetect">
-            {{ isBusy ? "Detecting" : "Detect" }}
+            {{ isBusy ? 'Detecting' : 'Detect' }}
           </button>
         </div>
       </section>
 
-      <section
-        class="language-detector__pane language-detector__pane--output"
-        aria-live="polite"
-      >
+      <section class="language-detector__pane language-detector__pane--output" aria-live="polite">
         <div class="language-detector__toolbar">
           <div class="language-detector__toolbar-main">
             <span class="language-detector__label">Detected language</span>
@@ -154,32 +118,22 @@
 
         <div class="language-detector__result">
           <div v-if="lastResult" class="language-detector__hero">
-            <span class="language-detector__hero-code">{{
-              lastResult.detectedLanguage
-            }}</span>
+            <span class="language-detector__hero-code">{{ lastResult.detectedLanguage }}</span>
             <div>
               <strong>{{ lastResult.name }}</strong>
-              <span
-                >{{ Math.round(lastResult.confidence * 100) }}% confidence</span
-              >
+              <span>{{ Math.round(lastResult.confidence * 100) }}% confidence</span>
             </div>
           </div>
 
           <div v-if="displayedResults.length" class="language-detector__ranked">
-            <div
-              v-for="result in displayedResults"
-              :key="result.detectedLanguage"
-              class="language-detector__rank"
-            >
+            <div v-for="result in displayedResults" :key="result.detectedLanguage" class="language-detector__rank">
               <div class="language-detector__rank-row">
                 <span>{{ result.name }}</span>
                 <strong>{{ result.detectedLanguage }}</strong>
                 <em>{{ Math.round(result.confidence * 100) }}%</em>
               </div>
               <div class="language-detector__bar">
-                <span
-                  :style="{ width: `${Math.round(result.confidence * 100)}%` }"
-                ></span>
+                <span :style="{ width: `${Math.round(result.confidence * 100)}%` }"></span>
               </div>
             </div>
           </div>
@@ -192,21 +146,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   getLanguageDetectorLanguageName,
   useLanguageDetector,
   type LanguageDetectorCreate,
   type LanguageDetectorLargeInputStrategy,
   type LanguageDetectorProgressState,
-  type LanguageDetectorResult,
-} from "../composables/useLanguageDetector";
-import { useSyncedString } from "../composables/useSyncedString";
-import {
-  copyText,
-  formatAvailability,
-  formatTokenCount,
-} from "../utils/display";
+  type LanguageDetectorResult
+} from '../composables/useLanguageDetector';
+import { useSyncedString } from '../composables/useSyncedString';
+import { copyText, formatAvailability, formatTokenCount } from '../utils/display';
 
 interface Props {
   modelValue?: string;
@@ -223,22 +173,22 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: "",
-  placeholder: "Paste text to identify its language locally...",
-  emptyOutputMessage: "Language results will appear here.",
+  modelValue: '',
+  placeholder: 'Paste text to identify its language locally...',
+  emptyOutputMessage: 'Language results will appear here.',
   expectedInputLanguages: undefined,
   autoInit: true,
   autoCreate: true,
   stripHtml: true,
-  largeInputStrategy: "chunk",
+  largeInputStrategy: 'chunk',
   minConfidence: 0.42,
   maxResults: 6,
-  disabled: false,
+  disabled: false
 });
 
 const emit = defineEmits<{
-  "update:modelValue": [value: string];
-  "availability-change": [availability: Availability];
+  'update:modelValue': [value: string];
+  'availability-change': [availability: Availability];
   progress: [state: LanguageDetectorProgressState];
   detect: [result: LanguageDetectorResult];
   error: [error: unknown];
@@ -255,45 +205,39 @@ const {
   isProcessing,
   requestAvailability,
   detectWithDetails,
-  dispose,
+  dispose
 } = useLanguageDetector({
-  expectedInputLanguages: props.expectedInputLanguages ?? [],
+  expectedInputLanguages: props.expectedInputLanguages ?? []
 });
 
 const sourceText = useSyncedString(
   () => props.modelValue,
-  (value) => emit("update:modelValue", value),
+  (value) => emit('update:modelValue', value)
 );
-const errorMessage = ref("");
-const expectedLanguagesText = ref(
-  (props.expectedInputLanguages ?? []).join(", "),
-);
+const errorMessage = ref('');
+const expectedLanguagesText = ref((props.expectedInputLanguages ?? []).join(', '));
 const stripHtmlInput = ref(props.stripHtml);
-const largeInputMode = ref<LanguageDetectorLargeInputStrategy>(
-  props.largeInputStrategy,
-);
+const largeInputMode = ref<LanguageDetectorLargeInputStrategy>(props.largeInputStrategy);
 const minimumConfidence = ref(props.minConfidence);
 const maximumResults = ref(props.maxResults);
 
 const parsedExpectedInputLanguages = computed(() => {
   return expectedLanguagesText.value
-    .split(",")
+    .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
 });
 
 const createOptions = computed<LanguageDetectorCreate>(() => ({
-  expectedInputLanguages: parsedExpectedInputLanguages.value,
+  expectedInputLanguages: parsedExpectedInputLanguages.value
 }));
 
 const expectedLanguagesLabel = computed(() => {
   if (parsedExpectedInputLanguages.value.length === 0) {
-    return "All detectable languages";
+    return 'All detectable languages';
   }
 
-  return parsedExpectedInputLanguages.value
-    .map((language) => getLanguageDetectorLanguageName(language))
-    .join(", ");
+  return parsedExpectedInputLanguages.value.map((language) => getLanguageDetectorLanguageName(language)).join(', ');
 });
 
 const operationalStatusLabel = computed(() => {
@@ -304,10 +248,7 @@ const isBusy = computed(() => props.disabled || isProcessing.value);
 
 const canDetect = computed(() => {
   return (
-    !props.disabled &&
-    !isProcessing.value &&
-    availability.value !== "unavailable" &&
-    sourceText.value.trim().length > 0
+    !props.disabled && !isProcessing.value && availability.value !== 'unavailable' && sourceText.value.trim().length > 0
   );
 });
 
@@ -316,45 +257,41 @@ const inputUsageLabel = computed(() => formatTokenCount(inputUsage.value));
 const inputQuotaLabel = computed(() => formatTokenCount(inputQuota.value));
 
 const resultMetaLabel = computed(() => {
-  if (!lastResult.value) return "Ranked confidence results";
-  if (lastResult.value.chunked)
-    return `${lastResult.value.chunks.length} chunks analyzed`;
-  if (lastResult.value.sampled) return "Representative sample analyzed";
+  if (!lastResult.value) return 'Ranked confidence results';
+  if (lastResult.value.chunked) return `${lastResult.value.chunks.length} chunks analyzed`;
+  if (lastResult.value.sampled) return 'Representative sample analyzed';
   return `${lastResult.value.results.length} candidates`;
 });
 
 const progressLabel = computed(() => {
   const state = progressState.value;
-  if (state.phase === "measuring") return "Measuring input";
-  if (state.phase === "chunking") return "Preparing chunks";
-  if (state.phase === "detecting") {
+  if (state.phase === 'measuring') return 'Measuring input';
+  if (state.phase === 'chunking') return 'Preparing chunks';
+  if (state.phase === 'detecting') {
     if (state.totalChunks > 1) {
       return `Detecting ${state.currentChunk} / ${state.totalChunks}`;
     }
-    return "Detecting language";
+    return 'Detecting language';
   }
-  return "";
+  return '';
 });
 
 const progressPercent = computed(() => {
   const state = progressState.value;
-  if (state.phase === "measuring") return 18;
-  if (state.phase === "chunking") return 38;
-  if (state.phase === "detecting" && state.totalChunks > 0) {
-    return Math.max(
-      48,
-      Math.round((state.processedChunks / state.totalChunks) * 92),
-    );
+  if (state.phase === 'measuring') return 18;
+  if (state.phase === 'chunking') return 38;
+  if (state.phase === 'detecting' && state.totalChunks > 0) {
+    return Math.max(48, Math.round((state.processedChunks / state.totalChunks) * 92));
   }
-  if (state.phase === "detecting") return 68;
-  return state.phase === "ready" ? 100 : 8;
+  if (state.phase === 'detecting') return 68;
+  return state.phase === 'ready' ? 100 : 8;
 });
 
 const handleDetect = async () => {
   if (!canDetect.value) return;
 
   try {
-    errorMessage.value = "";
+    errorMessage.value = '';
 
     const result = await detectWithDetails(sourceText.value, {
       createOptions: createOptions.value,
@@ -363,16 +300,13 @@ const handleDetect = async () => {
       largeInputStrategy: largeInputMode.value,
       minConfidence: minimumConfidence.value,
       maxResults: maximumResults.value,
-      onProgress: (state) => emit("progress", state),
+      onProgress: (state) => emit('progress', state)
     });
 
-    emit("detect", result);
+    emit('detect', result);
   } catch (error) {
-    errorMessage.value =
-      error instanceof Error
-        ? error.message
-        : "Unable to detect this input language.";
-    emit("error", error);
+    errorMessage.value = error instanceof Error ? error.message : 'Unable to detect this input language.';
+    emit('error', error);
   }
 };
 
@@ -385,18 +319,18 @@ const copyTopLanguage = async () => {
 watch(
   () => props.expectedInputLanguages,
   (value) => {
-    expectedLanguagesText.value = (value ?? []).join(", ");
-  },
+    expectedLanguagesText.value = (value ?? []).join(', ');
+  }
 );
 
 watch(
   availability,
   (value) => {
     if (value) {
-      emit("availability-change", value);
+      emit('availability-change', value);
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 watch(
@@ -405,7 +339,7 @@ watch(
     if (!props.autoInit) return;
     await requestAvailability(options);
   },
-  { deep: true },
+  { deep: true }
 );
 
 onMounted(async () => {
@@ -630,7 +564,7 @@ onBeforeUnmount(() => {
   outline: none;
 }
 
-.language-detector__field input:not([type="range"]),
+.language-detector__field input:not([type='range']),
 .language-detector__field select {
   min-height: 2.3rem;
   padding: 0 0.65rem;
@@ -705,11 +639,7 @@ onBeforeUnmount(() => {
 .language-detector__footer button {
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.09)
-  );
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
   color: var(--color-primary, #fff);
   font-weight: 800;
   cursor: pointer;
@@ -748,11 +678,7 @@ onBeforeUnmount(() => {
   padding: 2rem;
   border: 1px dashed rgba(167, 139, 250, 0.16);
   border-radius: 0.75rem;
-  background: radial-gradient(
-    circle at center,
-    rgba(124, 92, 228, 0.08),
-    transparent 62%
-  );
+  background: radial-gradient(circle at center, rgba(124, 92, 228, 0.08), transparent 62%);
   text-align: center;
 }
 

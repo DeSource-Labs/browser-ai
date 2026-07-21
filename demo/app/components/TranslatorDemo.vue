@@ -9,9 +9,7 @@
 </template>
 
 <script setup lang="ts">
-const source = ref(
-  "Private AI should feel like a native product feature, not an infrastructure project.",
-);
+const source = ref('Private AI should feel like a native product feature, not an infrastructure project.');
 </script>
 
 <style scoped>

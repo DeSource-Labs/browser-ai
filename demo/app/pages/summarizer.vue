@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import "@desource/browser-ai-vue/assets/lib.css";
+import '@desource/browser-ai-vue/assets/lib.css';
 </script>

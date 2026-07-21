@@ -17,46 +17,27 @@
       <article
         v-for="message in messages"
         :key="message.id"
-        v-memo="[
-          message.content,
-          message.timestamp,
-          message.attachments,
-          isActiveTypingMessage(message),
-        ]"
+        v-memo="[message.content, message.timestamp, message.attachments, isActiveTypingMessage(message)]"
         class="chat-message"
         :class="{
           'chat-message--user': message.role === 'user',
           'chat-message--assistant': message.role === 'assistant',
-          'chat-message--typing': isActiveTypingMessage(message),
+          'chat-message--typing': isActiveTypingMessage(message)
         }"
       >
         <header class="chat-message__header">
           <span class="chat-message__role">
             <i aria-hidden="true" />
-            {{ message.role === "user" ? "You" : "Local AI" }}
+            {{ message.role === 'user' ? 'You' : 'Local AI' }}
           </span>
-          <time
-            class="chat-message__time"
-            :datetime="toDateTime(message.timestamp)"
-          >
+          <time class="chat-message__time" :datetime="toDateTime(message.timestamp)">
             {{ formatRelativeTime(message.timestamp) }}
           </time>
         </header>
 
-        <div
-          v-if="message.attachments?.length"
-          class="chat-message__attachments"
-        >
-          <div
-            v-for="attachment in message.attachments"
-            :key="attachment.id"
-            class="chat-message__attachment"
-          >
-            <img
-              v-if="attachment.type.startsWith('image/')"
-              :src="attachment.url"
-              :alt="attachment.name"
-            />
+        <div v-if="message.attachments?.length" class="chat-message__attachments">
+          <div v-for="attachment in message.attachments" :key="attachment.id" class="chat-message__attachment">
+            <img v-if="attachment.type.startsWith('image/')" :src="attachment.url" :alt="attachment.name" />
             <div v-else class="chat-message__file">
               {{ attachment.name }}
             </div>
@@ -66,7 +47,7 @@
         <div
           class="chat-message__text"
           :class="{
-            'chat-message__text--typing': isActiveTypingMessage(message),
+            'chat-message__text--typing': isActiveTypingMessage(message)
           }"
         >
           <span
@@ -79,27 +60,15 @@
             <span class="typing-dot" />
           </span>
           <template v-else>
-            <MarkdownRenderer
-              class="chat-message__content"
-              :content="message.content"
-            />
-            <span
-              v-if="isActiveTypingMessage(message)"
-              class="typing-cursor"
-              aria-hidden="true"
-            />
+            <MarkdownRenderer class="chat-message__content" :content="message.content" />
+            <span v-if="isActiveTypingMessage(message)" class="typing-cursor" aria-hidden="true" />
           </template>
         </div>
       </article>
 
-      <article
-        v-if="showStandaloneTyping"
-        class="chat-message chat-message--assistant chat-message--typing"
-      >
+      <article v-if="showStandaloneTyping" class="chat-message chat-message--assistant chat-message--typing">
         <header class="chat-message__header">
-          <span class="chat-message__role"
-            ><i aria-hidden="true" />Local AI</span
-          >
+          <span class="chat-message__role"><i aria-hidden="true" />Local AI</span>
         </header>
         <div class="chat-message__dots" aria-label="Local AI is responding">
           <span class="typing-dot" />
@@ -109,21 +78,16 @@
       </article>
     </div>
 
-    <button
-      v-if="showJumpToLatest"
-      type="button"
-      class="chat-history__latest"
-      @click="scrollToBottom(true)"
-    >
+    <button v-if="showJumpToLatest" type="button" class="chat-history__latest" @click="scrollToBottom(true)">
       Latest response ↓
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
-import { formatRelativeTime, toDateTime } from "../utils/display";
-import MarkdownRenderer from "./MarkdownRenderer.vue";
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { formatRelativeTime, toDateTime } from '../utils/display';
+import MarkdownRenderer from './MarkdownRenderer.vue';
 
 export type ChatAttachment = {
   id: string;
@@ -134,7 +98,7 @@ export type ChatAttachment = {
 
 export type ChatMessage = {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
   timestamp?: number;
   attachments?: ChatAttachment[];
@@ -148,7 +112,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   isTyping: false,
-  autoScroll: true,
+  autoScroll: true
 });
 
 const historyEl = ref<HTMLDivElement | null>(null);
@@ -158,24 +122,18 @@ const hasUnseenContent = ref(false);
 const activeTypingMessageId = computed<string | null>(() => {
   if (!props.isTyping || props.messages.length === 0) return null;
   const lastMessage = props.messages[props.messages.length - 1];
-  return lastMessage?.role === "assistant" ? lastMessage.id : null;
+  return lastMessage?.role === 'assistant' ? lastMessage.id : null;
 });
 
-const showStandaloneTyping = computed(
-  () => props.isTyping && activeTypingMessageId.value === null,
-);
-const showJumpToLatest = computed(
-  () => props.autoScroll && !isPinnedToBottom.value && hasUnseenContent.value,
-);
+const showStandaloneTyping = computed(() => props.isTyping && activeTypingMessageId.value === null);
+const showJumpToLatest = computed(() => props.autoScroll && !isPinnedToBottom.value && hasUnseenContent.value);
 
-const isActiveTypingMessage = (message: ChatMessage) =>
-  props.isTyping && activeTypingMessageId.value === message.id;
+const isActiveTypingMessage = (message: ChatMessage) => props.isTyping && activeTypingMessageId.value === message.id;
 
 const handleScroll = () => {
   const element = historyEl.value;
   if (!element) return;
-  isPinnedToBottom.value =
-    element.scrollHeight - element.scrollTop - element.clientHeight < 72;
+  isPinnedToBottom.value = element.scrollHeight - element.scrollTop - element.clientHeight < 72;
   if (isPinnedToBottom.value) hasUnseenContent.value = false;
 };
 
@@ -196,19 +154,15 @@ const scrollToBottom = (force = false) => {
 };
 
 watch(
-  [
-    () => props.messages.length,
-    () => props.messages[props.messages.length - 1]?.content,
-    () => props.isTyping,
-  ],
-  () => scrollToBottom(),
+  [() => props.messages.length, () => props.messages[props.messages.length - 1]?.content, () => props.isTyping],
+  () => scrollToBottom()
 );
 
 watch(
   () => props.autoScroll,
   (enabled) => {
     if (enabled) scrollToBottom(true);
-  },
+  }
 );
 
 onMounted(() => scrollToBottom(true));
@@ -231,13 +185,7 @@ onMounted(() => scrollToBottom(true));
   padding: clamp(0.65rem, 1.4vw, 1rem);
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 1rem;
-  background:
-    radial-gradient(
-      circle at 15% 0%,
-      rgba(91, 124, 255, 0.07),
-      transparent 28%
-    ),
-    rgba(4, 7, 15, 0.58);
+  background: radial-gradient(circle at 15% 0%, rgba(91, 124, 255, 0.07), transparent 28%), rgba(4, 7, 15, 0.58);
   user-select: text;
   scrollbar-width: thin;
   scrollbar-color: rgba(167, 139, 250, 0.35) transparent;
@@ -294,11 +242,7 @@ onMounted(() => scrollToBottom(true));
   max-width: min(76%, 680px);
   border-color: rgba(124, 145, 255, 0.26);
   border-bottom-right-radius: 0.35rem;
-  background: linear-gradient(
-    145deg,
-    rgba(91, 94, 170, 0.34),
-    rgba(91, 66, 132, 0.3)
-  );
+  background: linear-gradient(145deg, rgba(91, 94, 170, 0.34), rgba(91, 66, 132, 0.3));
 }
 
 .chat-message--assistant {

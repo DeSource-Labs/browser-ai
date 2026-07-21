@@ -1,20 +1,9 @@
 <template>
   <div class="tools" aria-label="Live Browser AI availability">
-    <NuxtLink
-      v-for="(item, index) in apiRows"
-      :key="item.id"
-      class="tools__card"
-      :to="item.href"
-      :data-api="item.id"
-    >
+    <NuxtLink v-for="(item, index) in apiRows" :key="item.id" class="tools__card" :to="item.href" :data-api="item.id">
       <div class="tools__card-top">
-        <span class="tools__index" aria-hidden="true">{{
-          String(index + 1).padStart(2, "0")
-        }}</span>
-        <span
-          class="tools__badge"
-          :class="`tools__badge--${item.availability}`"
-        >
+        <span class="tools__index" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
+        <span class="tools__badge" :class="`tools__badge--${item.availability}`">
           <i aria-hidden="true" />
           {{ getAvailabilityLabel(item.availability) }}
         </span>
@@ -37,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-type DemoAvailability = Availability | "checking";
+type DemoAvailability = Availability | 'checking';
 
 type ApiRow = ToolItem & {
   availability: DemoAvailability;
@@ -48,83 +37,79 @@ type AvailabilityConstructor = {
 };
 
 const statuses = reactive<Record<Tool, DemoAvailability>>(
-  Object.fromEntries(ToolItems.map((item) => [item.id, "checking"])) as Record<
-    Tool,
-    DemoAvailability
-  >,
+  Object.fromEntries(ToolItems.map((item) => [item.id, 'checking'])) as Record<Tool, DemoAvailability>
 );
 
 const availabilityOptions: Partial<Record<Tool, Record<string, unknown>>> = {
   translator: {
-    sourceLanguage: "en",
-    targetLanguage: "fr",
-  },
+    sourceLanguage: 'en',
+    targetLanguage: 'fr'
+  }
 };
 
 const constructorNames: Partial<Record<Tool, string>> = {
-  "prompt-api": "LanguageModel",
-  summarizer: "Summarizer",
-  writer: "Writer",
-  rewriter: "Rewriter",
-  translator: "Translator",
-  "language-detector": "LanguageDetector",
-  proofreader: "Proofreader",
+  'prompt-api': 'LanguageModel',
+  summarizer: 'Summarizer',
+  writer: 'Writer',
+  rewriter: 'Rewriter',
+  translator: 'Translator',
+  'language-detector': 'LanguageDetector',
+  proofreader: 'Proofreader'
 };
 
 const apiRows = computed<ApiRow[]>(() =>
   ToolItems.map((item) => ({
     ...item,
-    availability: statuses[item.id],
-  })),
+    availability: statuses[item.id]
+  }))
 );
 
 const checkNativeAvailability = async (tool: Tool): Promise<Availability> => {
-  if (tool === "webmcp") {
-    return document.modelContext ? "available" : "unavailable";
+  if (tool === 'webmcp') {
+    return document.modelContext ? 'available' : 'unavailable';
   }
 
   const constructorName = constructorNames[tool];
   const constructor = constructorName
-    ? ((globalThis as typeof globalThis & Record<string, unknown>)[
-        constructorName
-      ] as AvailabilityConstructor | undefined)
+    ? ((globalThis as typeof globalThis & Record<string, unknown>)[constructorName] as
+        AvailabilityConstructor | undefined)
     : undefined;
 
-  if (typeof constructor?.availability !== "function") return "unavailable";
+  if (typeof constructor?.availability !== 'function') return 'unavailable';
 
   try {
     return await constructor.availability(availabilityOptions[tool]);
   } catch {
-    return "unavailable";
+    return 'unavailable';
   }
 };
 
 const getAvailabilityLabel = (status: DemoAvailability) => {
   switch (status) {
-    case "checking":
-      return "Checking";
-    case "downloading":
-      return "Downloading";
-    case "available":
-      return "Ready now";
-    case "downloadable":
-      return "Download first";
+    case 'checking':
+      return 'Checking';
+    case 'downloading':
+      return 'Downloading';
+    case 'available':
+      return 'Ready now';
+    case 'downloadable':
+      return 'Download first';
     default:
-      return "Not enabled";
+      return 'Not enabled';
   }
 };
 
 const getRuntimeLabel = (tool: Tool) => {
-  if (tool === "webmcp") return "Browser agent tools";
-  if (tool === "translator") return "Local language pack";
-  return "On-device model";
+  if (tool === 'webmcp') return 'Browser agent tools';
+  if (tool === 'translator') return 'Local language pack';
+  return 'On-device model';
 };
 
 onMounted(async () => {
   await Promise.all(
     ToolItems.map(async (item) => {
       statuses[item.id] = await checkNativeAvailability(item.id);
-    }),
+    })
   );
 });
 </script>
@@ -150,13 +135,7 @@ onMounted(async () => {
   color: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 1.15rem;
-  background:
-    radial-gradient(
-      circle at 85% 0%,
-      rgba(124, 92, 228, 0.16),
-      transparent 42%
-    ),
-    rgba(7, 10, 20, 0.7);
+  background: radial-gradient(circle at 85% 0%, rgba(124, 92, 228, 0.16), transparent 42%), rgba(7, 10, 20, 0.7);
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.055);
   transition:
     transform 180ms ease,
@@ -171,7 +150,7 @@ onMounted(async () => {
   bottom: -4rem;
   width: 9rem;
   height: 9rem;
-  content: "";
+  content: '';
   border: 1px solid rgba(94, 234, 212, 0.13);
   border-radius: 50%;
   box-shadow:

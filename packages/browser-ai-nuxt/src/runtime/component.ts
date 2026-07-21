@@ -1,1 +1,1 @@
-export { PromptApi as default } from "@desource/browser-ai-vue";
+export { PromptApi as default } from '@desource/browser-ai-vue';
