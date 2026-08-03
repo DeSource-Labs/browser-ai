@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "@types/dom-chromium-ai": "^0.0.17",
-    "markdown-it": "^14.3.0",
+    "markdown-it": "^15.0.0",
     "webmcp-types": "^0.1.2"
   },
   "peerDependencies": {
