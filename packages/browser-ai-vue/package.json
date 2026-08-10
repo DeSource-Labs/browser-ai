@@ -63,7 +63,7 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@vitejs/plugin-vue": "^6.0.8",
-    "vue": "^3.5.40",
+    "vue": "^3.5.41",
     "vue-tsc": "^3.3.7"
   },
   "dependencies": {
