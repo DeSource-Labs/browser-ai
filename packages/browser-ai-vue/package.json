@@ -69,7 +69,7 @@
   "dependencies": {
     "@types/dom-chromium-ai": "^0.0.17",
     "markdown-it": "^14.3.0",
-    "webmcp-types": "^0.1.2"
+    "webmcp-types": "^0.1.5"
   },
   "peerDependencies": {
     "vue": "^3.4.33"
