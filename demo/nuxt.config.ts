@@ -116,10 +116,10 @@ const config: NuxtConfig = {
           name: 'twitter:card',
           content: 'summary_large_image'
         },
-        // {
-        //   name: 'twitter:site',
-        //   content: meta.x,
-        // },
+        {
+          name: 'twitter:site',
+          content: meta.x
+        },
         {
           property: 'og:title',
           content: meta.title
