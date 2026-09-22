@@ -2,7 +2,10 @@
   <footer class="footer">
     <div class="footer__inner">
       <div class="footer__brand">
-        <NuxtLink to="/">Browser AI Kit</NuxtLink>
+        <NuxtLink class="brand" to="/" aria-label="Browser AI Kit home">
+          <img src="/logo/android-chrome-192x192.png" alt="" width="32" height="32" />
+          <span>Browser AI Kit</span>
+        </NuxtLink>
         <p>Chrome's on-device AI, shaped into framework APIs you can ship.</p>
       </div>
 

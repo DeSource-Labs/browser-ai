@@ -1,10 +1,8 @@
 <template>
   <header class="site-nav-wrap">
     <nav class="site-nav" aria-label="Primary navigation">
-      <NuxtLink class="site-nav__brand" to="/" aria-label="Browser AI Kit home">
-        <span class="site-nav__mark" aria-hidden="true">
-          <span />
-        </span>
+      <NuxtLink class="site-nav__brand brand" to="/" aria-label="Browser AI Kit home">
+        <img src="/logo/android-chrome-192x192.png" alt="" width="32" height="32" />
         <span>Browser AI Kit</span>
       </NuxtLink>
 
