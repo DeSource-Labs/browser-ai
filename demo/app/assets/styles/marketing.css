@@ -30,7 +30,7 @@
 .site-nav::before {
   position: absolute;
   inset: 0;
-  content: "";
+  content: '';
   pointer-events: none;
   background: linear-gradient(
     105deg,
@@ -77,7 +77,7 @@
 
 .site-nav__mark::before,
 .site-nav__mark span {
-  content: "";
+  content: '';
   width: 0.65rem;
   height: 0.65rem;
   border: 2px solid #fff;

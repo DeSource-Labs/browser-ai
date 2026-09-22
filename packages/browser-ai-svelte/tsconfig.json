@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "rootDir": "../..",
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "types": ["@types/dom-chromium-ai", "webmcp-types", "vite/client"]
+  },
+  "include": ["src/**/*", "test/**/*", "svelte.config.js", "vitest.config.ts"]
+}

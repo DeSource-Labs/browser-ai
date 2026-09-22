@@ -1,12 +1,21 @@
 <template>
   <div class="prompt-input">
-    <div v-if="allowAttachments && attachments.length" class="prompt-input__attachments">
+    <div v-if="attachments.length" class="prompt-input__attachments">
       <div v-for="attachment in attachments" :key="attachment.id" class="prompt-input__attachment">
-        <img v-if="attachment.type.startsWith('image/')" :src="attachment.url" :alt="attachment.name" />
+        <img
+          v-if="attachment.type.startsWith('image/') && attachment.url"
+          :src="attachment.url"
+          :alt="attachment.name"
+        />
         <div v-else class="prompt-input__file">
           {{ attachment.name }}
         </div>
-        <button type="button" class="prompt-input__remove" @click="removeAttachment(attachment.id)">
+        <button
+          type="button"
+          class="prompt-input__remove"
+          :aria-label="`Remove ${attachment.name}`"
+          @click="removeAttachment(attachment.id)"
+        >
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -83,12 +92,13 @@
 </template>
 
 <script setup lang="ts">
+import { PROMPT_FILE_ACCEPT } from '@desource/browser-ai';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 export type PromptAttachment = {
   id: string;
-  file: File;
-  url: string;
+  file?: File;
+  url?: string;
   name: string;
   type: string;
 };
@@ -113,7 +123,7 @@ const props = withDefaults(defineProps<Props>(), {
   sendOnEnter: true,
   allowAttachments: false,
   allowVoice: false,
-  accept: 'image/*',
+  accept: PROMPT_FILE_ACCEPT,
   maxAttachments: undefined
 });
 
@@ -126,6 +136,7 @@ const emit = defineEmits<{
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const textareaEl = ref<HTMLTextAreaElement | null>(null);
+const createdUrls = new Set<string>();
 let resizeFrame: number | null = null;
 
 const canSend = computed(() => {
@@ -153,7 +164,7 @@ const scheduleResize = () => {
 
 const onKeydown = (event: KeyboardEvent) => {
   if (!props.sendOnEnter) return;
-  if (event.key !== 'Enter' || event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) {
+  if (event.isComposing || event.key !== 'Enter' || event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) {
     return;
   }
   event.preventDefault();
@@ -180,33 +191,34 @@ const handleFiles = (event: Event) => {
   const files = Array.from(target.files || []);
   if (files.length === 0) return;
 
-  const availableSlots = props.maxAttachments
-    ? Math.max(props.maxAttachments - props.attachments.length, 0)
-    : files.length;
+  const availableSlots =
+    props.maxAttachments == null ? files.length : Math.max(props.maxAttachments - props.attachments.length, 0);
   if (availableSlots === 0) {
     target.value = '';
     return;
   }
 
   const selectedFiles = files.slice(0, availableSlots);
-  const next = selectedFiles.map((file) => ({
-    id:
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-    file,
-    url: URL.createObjectURL(file),
-    name: file.name,
-    type: file.type
-  }));
+  const next = selectedFiles.map((file) => {
+    const url = URL.createObjectURL(file);
+    createdUrls.add(url);
+    return {
+      id:
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random()}`,
+      file,
+      url,
+      name: file.name,
+      type: file.type
+    };
+  });
 
   emit('update:attachments', [...props.attachments, ...next]);
   target.value = '';
 };
 
 const removeAttachment = (id: string) => {
-  const toRemove = props.attachments.find((item) => item.id === id);
-  if (toRemove) {
-    URL.revokeObjectURL(toRemove.url);
-  }
   emit(
     'update:attachments',
     props.attachments.filter((item) => item.id !== id)
@@ -218,8 +230,9 @@ watch(
   (next, previous = []) => {
     const nextIds = new Set(next.map((item) => item.id));
     previous.forEach((attachment) => {
-      if (!nextIds.has(attachment.id)) {
+      if (attachment.url && createdUrls.has(attachment.url) && !nextIds.has(attachment.id)) {
         URL.revokeObjectURL(attachment.url);
+        createdUrls.delete(attachment.url);
       }
     });
   },
@@ -237,141 +250,7 @@ onBeforeUnmount(() => {
   if (resizeFrame !== null) {
     window.cancelAnimationFrame(resizeFrame);
   }
-  props.attachments.forEach((attachment) => {
-    URL.revokeObjectURL(attachment.url);
-  });
+  createdUrls.forEach((url) => URL.revokeObjectURL(url));
+  createdUrls.clear();
 });
 </script>
-
-<style scoped>
-.prompt-input {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.65rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  background: radial-gradient(circle at 100% 100%, rgba(124, 92, 228, 0.08), transparent 36%), rgba(7, 10, 20, 0.78);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.045);
-  pointer-events: all;
-}
-
-.prompt-input__attachments {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.prompt-input__attachment {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  border-radius: 0.6rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.prompt-input__attachment img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.prompt-input__file {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  color: var(--color-secondary);
-  padding: 0.25rem;
-  text-align: center;
-}
-
-.prompt-input__remove {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.6);
-  color: var(--color-primary);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
-
-.prompt-input__row {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-}
-
-.prompt-input__icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 0.7rem;
-  border: 1px solid rgba(120, 120, 120, 0.35);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-primary);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: background 0.2s ease;
-}
-
-.prompt-input__icon:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.prompt-input__file-input {
-  display: none;
-}
-
-.prompt-input__field {
-  flex: 1;
-  min-height: 2.5rem;
-  max-height: 10rem;
-  overflow-y: auto;
-  resize: none;
-  border: none;
-  background: transparent;
-  color: var(--color-primary);
-  font: inherit;
-  font-size: 0.88rem;
-  line-height: 1.5;
-  padding: 0.58rem 0.55rem;
-}
-
-.prompt-input__field:focus {
-  outline: none;
-}
-
-.prompt-input__send {
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(167, 139, 250, 0.25);
-  border-radius: 0.78rem;
-  background: linear-gradient(145deg, rgba(124, 92, 228, 0.42), rgba(77, 109, 220, 0.34));
-  color: var(--color-primary);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: background 0.2s ease;
-}
-
-.prompt-input__send:hover {
-  background: linear-gradient(145deg, rgba(139, 108, 244, 0.58), rgba(88, 122, 238, 0.48));
-}
-
-.prompt-input__send:disabled,
-.prompt-input__icon:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>

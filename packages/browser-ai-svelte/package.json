@@ -1,0 +1,95 @@
+{
+  "name": "@desource/browser-ai-svelte",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "description": "Svelte stores and components for Chrome built-in AI and WebMCP.",
+  "keywords": [
+    "svelte",
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "svelte": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "import": "./dist/index.js"
+    },
+    "./assets/lib.css": "./dist/browser-ai-svelte.css",
+    "./package.json": "./package.json",
+    "./workflows": {
+      "types": "./dist/workflows.d.ts",
+      "import": "./dist/workflows.js",
+      "default": "./dist/workflows.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "author": "DeSource Labs <hello@desourcelabs.com>",
+  "license": "MIT",
+  "homepage": "https://ai.desourcelabs.com/docs#svelte",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/browser-ai-svelte"
+  },
+  "bugs": "https://github.com/DeSource-Labs/browser-ai/issues",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rimraf dist coverage test-results .svelte-kit",
+    "clean:modules": "rimraf node_modules",
+    "dev": "vite demo --config demo/vite.config.ts",
+    "build": "pnpm clean && pnpm build:internal",
+    "build:internal": "svelte-package --tsconfig ./tsconfig.build.json && sass src/lib/style.scss dist/browser-ai-svelte.css --no-source-map --style=compressed && node scripts/prepare-package.mjs",
+    "build:demo": "vite build demo --config demo/vite.config.ts",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json && svelte-check --tsconfig ./demo/tsconfig.json",
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage.enabled",
+    "test:e2e": "playwright test",
+    "test:e2e:live": "playwright test --project enabled-user-chrome",
+    "publish:check": "publint && attw --pack . --ignore-rules=cjs-resolves-to-esm --exclude-entrypoints ./assets/lib.css"
+  },
+  "dependencies": {
+    "@desource/browser-ai": "workspace:*",
+    "@types/dom-chromium-ai": "^0.0.17",
+    "markdown-it": "^15.0.2",
+    "webmcp-types": "^0.1.9"
+  },
+  "peerDependencies": {
+    "svelte": "^5.29.0"
+  },
+  "devDependencies": {
+    "@sveltejs/package": "^2.5.8",
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "sass": "^1.104.1",
+    "svelte": "^5.57.0",
+    "svelte-check": "^4.7.6"
+  },
+  "typesVersions": {
+    "*": {
+      "workflows": [
+        "./dist/workflows.d.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "name": "@desource/browser-ai-angular",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "description": "Angular signals and standalone components for Chrome built-in AI and WebMCP.",
+  "keywords": [
+    "angular",
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "style": "./browser-ai-angular.css",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "author": "DeSource Labs <hello@desourcelabs.com>",
+  "license": "MIT",
+  "homepage": "https://ai.desourcelabs.com/docs#angular",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/browser-ai-angular"
+  },
+  "bugs": "https://github.com/DeSource-Labs/browser-ai/issues",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "directory": "dist"
+  },
+  "scripts": {
+    "clean": "rimraf dist coverage test-results .angular",
+    "clean:modules": "rimraf node_modules",
+    "dev": "ng serve demo --host 127.0.0.1 --port 4174",
+    "build": "pnpm clean && pnpm build:internal",
+    "build:internal": "ng-packagr -p ng-package.json && sass src/style.scss dist/browser-ai-angular.css --no-source-map --style=compressed && node scripts/prepare-package.mts",
+    "build:demo": "ng build demo",
+    "typecheck": "ngc -p tsconfig.lib.json --noEmit && ngc -p demo/tsconfig.app.json --noEmit",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:unit:coverage": "vitest run --config vitest.config.ts --coverage.enabled",
+    "test:e2e": "playwright test",
+    "test:e2e:live": "playwright test --project enabled-user-chrome",
+    "publish:check": "publint dist && attw --pack dist --ignore-rules=cjs-resolves-to-esm --exclude-entrypoints ./assets/lib.css ./browser-ai-angular.css"
+  },
+  "dependencies": {
+    "@desource/browser-ai": "workspace:*",
+    "@types/dom-chromium-ai": "^0.0.17",
+    "markdown-it": "^15.0.2",
+    "tslib": "^2.8.1",
+    "webmcp-types": "^0.1.9"
+  },
+  "peerDependencies": {
+    "@angular/common": "^22.1.7",
+    "@angular/core": "^22.1.7"
+  },
+  "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.7.2",
+    "@angular/build": "^22.1.8",
+    "@angular/cli": "^22.1.8",
+    "@angular/common": "^22.1.7",
+    "@angular/compiler": "^22.1.7",
+    "@angular/compiler-cli": "^22.1.7",
+    "@angular/core": "^22.1.7",
+    "@angular/platform-browser": "^22.1.7",
+    "ng-packagr": "^22.1.1",
+    "sass": "^1.104.1"
+  },
+  "typesVersions": {
+    "*": {
+      "controllers": [
+        "./types/desource-browser-ai-angular-controllers.d.ts"
+      ]
+    }
+  }
+}

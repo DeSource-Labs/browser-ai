@@ -11,7 +11,7 @@
         <div class="hero__copy">
           <p class="eyebrow">
             <span class="eyebrow__dot" />
-            Private AI. Native to Chrome. Ready for Vue.
+            Private AI. Native to Chrome. Ready for your framework.
           </p>
           <h1 id="hero-title">
             Ship on-device AI<br />
@@ -199,8 +199,8 @@
             <h2>Native to your framework.<br />Consistent underneath.</h2>
           </div>
           <p>
-            Vue and Nuxt are ready today. React, Angular, Svelte, and a framework-neutral TypeScript core are on the
-            public roadmap.
+            Vue, Nuxt, React, Angular, Svelte, and a framework-neutral TypeScript core ship from one repository and
+            share one tested browser-behavior contract.
           </p>
         </div>
 
@@ -220,10 +220,7 @@
             </div>
             <h3>{{ item.name }}</h3>
             <p>{{ item.description }}</p>
-            <span class="framework-card__link">
-              {{ item.status === 'available' ? 'Package guide' : 'View roadmap' }}
-              →
-            </span>
+            <span class="framework-card__link"> Package guide → </span>
           </a>
         </div>
       </section>
@@ -251,8 +248,8 @@
         <p class="section-kicker">Open source and ready to build on</p>
         <h2>Make the browser the AI runtime.</h2>
         <p>
-          Start with the package guide, run every API against your local Chrome profile, or help shape the next
-          framework integration.
+          Start with a package guide, run every API against your local Chrome profile, or inspect the shared contracts
+          that keep every framework adapter aligned.
         </p>
         <div class="hero__actions final-cta__actions">
           <NuxtLink class="button button--primary" to="/docs">
@@ -273,9 +270,9 @@
 import type { Library } from '~~/shared/types';
 
 useSeoMeta({
-  title: 'Browser AI Kit — Chrome built-in AI for Vue and Nuxt',
+  title: 'Browser AI Kit — Chrome built-in AI for Vue, React, Svelte, Angular, and Nuxt',
   description:
-    'Ship private, on-device AI in Vue and Nuxt with production-ready components, composables, long-input handling, and WebMCP tools.'
+    'Ship private, on-device AI in Vue, React, Svelte, Angular, Nuxt, or TypeScript with production-ready components, framework APIs, attachments, long-input handling, and WebMCP.'
 });
 
 useHead({
@@ -1018,10 +1015,6 @@ const frameworkMarks: Record<Library, string> = {
   transform: translateY(-3px);
   border-color: rgba(167, 139, 250, 0.25);
   background: rgba(12, 16, 32, 0.74);
-}
-
-.framework-card--planned {
-  background: rgba(7, 10, 22, 0.36);
 }
 
 .framework-card__head {

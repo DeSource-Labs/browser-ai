@@ -12,7 +12,7 @@ body {
   background-color: var(--color-background);
   color: var(--color-primary);
 
-  font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+  font-family: ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, sans-serif;
   font-weight: 400;
   font-style: normal;
   overflow-x: clip;
@@ -89,7 +89,7 @@ a {
 }
 
 .animated-link::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   bottom: 0;

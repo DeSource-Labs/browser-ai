@@ -1,0 +1,97 @@
+{
+  "name": "@desource/browser-ai-react",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "description": "React hooks and components for Chrome built-in AI and WebMCP.",
+  "keywords": [
+    "react",
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./assets/lib.css": "./dist/browser-ai-react.css",
+    "./package.json": "./package.json",
+    "./workflows": {
+      "types": "./dist/workflows.d.ts",
+      "import": "./dist/workflows.js",
+      "default": "./dist/workflows.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "author": "DeSource Labs <hello@desourcelabs.com>",
+  "license": "MIT",
+  "homepage": "https://ai.desourcelabs.com/docs#react",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/browser-ai-react"
+  },
+  "bugs": "https://github.com/DeSource-Labs/browser-ai/issues",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rimraf dist coverage test-results",
+    "clean:modules": "rimraf node_modules",
+    "dev": "vite demo --config demo/vite.config.ts",
+    "build": "pnpm clean && pnpm build:internal",
+    "build:internal": "pnpm build:lib && pnpm build:types",
+    "build:demo": "vite build demo --config demo/vite.config.ts",
+    "build:lib": "vite build",
+    "build:types": "tsc -p tsconfig.build.json && node scripts/fix-dts.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p demo/tsconfig.json --noEmit",
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage.enabled",
+    "test:e2e": "playwright test",
+    "test:e2e:live": "playwright test --project enabled-user-chrome",
+    "publish:check": "publint && attw --pack . --ignore-rules=cjs-resolves-to-esm --exclude-entrypoints ./assets/lib.css"
+  },
+  "dependencies": {
+    "@desource/browser-ai": "workspace:*",
+    "@types/dom-chromium-ai": "^0.0.17",
+    "markdown-it": "^15.0.2",
+    "webmcp-types": "^0.1.9"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "typesVersions": {
+    "*": {
+      "workflows": [
+        "./dist/workflows.d.ts"
+      ]
+    }
+  }
+}

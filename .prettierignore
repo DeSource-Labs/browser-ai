@@ -3,6 +3,8 @@ node_modules
 .pnpm-store
 .nuxt
 .output
+.angular
+.svelte-kit
 .cache
 coverage
 test-results

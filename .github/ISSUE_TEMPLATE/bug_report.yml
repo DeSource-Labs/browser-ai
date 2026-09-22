@@ -1,6 +1,6 @@
 name: Bug report
 description: Report reproducible package, browser API, or demo behavior.
-title: "[Bug]: "
+title: '[Bug]: '
 labels: [bug, needs-triage]
 body:
   - type: markdown
@@ -11,8 +11,8 @@ body:
     attributes:
       label: Package or surface
       options:
-        - "@desource/browser-ai-vue"
-        - "@desource/browser-ai-nuxt"
+        - '@desource/browser-ai-vue'
+        - '@desource/browser-ai-nuxt'
         - Demo and documentation site
         - Repository tooling
     validations:
@@ -22,7 +22,7 @@ body:
     attributes:
       label: Versions
       description: Package version, exact Chrome version, operating system, and framework version.
-      placeholder: "browser-ai-vue 0.2.0; Chrome 150.0.x; macOS 15; Vue 3.5"
+      placeholder: 'browser-ai-vue 0.2.0; Chrome 150.0.x; macOS 15; Vue 3.5'
     validations:
       required: true
   - type: textarea

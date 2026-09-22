@@ -1,8 +1,4 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json",
-  "compilerOptions": {
-    "declaration": true,
-    "declarationDir": "./node_modules/@types/dom-chromium-ai"
-  }
+  "extends": "./.nuxt/tsconfig.json"
 }

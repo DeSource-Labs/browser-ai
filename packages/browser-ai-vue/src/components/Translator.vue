@@ -1,131 +1,79 @@
 <template>
-  <div class="translator">
-    <div class="translator__workspace">
-      <section class="translator__pane translator__pane--input" aria-label="Translator source input">
-        <div class="translator__toolbar">
-          <div class="translator__toolbar-main">
-            <span class="translator__label">Source</span>
-            <span class="translator__config">{{ sourceLanguageLabel }} to {{ targetLanguageLabel }}</span>
-          </div>
+  <TextTool
+    v-model="sourceText"
+    :output="translatedText"
+    input-label="Source"
+    :output-label="targetLanguageLabel"
+    :action-label="prepareButtonLabel"
+    :busy-action-label="prepareButtonLabel"
+    :placeholder="placeholder"
+    :empty-output-message="emptyOutputMessage"
+    :settings-summary="`${sourceLanguageLabel} to ${targetLanguageLabel}`"
+    :input-meta="`${inputUsageLabel} / ${inputQuotaLabel} tokens | ${sourceText.length} chars`"
+    :output-meta="outputMetaLabel"
+    :availability="availability"
+    :download-progress="downloadProgress"
+    :status-text="operationalStatusLabel"
+    :busy="isProcessing"
+    :disabled="disabled"
+    :can-run="canPreparePair"
+    :show-action="showPrepareButton"
+    :progress-percent="progressPercent"
+    :error-message="errorMessage"
+    :render-markdown="renderMarkdown"
+    copyable
+    @interrupt="interrupt"
+    @run="handlePreparePair"
+    @copy="copyTranslation"
+  >
+    <template #settings>
+      <div class="writing-tool__toggles">
+        <label class="writing-tool__toggle"
+          ><input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />Strip HTML</label
+        >
+        <label class="writing-tool__toggle"
+          ><input v-model="chunkLargeInput" type="checkbox" :disabled="isBusy" />Auto chunk long text</label
+        >
+        <label class="writing-tool__toggle"
+          ><input v-model="streamOutput" type="checkbox" :disabled="isBusy" />Stream output</label
+        >
+        <label class="writing-tool__toggle"
+          ><input v-model="autoTranslateInput" type="checkbox" :disabled="isBusy" />Auto translate</label
+        >
+      </div>
+    </template>
 
-          <div class="translator__toolbar-actions">
-            <span
-              class="translator__status"
-              :class="{
-                'translator__status--available': availability === 'available',
-                'translator__status--downloadable': availability === 'downloadable',
-                'translator__status--downloading': availability === 'downloading',
-                'translator__status--unavailable': availability === 'unavailable'
-              }"
-            >
-              <span class="translator__status-dot"></span>
-              {{ operationalStatusLabel }}
-            </span>
+    <template #input-before>
+      <div class="browser-ai-language-pair">
+        <label
+          >From<select v-model="selectedSourceLanguage" :disabled="isBusy" @change="handleLanguageSelection">
+            <option value="" disabled>Choose source</option>
+            <option v-for="language in normalizedLanguageOptions" :key="language.code" :value="language.code">
+              {{ language.name }}
+            </option>
+          </select></label
+        >
+        <button type="button" :disabled="isBusy || !canSwapLanguages" @click="swapLanguages">Swap</button>
+        <label
+          >To<select v-model="selectedTargetLanguage" :disabled="isBusy" @change="handleLanguageSelection">
+            <option value="" disabled>Choose target</option>
+            <option v-for="language in normalizedLanguageOptions" :key="language.code" :value="language.code">
+              {{ language.name }}
+            </option>
+          </select></label
+        >
+      </div>
+    </template>
 
-            <details class="translator__settings">
-              <summary>Settings</summary>
-
-              <div class="translator__settings-panel">
-                <div class="translator__toggles">
-                  <label class="translator__toggle">
-                    <input v-model="stripHtmlInput" type="checkbox" :disabled="isBusy" />
-                    <span>Strip HTML</span>
-                  </label>
-
-                  <label class="translator__toggle">
-                    <input v-model="chunkLargeInput" type="checkbox" :disabled="isBusy" />
-                    <span>Auto chunk long text</span>
-                  </label>
-
-                  <label class="translator__toggle">
-                    <input v-model="streamOutput" type="checkbox" :disabled="isBusy" />
-                    <span>Stream output</span>
-                  </label>
-
-                  <label class="translator__toggle">
-                    <input v-model="autoTranslateInput" type="checkbox" :disabled="isBusy" />
-                    <span>Auto translate</span>
-                  </label>
-                </div>
-              </div>
-            </details>
-          </div>
-        </div>
-
-        <div class="translator__language-bar">
-          <label>
-            <span>From</span>
-            <select v-model="selectedSourceLanguage" :disabled="isBusy" @change="handleLanguageSelection">
-              <option value="" disabled>Choose source</option>
-              <option v-for="language in normalizedLanguageOptions" :key="language.code" :value="language.code">
-                {{ language.name }}
-              </option>
-            </select>
-          </label>
-
-          <button type="button" :disabled="isBusy || !canSwapLanguages" @click="swapLanguages">Swap</button>
-
-          <label>
-            <span>To</span>
-            <select v-model="selectedTargetLanguage" :disabled="isBusy" @change="handleLanguageSelection">
-              <option value="" disabled>Choose target</option>
-              <option v-for="language in normalizedLanguageOptions" :key="language.code" :value="language.code">
-                {{ language.name }}
-              </option>
-            </select>
-          </label>
-        </div>
-
-        <div class="translator__editor">
-          <textarea v-model="sourceText" :disabled="disabled" :placeholder="placeholder"></textarea>
-        </div>
-
-        <div v-if="isProcessing" class="translator__progress" role="status" aria-live="polite">
-          <span :style="{ width: `${progressPercent}%` }"></span>
-        </div>
-
-        <p v-if="errorMessage" class="translator__error" role="alert">
-          {{ errorMessage }}
-        </p>
-
-        <div class="translator__footer">
-          <div class="translator__meta">
-            <span>{{ inputUsageLabel }} / {{ inputQuotaLabel }} tokens | {{ sourceText.length }} chars</span>
-            <span v-if="progressLabel">{{ progressLabel }}</span>
-            <span v-if="lastResult?.chunked">Chunked</span>
-            <span v-if="lastResult?.bypassed">Same language</span>
-            <span v-if="autoTranslateInput && hasLanguagePair">Auto</span>
-            <span v-if="!hasLanguagePair">Select languages first</span>
-            <span v-if="pendingAutoTranslate">Queued</span>
-            <span v-if="downloadProgress > 0 && downloadProgress < 100"> Downloading {{ downloadProgress }}% </span>
-          </div>
-
-          <button v-if="showPrepareButton" type="button" :disabled="!canPreparePair" @click="handlePreparePair">
-            {{ prepareButtonLabel }}
-          </button>
-        </div>
-      </section>
-
-      <section class="translator__pane translator__pane--output" aria-live="polite">
-        <div class="translator__toolbar">
-          <div class="translator__toolbar-main">
-            <span class="translator__label">{{ targetLanguageLabel }}</span>
-            <span class="translator__config">{{ outputMetaLabel }}</span>
-          </div>
-
-          <button v-if="translatedText" class="translator__ghost-button" type="button" @click="copyTranslation">
-            Copy
-          </button>
-        </div>
-
-        <div class="translator__output">
-          <MarkdownRenderer v-if="translatedText && renderMarkdown" :content="translatedText" />
-          <pre v-else-if="translatedText">{{ translatedText }}</pre>
-          <p v-else>{{ emptyOutputMessage }}</p>
-        </div>
-      </section>
-    </div>
-  </div>
+    <template #meta>
+      <span v-if="progressLabel">{{ progressLabel }}</span>
+      <span v-if="lastResult?.chunked">Chunked</span>
+      <span v-if="lastResult?.bypassed">Same language</span>
+      <span v-if="autoTranslateInput && hasLanguagePair">Auto</span>
+      <span v-if="!hasLanguagePair">Select languages first</span>
+      <span v-if="pendingAutoTranslate">Queued</span>
+    </template>
+  </TextTool>
 </template>
 
 <script setup lang="ts">
@@ -141,7 +89,7 @@ import {
 } from '../composables/useTranslator';
 import { useSyncedString } from '../composables/useSyncedString';
 import { copyText, formatTokenCount } from '../utils/display';
-import MarkdownRenderer from './MarkdownRenderer.vue';
+import TextTool from './TextTool.vue';
 
 interface Props {
   modelValue?: string;
@@ -549,392 +497,3 @@ onBeforeUnmount(() => {
   dispose();
 });
 </script>
-
-<style scoped>
-.translator {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  box-sizing: border-box;
-  padding: 0.5rem;
-  color: var(--color-primary, #fff);
-  pointer-events: all;
-}
-
-.translator__workspace {
-  height: 100%;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  gap: 0.75rem;
-}
-
-.translator__pane {
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 0.85rem;
-  background: rgba(8, 10, 18, 0.46);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  overflow: hidden;
-}
-
-.translator__toolbar,
-.translator__toolbar-main,
-.translator__toolbar-actions,
-.translator__footer,
-.translator__meta,
-.translator__toggles,
-.translator__toggle,
-.translator__language-bar {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-.translator__toolbar,
-.translator__footer {
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-}
-
-.translator__footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-  border-bottom: none;
-  background: rgba(5, 7, 12, 0.42);
-}
-
-.translator__toolbar-main {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.18rem;
-}
-
-.translator__toolbar-actions {
-  justify-content: flex-end;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.translator__label {
-  color: var(--color-primary, #fff);
-  font-size: 0.86rem;
-  font-weight: 800;
-  line-height: 1.15;
-}
-
-.translator__config,
-.translator__meta {
-  color: var(--color-secondary, rgba(255, 255, 255, 0.62));
-  font-size: 0.74rem;
-  line-height: 1.3;
-}
-
-.translator__config {
-  max-width: min(48vw, 520px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.translator__status,
-.translator__ghost-button,
-.translator__settings summary,
-.translator__footer button,
-.translator__language-bar button {
-  min-height: 2.05rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0 0.68rem;
-  font-size: 0.76rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.translator__status {
-  gap: 0.38rem;
-  border: 1px solid rgba(120, 120, 120, 0.32);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.translator__status-dot {
-  width: 0.44rem;
-  height: 0.44rem;
-  border-radius: 999px;
-  background: currentColor;
-  box-shadow: 0 0 0.75rem currentColor;
-}
-
-.translator__status--available {
-  background: rgba(34, 197, 94, 0.15);
-  color: rgba(134, 239, 172, 1);
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
-.translator__status--downloadable {
-  background: rgba(59, 130, 246, 0.15);
-  color: rgba(147, 197, 253, 1);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.translator__status--downloading {
-  background: rgba(251, 146, 60, 0.15);
-  color: rgba(254, 215, 170, 1);
-  border-color: rgba(251, 146, 60, 0.3);
-}
-
-.translator__status--unavailable {
-  background: rgba(239, 68, 68, 0.15);
-  color: rgba(252, 165, 165, 1);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.translator__settings {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.translator__settings summary,
-.translator__ghost-button,
-.translator__language-bar button {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--color-primary, #fff);
-  cursor: pointer;
-  list-style: none;
-}
-
-.translator__settings summary::-webkit-details-marker {
-  display: none;
-}
-
-.translator__settings[open] summary {
-  background: rgba(147, 197, 253, 0.14);
-  border-color: rgba(147, 197, 253, 0.3);
-}
-
-.translator__settings-panel {
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  right: 0;
-  z-index: 5;
-  width: min(420px, calc(100vw - 2rem));
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 0.9rem;
-  padding: 0.8rem;
-  background: rgba(12, 14, 24, 0.96);
-  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.46);
-  backdrop-filter: blur(18px);
-}
-
-.translator__toggles {
-  flex-wrap: wrap;
-  gap: 0.55rem;
-}
-
-.translator__toggle {
-  min-height: 2rem;
-  flex: 1 1 150px;
-  gap: 0.48rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.7rem;
-  padding: 0 0.58rem;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-secondary, rgba(255, 255, 255, 0.64));
-  font-size: 0.74rem;
-  font-weight: 750;
-}
-
-.translator__language-bar {
-  gap: 0.65rem;
-  padding: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-  background: rgba(5, 7, 12, 0.26);
-}
-
-.translator__language-bar label {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  color: var(--color-secondary, rgba(255, 255, 255, 0.64));
-  font-size: 0.72rem;
-  font-weight: 750;
-}
-
-.translator__language-bar select,
-.translator__editor textarea {
-  width: 100%;
-  border: 1px solid rgba(120, 120, 120, 0.26);
-  border-radius: 0.75rem;
-  background: rgba(20, 20, 20, 0.45);
-  color: var(--color-primary, #fff);
-  font: inherit;
-  outline: none;
-}
-
-.translator__language-bar select {
-  min-height: 2.3rem;
-  padding: 0 0.65rem;
-}
-
-.translator__language-bar select:focus,
-.translator__editor textarea:focus {
-  border-color: rgba(147, 197, 253, 0.46);
-  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.12);
-}
-
-.translator__editor {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0.75rem;
-}
-
-.translator__editor > textarea {
-  flex: 1;
-  min-height: 260px;
-  resize: none;
-  padding: 0.9rem;
-  line-height: 1.5;
-}
-
-.translator__meta {
-  flex-wrap: wrap;
-  gap: 0.35rem 0.65rem;
-  min-width: 0;
-}
-
-.translator__progress {
-  height: 4px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.translator__progress span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: rgba(147, 197, 253, 0.9);
-  transition: width 0.2s ease;
-}
-
-.translator__error {
-  margin: 0;
-  margin-inline: 0.75rem;
-  border: 1px solid rgba(239, 68, 68, 0.28);
-  border-radius: 0.65rem;
-  padding: 0.6rem 0.7rem;
-  background: rgba(239, 68, 68, 0.12);
-  color: rgba(252, 165, 165, 1);
-  font-size: 0.82rem;
-  line-height: 1.35;
-}
-
-.translator__footer button {
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.09));
-  color: var(--color-primary, #fff);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.translator__footer button:disabled,
-.translator__editor textarea:disabled,
-.translator__language-bar select:disabled,
-.translator__language-bar button:disabled,
-.translator__toggle input:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
-.translator__output {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  padding: 0.85rem;
-  user-select: text;
-}
-
-.translator__output pre,
-.translator__output p {
-  margin: 0;
-  white-space: pre-wrap;
-  color: var(--color-primary, #fff);
-  font: inherit;
-  line-height: 1.5;
-}
-
-.translator__output p {
-  color: var(--color-secondary, rgba(255, 255, 255, 0.62));
-}
-
-.translator__output p:only-child {
-  flex: 1;
-  min-height: 180px;
-  display: grid;
-  place-items: center;
-  padding: 2rem;
-  border: 1px dashed rgba(167, 139, 250, 0.16);
-  border-radius: 0.75rem;
-  background: radial-gradient(circle at center, rgba(124, 92, 228, 0.08), transparent 62%);
-  text-align: center;
-}
-
-@media (max-width: 980px) {
-  .translator__workspace {
-    grid-template-columns: 1fr;
-  }
-
-  .translator__pane--output {
-    min-height: 280px;
-  }
-}
-
-@media (max-width: 700px) {
-  .translator {
-    padding: 0.35rem;
-  }
-
-  .translator__toolbar,
-  .translator__footer,
-  .translator__language-bar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .translator__toolbar-actions {
-    justify-content: space-between;
-  }
-
-  .translator__config {
-    max-width: 100%;
-  }
-
-  .translator__settings {
-    position: static;
-  }
-
-  .translator__settings-panel {
-    right: auto;
-    left: 0.35rem;
-    width: calc(100vw - 1.4rem);
-  }
-
-  .translator__editor > textarea {
-    min-height: 220px;
-  }
-}
-</style>

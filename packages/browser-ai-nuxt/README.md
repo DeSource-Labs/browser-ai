@@ -2,7 +2,7 @@
 
 The Nuxt module for Browser AI Kit: Chrome's on-device Prompt API, Summarizer, Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP—with auto-imports and SSR-safe client components.
 
-[Live examples](https://ai.desource-labs.org/#apis) · [Documentation](https://ai.desource-labs.org/docs) · [GitHub](https://github.com/DeSource-Labs/browser-ai) · [Vue core](https://www.npmjs.com/package/@desource/browser-ai-vue)
+[Live examples](https://ai.desourcelabs.com/#apis) · [Documentation](https://ai.desourcelabs.com/docs) · [GitHub](https://github.com/DeSource-Labs/browser-ai) · [Framework packages](https://github.com/DeSource-Labs/browser-ai/tree/main/packages)
 
 ## What the module solves
 
@@ -103,6 +103,8 @@ Disable `css` when you only use composables or want to load the stylesheet in se
 - language option collections and display-name helpers
 
 All public types from the Vue core are available to Nuxt's generated type system.
+
+The same 11 components and eight capability adapters are available as native React, Svelte, and Angular packages. All adapters share `@desource/browser-ai` lifecycle behavior, common component tests, and common compiled styles; Nuxt adds SSR-safe Vue registration rather than a separate implementation.
 
 Generated prose in the starter components is Markdown-aware by default. Use `:render-markdown="false"` for literal output; Proofreader keeps its correction highlights unless `render-markdown` is enabled.
 

@@ -1,70 +1,103 @@
 # Why Browser AI Kit
 
-Chrome's built-in AI APIs make local inference possible. Browser AI Kit makes it practical inside a framework application.
+Chrome's built-in AI APIs make private, local inference possible. Browser AI Kit makes the surrounding feature maintainable across Vue, React, Svelte, Angular, Nuxt, and plain TypeScript.
 
-## What the native APIs already do well
+## The native APIs are the foundation
 
-The browser provides the model, hardware acceleration, local execution, resource management, and specialized capabilities. Browser AI Kit deliberately does not hide that architecture behind a generic cloud-SDK shape.
+Chrome provides the models, hardware acceleration, downloads, resource management, specialized task APIs, and WebMCP implementation. Browser AI Kit does not conceal that architecture behind a cloud-SDK shape.
 
-Calling the native API directly is a sound choice for a small experiment or a single controlled interaction.
+Calling the native API directly is a sound choice for one small, controlled interaction. The kit earns its place when the integration must handle real lifecycle and product states.
 
-## What production applications still need
+## The first call is short; the feature is not
 
-The first native call is short. The surrounding feature is not:
+A production integration must account for:
 
-- support and eligibility vary by browser, device, profile, and API;
-- models and language packs may need a user-initiated download;
-- sessions consume browser-managed resources and require cleanup;
-- streaming can create excessive framework rendering;
-- long text must be measured, divided safely, and merged meaningfully;
-- Prompt API histories can exceed the context window after many turns;
-- Nuxt must render safely when browser globals do not exist;
-- cancellations, reloads, stale work, and errors must leave the UI consistent.
+- support varying by browser, device, profile, language, options, and model state;
+- user-initiated model and language-pack downloads;
+- session cleanup and interrupted work;
+- streaming without excessive renderer updates;
+- text that exceeds the native input or context quota;
+- Prompt history that overflows after multiple turns;
+- multimodal values and local text-file conversion;
+- structured output validation;
+- server rendering where browser globals do not exist;
+- WebMCP registration lifetime, authorization, origin policy, and visible state.
 
-Those concerns repeat across every product and every built-in AI surface. The kit centralizes them and exposes the resulting state through framework-native primitives.
+Those concerns repeat across every framework. Reimplementing them in each component invites drift.
 
-## A thin wrapper where it should be, an opinionated layer where it must be
+## One core, native framework ergonomics
 
-Simple operations remain recognizable. `prompt()`, `summarize()`, `write()`, `rewrite()`, `translate()`, `detect()`, and `proofread()` map directly to their browser counterparts.
+`@desource/browser-ai` owns browser access and state transitions. Its controllers expose immutable external stores, so framework adapters can subscribe without proxying browser-owned sessions.
 
-The package becomes more opinionated around failure-prone lifecycle work:
+| Package | Native adaptation                                      |
+| ------- | ------------------------------------------------------ |
+| Vue     | refs, computed refs, effect-scope disposal             |
+| React   | hooks and `useSyncExternalStore`                       |
+| Svelte  | stores and explicit teardown                           |
+| Angular | signals, services, standalone components, `DestroyRef` |
+| Nuxt    | client-only registration and auto-imports              |
 
-| Problem                  | Browser AI Kit approach                                                                           |
-| ------------------------ | ------------------------------------------------------------------------------------------------- |
-| Native object reactivity | Store sessions in shallow refs; never deep-proxy browser objects                                  |
-| Stream rendering         | Coalesce visible updates to animation frames                                                      |
-| Long summaries           | Measure native quota, summarize safe chunks, recursively roll up                                  |
-| Long translations        | Split on text boundaries and preserve ordered output                                              |
-| Large chat history       | Measure the real context window, cache summaries, restore recent context, compact before overflow |
-| Saved chats              | Persist messages and summary cache in IndexedDB                                                   |
-| Nuxt rendering           | Register components client-side and keep server evaluation safe                                   |
-| WebMCP lifecycle         | Tie registrations to abort signals and Vue scope disposal                                         |
+The packages share behavior, CSS source, component contracts, and browser scenarios. They do not share a framework runtime. An Angular application never downloads Vue; a React application never downloads Svelte.
 
-## How it compares with common alternatives
+## Thin where possible, opinionated where necessary
 
-There is no equivalent mature framework library covering this full browser surface today. The meaningful choices are native code, a hosted-model SDK, or Browser AI Kit.
+Simple operations remain recognizable: `prompt()`, `summarize()`, `write()`, `rewrite()`, `translate()`, `detect()`, and `proofread()` map directly to their browser counterparts.
 
-| Question                          | Native API                      | Hosted-model SDK        | Browser AI Kit                  |
-| --------------------------------- | ------------------------------- | ----------------------- | ------------------------------- |
-| Where does inference run?         | Chrome                          | Provider infrastructure | Chrome                          |
-| API key required?                 | No                              | Usually                 | No                              |
-| Prompts leave the device?         | No, for the built-in model call | Yes                     | No, for the built-in model call |
-| Works across browsers?            | No                              | Usually                 | No; intentionally Chrome-native |
-| Framework lifecycle included?     | No                              | Varies                  | Yes                             |
-| Local model download UX included? | No                              | Not applicable          | Yes                             |
-| Long-input strategy included?     | No                              | Varies                  | Yes, per API                    |
-| Ready-made UI included?           | No                              | Rarely                  | Yes, optional                   |
+The kit adds policy only around failure-prone work:
 
-A hosted model is not inherently worse; it serves different requirements, including cross-browser reach and larger models. The important distinction is to make the network and privacy boundary explicit.
+| Problem           | Browser AI Kit behavior                                                          |
+| ----------------- | -------------------------------------------------------------------------------- |
+| Availability      | Checks the exact constructor and core options                                    |
+| Downloads         | Exposes progress, aborts, errors, and user-action boundaries                     |
+| Native objects    | Stores them outside deep framework reactivity                                    |
+| Streaming         | Provides incremental streams and accumulated output                              |
+| Long summaries    | Measures chunks and recursively rolls up results                                 |
+| Long translations | Splits on safe boundaries and preserves order                                    |
+| Detection         | Merges confidence weighted by chunk size                                         |
+| Proofreading      | Re-bases correction ranges across chunks                                         |
+| Prompt history    | Measures real context, observes overflow, and supports compaction                |
+| Attachments       | Preserves native image/audio values and locally decodes bounded text files       |
+| Structured output | Passes JSON Schema constraints and parses typed results                          |
+| WebMCP            | Validates schemas, owns registration signals, and reports deployment diagnostics |
+
+## Optional UI, not a design-system dependency
+
+Each UI framework ships the same 11 accessible starter components. They cover unsupported, downloadable, downloading, ready, processing, cancelled, empty, and failed states and expose stable class hooks.
+
+All styles compile from one Sass source into each package's CSS artifact. There is no CSS-in-JS runtime, framework-neutral component renderer, or cross-package stylesheet request. Teams can use the components as delivered, theme the CSS variables, or use only the headless adapters.
+
+## Honest comparison
+
+| Question                               | Native API        | Hosted-model SDK        | Browser AI Kit                  |
+| -------------------------------------- | ----------------- | ----------------------- | ------------------------------- |
+| Inference location                     | Chrome            | Provider infrastructure | Chrome                          |
+| API key                                | No                | Usually                 | No                              |
+| Prompts leave the device for inference | No                | Yes                     | No                              |
+| Cross-browser reach                    | No                | Usually                 | No; intentionally Chrome-native |
+| Framework lifecycle                    | Application-owned | Varies                  | Included                        |
+| Download state UX                      | Application-owned | Not applicable          | Included                        |
+| Long-input strategy                    | Application-owned | Varies                  | Per API                         |
+| Multimodal file conversion             | Application-owned | SDK-specific            | Included for Prompt API         |
+| Accessible starter UI                  | No                | Rarely                  | Optional                        |
+| WebMCP lifecycle                       | Application-owned | Unrelated               | Included                        |
+
+A hosted model is not inherently worse. It fits different requirements: broad browser support, server-side guarantees, larger models, or central governance. The product must make the network and privacy boundary explicit.
 
 ## When not to use the kit
 
-Use something else when:
+Choose another approach when:
 
-- the feature must work in Safari, Firefox, or unsupported Chrome devices;
+- the feature must work in Safari, Firefox, mobile Chrome, or ineligible desktop devices;
 - a server must guarantee one model and version for every user;
 - the task exceeds the local model's capability or context;
-- your organization does not allow experimental browser features;
-- the native call is so small that lifecycle abstraction would add more code than it removes.
+- the organization does not permit experimental browser surfaces;
+- the native call is small enough that lifecycle abstraction adds more code than it removes;
+- WebMCP would hide a consequential action instead of keeping the user in control.
 
-Browser AI Kit is strongest when local privacy, instant repeated use, offline-capable inference, and a polished framework integration matter more than universal browser reach.
+Browser AI Kit is strongest when local privacy, repeated low-latency use, offline-capable inference after download, and consistent framework maintenance matter more than universal reach.
+
+## Evidence, not promises
+
+The repository enforces framework file parity, shared component behavior, at least 95% unit coverage per package, production dependency audit, peer compatibility, built-package validation, framework demo builds, and unsupported Chromium e2e tests. Live tests run separately against an existing Chrome profile with the AI flags enabled; without a CDP endpoint, that opt-in suite is skipped.
+
+Read the dated [API status](api-status.md) before release and the [framework contract](framework-roadmap.md) before changing public behavior.

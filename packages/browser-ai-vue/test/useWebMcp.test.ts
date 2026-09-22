@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { effectScope } from 'vue';
 import {
   createWebMcpFieldAttributes,
   createWebMcpFormAttributes,
@@ -27,7 +28,7 @@ class FakeModelContext extends EventTarget {
     return Array.from(this.tools.values(), (tool) => ({
       annotations: tool.annotations,
       description: tool.description,
-      inputSchema: JSON.stringify(tool.inputSchema ?? {}),
+      inputSchema: tool.inputSchema,
       name: tool.name,
       origin: 'https://example.test',
       title: tool.title,
@@ -35,8 +36,8 @@ class FakeModelContext extends EventTarget {
     }));
   }
 
-  async executeTool(tool: { name: string }, input: string) {
-    return this.tools.get(tool.name)?.execute(JSON.parse(input));
+  async executeTool(tool: { name: string }, input: Record<string, unknown> = {}) {
+    return JSON.stringify(await this.tools.get(tool.name)?.execute(input, { signal: new AbortController().signal }));
   }
 }
 
@@ -70,6 +71,14 @@ describe('useWebMcp', () => {
     });
 
     const webMcp = useWebMcp();
+    expect(webMcp.modelContext.value).toBe(modelContext);
+    expect(webMcp.support.value.supported).toBe(true);
+    expect(webMcp.isSupported.value).toBe(true);
+    expect(webMcp.processing.value).toBe('');
+    expect(webMcp.isProcessing.value).toBe(false);
+    expect(webMcp.discoveredTools.value).toEqual([]);
+    expect(webMcp.error.value).toBeNull();
+    expect(webMcp.lastResult.value).toBeNull();
     const unregister = await webMcp.registerTool({
       name: 'add_numbers',
       description: 'Add two numbers.',
@@ -86,11 +95,35 @@ describe('useWebMcp', () => {
 
     const [tool] = await webMcp.refreshTools();
     expect(webMcp.registeredTools.value).toHaveLength(1);
-    await expect(webMcp.executeTool(tool, { a: 2, b: 3 })).resolves.toBe(5);
+    await expect(webMcp.executeTool(tool, { a: 2, b: 3 })).resolves.toBe('5');
 
     expect(unregister()).toBe(true);
     expect(modelContext.tools.size).toBe(0);
     webMcp.dispose();
+  });
+
+  it('handles missing documents and disposes registrations with a Vue scope', async () => {
+    vi.stubGlobal('document', undefined);
+    const detached = useWebMcp();
+    expect(detached.modelContext.value).toBeNull();
+    detached.dispose();
+
+    vi.stubGlobal('document', { modelContext });
+    const scope = effectScope();
+    let scoped!: ReturnType<typeof useWebMcp>;
+    scope.run(() => {
+      scoped = useWebMcp();
+    });
+    await scoped.registerTools([
+      { name: 'one', description: 'One.', execute: () => 1 },
+      { name: 'two', description: 'Two.', execute: () => 2 }
+    ]);
+    expect(scoped.registeredTools.value).toHaveLength(2);
+    expect(scoped.unregisterTool('one')).toBe(true);
+    expect(scoped.unregisterAll()).toBeUndefined();
+    expect(scoped.registeredTools.value).toEqual([]);
+    scope.stop();
+    expect(modelContext.tools.size).toBe(0);
   });
 
   it('creates declarative form and field attributes', () => {

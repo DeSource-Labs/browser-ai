@@ -24,4 +24,11 @@ describe('renderMarkdown', () => {
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
   });
+
+  it('leaves relative links in the current browsing context and reuses the renderer', () => {
+    const html = renderMarkdown('[Local](/docs)');
+    expect(html).toContain('href="/docs"');
+    expect(html).not.toContain('target="_blank"');
+    expect(renderMarkdown('Second render')).toContain('Second render');
+  });
 });

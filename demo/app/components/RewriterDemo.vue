@@ -2,6 +2,8 @@
   <div class="rewriter-demo">
     <Rewriter
       v-model="source"
+      output-language="en"
+      :expected-input-languages="['en']"
       placeholder="Paste text that should become clearer, shorter, longer, more formal, or more casual..."
       empty-output-message="The rewritten version will appear here. Pick a tone and length in Settings before running it."
     />

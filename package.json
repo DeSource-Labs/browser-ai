@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "author": "DeSource Labs <hello@desource-labs.org>",
-  "homepage": "https://ai.desource-labs.org",
+  "author": "DeSource Labs <hello@desourcelabs.com>",
+  "homepage": "https://ai.desourcelabs.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DeSource-Labs/browser-ai.git"
@@ -14,7 +14,7 @@
     "url": "https://github.com/DeSource-Labs/browser-ai/issues"
   },
   "engines": {
-    "node": ">=20.19.0"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "clean": "pnpm -r --if-present --stream run clean",
@@ -23,46 +23,64 @@
     "dev:demo": "pnpm --filter demo dev",
     "dev:prepare": "pnpm --filter demo prepare:deps",
     "build:demo": "pnpm --filter demo build",
+    "build:framework-demos": "pnpm -r --filter @desource/browser-ai-vue --filter @desource/browser-ai-react --filter @desource/browser-ai-svelte --filter @desource/browser-ai-angular --stream run build:demo",
     "vercel-build": "pnpm build && pnpm dev:prepare && pnpm build:demo",
-    "build:all": "pnpm build && pnpm dev:prepare && pnpm build:demo",
-    "ci": "pnpm format:check && pnpm lint && pnpm build:all && pnpm test:all",
+    "build:all": "pnpm build && pnpm build:framework-demos && pnpm dev:prepare && pnpm build:demo",
+    "ci": "pnpm format:check && pnpm lint && pnpm check:framework-parity && pnpm check:peers && pnpm audit:prod && pnpm build:all && pnpm check:bundles && pnpm typecheck && pnpm validate:packages && pnpm test:unit:coverage && pnpm test:e2e",
+    "check:release": "pnpm run ci && pnpm check:changesets",
+    "check:changesets": "changeset status",
+    "check:framework-parity": "node scripts/check-framework-parity.mjs",
+    "check:peers": "pnpm peers check",
+    "audit:prod": "pnpm audit --prod",
+    "validate:packages": "pnpm -r --filter \"./packages/**\" --if-present --stream run publish:check",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --lockfile-only",
     "changeset:publish": "pnpm build && changeset publish",
     "release": "pnpm changeset:version && pnpm changeset:publish",
     "test:all": "pnpm test:unit && pnpm test:e2e",
     "test:e2e": "pnpm -r --filter \"./packages/**\" --if-present --stream --workspace-concurrency=1 run test:e2e",
+    "test:e2e:live": "pnpm -r --filter @desource/browser-ai-vue --filter @desource/browser-ai-react --filter @desource/browser-ai-svelte --filter @desource/browser-ai-angular --stream --workspace-concurrency=1 run test:e2e:live",
     "test:unit": "pnpm -r --filter \"./packages/**\" --if-present --stream run test:unit",
     "test:unit:coverage": "pnpm -r --filter \"./packages/**\" --if-present --stream run test:unit:coverage",
     "typecheck": "pnpm -r --if-present --stream run typecheck",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"**/*.{svelte,vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\"",
-    "format:check": "prettier --check \"**/*.{svelte,vue,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,md}\"",
+    "format": "prettier --write \"**/*.{svelte,vue,html,css,scss,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,jsonc,yml,yaml,md}\"",
+    "format:check": "prettier --check \"**/*.{svelte,vue,html,css,scss,js,jsx,cjs,mjs,ts,tsx,cts,mts,json,jsonc,yml,yaml,md}\"",
     "lint:staged": "lint-staged",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:bundles": "node scripts/check-bundle-size.mjs"
   },
-  "packageManager": "pnpm@11.10.0",
+  "packageManager": "pnpm@12.4.2",
   "devDependencies": {
-    "@changesets/changelog-github": "^0.7.0",
-    "@changesets/cli": "^2.31.1",
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@types/dom-chromium-ai": "^0.0.17",
-    "@types/node": "^26.1.1",
-    "@typescript-eslint/eslint-plugin": "^8.64.0",
-    "@typescript-eslint/parser": "^8.64.0",
-    "eslint": "^10.7.0",
+    "@types/node": "^26.6.1",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-vue": "^10.9.2",
-    "globals": "^17.7.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-svelte": "^3.23.0",
+    "eslint-plugin-vue": "^10.11.0",
+    "globals": "^17.12.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.1.0",
-    "prettier": "^3.9.5",
+    "jsdom": "^30.1.0",
+    "lint-staged": "^17.5.1",
+    "prettier": "^3.9.7",
     "prettier-plugin-svelte": "^4.1.1",
+    "publint": "^0.3.24",
     "rimraf": "^6.1.3",
-    "typescript": "^5.9.3",
-    "vite": "~8.0.16",
-    "vitest": "^4.1.10",
+    "sass": "^1.104.1",
+    "svelte-eslint-parser": "^1.8.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.0",
+    "vitest": "^4.1.11",
     "vue-eslint-parser": "^10.4.1"
   },
   "lint-staged": {
@@ -70,7 +88,7 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md}": [
+    "*.{css,scss,json,jsonc,yml,yaml,md}": [
       "prettier --write"
     ]
   }

@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/DeSource-Labs/browser-ai/discussions
     about: Ask for help or discuss an idea before turning it into an issue.
   - name: Security report
-    url: mailto:hello@desource-labs.org
+    url: mailto:hello@desourcelabs.com
     about: Report vulnerabilities privately. Do not disclose them in public issues.

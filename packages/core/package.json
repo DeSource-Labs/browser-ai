@@ -1,0 +1,93 @@
+{
+  "name": "@desource/browser-ai",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "description": "Framework-agnostic clients for Chrome built-in AI APIs and WebMCP.",
+  "keywords": [
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp",
+    "on-device-ai"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./workflows": {
+      "types": "./dist/workflows.d.ts",
+      "import": "./dist/workflows.js",
+      "require": "./dist/workflows.js"
+    },
+    "./chats": {
+      "types": "./dist/chats.d.ts",
+      "import": "./dist/chats.js",
+      "require": "./dist/chats.js"
+    },
+    "./conversation": {
+      "types": "./dist/conversation.d.ts",
+      "import": "./dist/conversation.js",
+      "require": "./dist/conversation.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "author": "DeSource Labs <hello@desourcelabs.com>",
+  "license": "MIT",
+  "homepage": "https://ai.desourcelabs.com/docs#core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/DeSource-Labs/browser-ai/issues",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "rimraf dist coverage",
+    "clean:modules": "rimraf node_modules",
+    "build": "pnpm clean && pnpm build:internal",
+    "build:internal": "pnpm build:lib && pnpm build:types",
+    "build:lib": "vite build",
+    "build:types": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage.enabled",
+    "publish:check": "publint && attw --pack . --ignore-rules=cjs-resolves-to-esm"
+  },
+  "dependencies": {
+    "@types/dom-chromium-ai": "^0.0.17",
+    "webmcp-types": "^0.1.9"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5"
+  },
+  "typesVersions": {
+    "*": {
+      "workflows": [
+        "./dist/workflows.d.ts"
+      ],
+      "chats": [
+        "./dist/chats.d.ts"
+      ],
+      "conversation": [
+        "./dist/conversation.d.ts"
+      ]
+    }
+  }
+}

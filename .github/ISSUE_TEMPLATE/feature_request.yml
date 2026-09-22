@@ -1,6 +1,6 @@
 name: Feature request
 description: Propose a framework integration, API improvement, or developer-experience enhancement.
-title: "[Feature]: "
+title: '[Feature]: '
 labels: [enhancement, needs-triage]
 body:
   - type: textarea

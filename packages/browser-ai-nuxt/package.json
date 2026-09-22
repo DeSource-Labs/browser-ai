@@ -1,6 +1,9 @@
 {
   "name": "@desource/browser-ai-nuxt",
   "version": "0.2.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "description": "Zero-config Nuxt module for Chrome built-in AI and WebMCP, powered by Browser AI Kit.",
   "keywords": [
     "nuxt",
@@ -26,9 +29,9 @@
     "CHANGELOG.md",
     "README.md"
   ],
-  "author": "DeSource Labs <hello@desource-labs.org>",
+  "author": "DeSource Labs <hello@desourcelabs.com>",
   "license": "MIT",
-  "homepage": "https://ai.desource-labs.org/docs#nuxt",
+  "homepage": "https://ai.desourcelabs.com/docs#nuxt",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
@@ -48,9 +51,10 @@
     "build:internal": "pnpm dev:prepare && nuxt-module-build build",
     "build": "pnpm clean && pnpm build:internal",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:unit": "sleep 100",
-    "test:unit:coverage": "sleep 100",
-    "test:e2e": "sleep 100"
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:unit:coverage": "vitest run --config vitest.unit.config.ts --coverage.enabled",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "publish:check": "publint && attw --pack . --ignore-rules=cjs-resolves-to-esm"
   },
   "peerDependencies": {
     "nuxt": "^3.17.0 || ^4.0.0",
@@ -60,9 +64,11 @@
     "@desource/browser-ai-vue": "workspace:*"
   },
   "devDependencies": {
-    "@nuxt/kit": "^4.5.0",
-    "@nuxt/module-builder": "^1.0.2",
-    "nuxt": "^4.5.0",
-    "vue": "^3.5.40"
+    "@nuxt/kit": "^4.5.2",
+    "@nuxt/module-builder": "^1.0.3",
+    "@nuxt/test-utils": "^4.3.2",
+    "nuxt": "^4.5.2",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.43"
   }
 }

@@ -1,4 +1,4 @@
-import './styles/writing-tool.css';
+import './style.scss';
 
 export { useAiChats } from './composables/useAiChats';
 
@@ -178,3 +178,5 @@ export type { ChatAttachment, ChatMessage } from './components/ChatHistory.vue';
 export type { ChatSidebarItem } from './components/ChatSidebar.vue';
 
 export type { PromptAttachment } from './components/PromptInput.vue';
+
+export { useWorkflow as useBrowserAiWorkflow } from './composables/useWorkflow';

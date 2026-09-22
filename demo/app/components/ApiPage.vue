@@ -62,10 +62,31 @@
           </article>
         </div>
       </section>
+
+      <section class="api-page__frameworks" aria-labelledby="framework-examples-title">
+        <div class="api-page__usage-intro">
+          <p>One contract, native ergonomics</p>
+          <h2 id="framework-examples-title">Use the same capability in every supported stack.</h2>
+          <span>
+            Vue composables, React hooks, Svelte stores, Angular signals, Nuxt auto-imports, and the TypeScript core all
+            delegate browser behavior to the same tested runtime.
+          </span>
+        </div>
+        <div class="api-page__framework-grid">
+          <article v-for="example in frameworkExamples" :key="example.label">
+            <div class="api-page__example-copy">
+              <p>{{ example.label }}</p>
+              <h3>{{ example.title }}</h3>
+              <span>{{ example.description }}</span>
+            </div>
+            <CodeBlock :label="example.label" :code="example.code" />
+          </article>
+        </div>
+      </section>
     </main>
 
     <footer class="api-page__footer">
-      <span>Browser AI Kit · Vue and Nuxt available now</span>
+      <span>Browser AI Kit · Vue · React · Svelte · Angular · Nuxt · TypeScript</span>
       <NuxtLink to="/#apis">Explore every API <span>→</span></NuxtLink>
     </footer>
   </div>
@@ -73,9 +94,11 @@
 
 <script setup lang="ts">
 import type { ApiGuide } from '#shared/types';
+import { getFrameworkExamples } from '#shared/utils/frameworkExamples';
 
 const props = defineProps<ApiGuide>();
 const router = useRouter();
+const frameworkExamples = computed(() => getFrameworkExamples(props.id));
 
 useSeoMeta({
   title: () => `${props.title} playground · Browser AI Kit`,
@@ -252,6 +275,27 @@ const goBack = () => {
   padding: clamp(1rem, 3vw, 2rem) 0 clamp(4rem, 8vw, 7rem);
 }
 
+.api-page__frameworks {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.34fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  padding: 0 0 clamp(4rem, 8vw, 7rem);
+}
+
+.api-page__framework-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.api-page__framework-grid article {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.35rem);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 1.1rem;
+  background: rgba(7, 10, 20, 0.58);
+}
+
 .api-page__usage-intro {
   align-self: start;
   position: sticky;
@@ -337,6 +381,10 @@ const goBack = () => {
     grid-template-columns: 1fr;
   }
 
+  .api-page__frameworks {
+    grid-template-columns: 1fr;
+  }
+
   .api-page__usage-intro {
     position: static;
   }
@@ -355,6 +403,10 @@ const goBack = () => {
   .api-page {
     width: calc(100% - 1rem);
     padding-top: 0.5rem;
+  }
+
+  .api-page__framework-grid {
+    grid-template-columns: 1fr;
   }
 
   .api-page__back,

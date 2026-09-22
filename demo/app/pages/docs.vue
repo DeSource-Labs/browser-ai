@@ -26,6 +26,7 @@
           <a href="#install">Install</a>
           <a href="#vue">Vue</a>
           <a href="#nuxt">Nuxt</a>
+          <a href="#frameworks">React, Svelte, Angular, core</a>
           <a href="#lifecycle">Browser lifecycle</a>
           <a href="#apis">API directory</a>
           <a href="#webmcp">WebMCP</a>
@@ -42,9 +43,10 @@
           <p class="docs-kicker">Overview</p>
           <h2>Chrome provides the model.<br />The kit provides the product layer.</h2>
           <p>
-            Browser AI Kit wraps Chrome's built-in AI APIs in Vue-native state and optional interfaces. It does not
-            proxy prompts through a server or flatten every capability into one generic abstraction. Prompt, Summarizer,
-            Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP keep their distinct strengths.
+            Browser AI Kit wraps Chrome's built-in AI APIs in framework-native state and optional interfaces. It does
+            not proxy prompts through a server or flatten every capability into one generic abstraction. Prompt,
+            Summarizer, Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP keep their distinct
+            strengths.
           </p>
           <div class="callout callout--note">
             <span aria-hidden="true">i</span>
@@ -66,41 +68,32 @@
           <p class="docs-kicker">Installation</p>
           <h2>Choose the framework boundary.</h2>
           <p>
-            Both packages expose the same runtime behavior. Nuxt adds auto-imports and client-only registration around
-            the Vue core.
+            Six packages expose one runtime behavior contract. Each adapter maps it to native framework lifecycle and
+            state primitives; Nuxt adds client-safe auto-imports around Vue.
           </p>
           <div class="install-grid">
-            <div class="install-card">
+            <div v-for="item in packageItems" :key="item.id" class="install-card">
               <div>
-                <span class="install-card__mark">V</span>
+                <span class="install-card__mark">{{ item.mark }}</span>
                 <span class="status-chip">Available</span>
               </div>
-              <h3>Vue</h3>
-              <p>Components and composables for Vue 3.4.33 or newer.</p>
-              <CodeBlock label="Terminal" code="npm install @desource/browser-ai-vue" />
-              <a :href="DocLinks.vue" target="_blank" rel="noopener noreferrer"> npm package guide → </a>
-            </div>
-            <div class="install-card">
-              <div>
-                <span class="install-card__mark">N</span>
-                <span class="status-chip">Available</span>
-              </div>
-              <h3>Nuxt</h3>
-              <p>Module integration for Nuxt 3.17+ and Nuxt 4.</p>
-              <CodeBlock label="Terminal" code="npm install @desource/browser-ai-nuxt" />
-              <a :href="DocLinks.nuxt" target="_blank" rel="noopener noreferrer"> npm package guide → </a>
+              <h3>{{ item.name }}</h3>
+              <p>{{ item.description }}</p>
+              <CodeBlock label="Terminal" :code="item.command" />
+              <a :href="item.href" target="_blank" rel="noopener noreferrer">Package guide →</a>
             </div>
           </div>
           <div class="roadmap-note">
-            <strong>React, Angular, and Svelte are next.</strong>
-            The public roadmap also includes a framework-neutral TypeScript core. Each adapter will use its framework's
-            native state and lifecycle conventions.
+            <strong>One browser runtime; native framework ergonomics.</strong>
+            The 11 public components and eight headless APIs are checked for parity across Vue, React, Svelte, and
+            Angular. Shared contract tests keep markup and behavior aligned without proxying browser-owned model
+            objects.
             <a
               href="https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md"
               target="_blank"
               rel="noopener noreferrer"
             >
-              View the framework contract →
+              Read the framework contract →
             </a>
           </div>
         </section>
@@ -119,7 +112,7 @@
             Composables expose reactive state and direct operations. A native session lives in a shallow ref, avoiding
             expensive traversal while the rest of your UI updates.
           </p>
-          <CodeBlock label="useLocalPrompt.ts" :code="vueComposableCode" />
+          <CodeBlock label="LocalPrompt.vue" :code="vueComposableCode" />
         </section>
 
         <section id="nuxt" class="doc-section">
@@ -141,6 +134,22 @@
               <span role="cell">{{ item.default }}</span>
               <span role="cell">{{ item.purpose }}</span>
             </div>
+          </div>
+        </section>
+
+        <section id="frameworks" class="doc-section">
+          <p class="docs-kicker">Every framework package</p>
+          <h2>Keep the browser behavior. Choose the state model.</h2>
+          <p>
+            React uses hooks backed by <code>useSyncExternalStore</code>. Svelte exposes readable stores and controller
+            factories. Angular provides signal controllers, standalone components, and <code>BrowserAiService</code>.
+            The core package works in vanilla TypeScript and is the only place browser lifecycle logic is implemented.
+          </p>
+          <div class="api-doc-grid">
+            <CodeBlock label="React" :code="reactCode" />
+            <CodeBlock label="Svelte" :code="svelteCode" />
+            <CodeBlock label="Angular" :code="angularCode" />
+            <CodeBlock label="TypeScript core" :code="coreCode" />
           </div>
         </section>
 
@@ -201,7 +210,7 @@
             Register imperative tools, annotate existing forms, discover tools, execute them manually during
             development, and observe lifecycle changes through one composable.
           </p>
-          <CodeBlock label="useCartTools.ts" :code="webMcpCode" />
+          <CodeBlock label="CartTools.vue" :code="webMcpCode" />
           <div class="callout callout--warning">
             <span aria-hidden="true">!</span>
             <p>
@@ -211,7 +220,7 @@
             </p>
           </div>
           <h3 class="doc-subheading">Production headers</h3>
-          <CodeBlock label="HTTP response" code="Origin-Agent-Cluster: ?1\nPermissions-Policy: tools=(self)" />
+          <CodeBlock label="HTTP response" :code="'Origin-Agent-Cluster: ?1\nPermissions-Policy: tools=(self)'" />
           <p class="docs-caption">
             WebMCP is experimental and currently requires Chrome's testing flag or origin-trial availability.
             <a
@@ -280,7 +289,7 @@ import type { Tool } from '~~/shared/types';
 useSeoMeta({
   title: 'Documentation — Browser AI Kit',
   description:
-    'Install and ship Chrome built-in AI in Vue and Nuxt with production lifecycle, long-input, Prompt API, and WebMCP guidance.'
+    'Install and ship Chrome built-in AI in Vue, Nuxt, React, Svelte, Angular, or TypeScript with production lifecycle, multimodal Prompt API, long-input, and WebMCP guidance.'
 });
 
 useHead({
@@ -296,12 +305,63 @@ const principles = [
   {
     icon: '↯',
     title: 'Fast framework state',
-    body: 'Shallow native sessions and frame-coalesced streaming protect interaction latency.'
+    body: 'Native sessions stay outside deep reactive proxies and are reused across compatible requests.'
   },
   {
     icon: '◇',
     title: 'Composable by default',
     body: 'Use the interface, the headless state, or direct native-shaped operations.'
+  }
+];
+
+const packageItems = [
+  {
+    id: 'typescript',
+    mark: 'TS',
+    name: 'TypeScript core',
+    description: 'Tree-shakeable browser lifecycle and WebMCP controllers.',
+    command: NpmCommands.typescript!,
+    href: DocLinks.typescript
+  },
+  {
+    id: 'vue',
+    mark: 'V',
+    name: 'Vue',
+    description: 'Components and composables for Vue 3.4.33 or newer.',
+    command: NpmCommands.vue!,
+    href: DocLinks.vue
+  },
+  {
+    id: 'nuxt',
+    mark: 'N',
+    name: 'Nuxt',
+    description: 'Auto-imports, client components, and SSR-safe defaults.',
+    command: NpmCommands.nuxt!,
+    href: DocLinks.nuxt
+  },
+  {
+    id: 'react',
+    mark: 'R',
+    name: 'React',
+    description: 'Hooks and accessible components for React 18.3 and 19.',
+    command: NpmCommands.react!,
+    href: DocLinks.react
+  },
+  {
+    id: 'svelte',
+    mark: 'S',
+    name: 'Svelte',
+    description: 'Readable controllers and components for Svelte 5.',
+    command: NpmCommands.svelte!,
+    href: DocLinks.svelte
+  },
+  {
+    id: 'angular',
+    mark: 'A',
+    name: 'Angular',
+    description: 'Signals, services, and standalone components for Angular 22.1.7+.',
+    command: NpmCommands.angular!,
+    href: DocLinks.angular
   }
 ];
 
@@ -317,22 +377,26 @@ import "@desource/browser-ai-vue/assets/lib.css";
   />
 </template>`;
 
-const vueComposableCode = `import { usePromptApi } from "@desource/browser-ai-vue";
+const vueComposableCode = `<script setup lang="ts">
+import { ref } from "vue";
+import { usePromptApi } from "@desource/browser-ai-vue";
 
-const ai = usePromptApi();
+const ai = usePromptApi(); // Disposed with this component's effect scope.
+const answer = ref("");
+async function ask() {
+  await ai.init({
+    expectedInputs: [{ type: "text", languages: ["en"] }],
+    expectedOutputs: [{ type: "text", languages: ["en"] }],
+  });
+  await ai.create(); // User action permits a required model download.
+  answer.value = await ai.prompt("Explain local AI.");
+}
+<${'/'}script>
 
-await ai.init({
-  expectedInputs: [{ type: "text", languages: ["en"] }],
-  expectedOutputs: [{ type: "text", languages: ["en"] }],
-});
-
-// Keep create() in a user action when a download is required.
-await ai.create();
-
-let answer = "";
-for await (const chunk of ai.promptStreaming("Explain local AI.")) {
-  answer += chunk;
-}`;
+<template>
+  <button @click="ask">Explain local AI</button>
+  <p>{{ answer }}</p>
+</template>`;
 
 const nuxtCode = `export default defineNuxtConfig({
   modules: ["@desource/browser-ai-nuxt"],
@@ -342,6 +406,43 @@ const nuxtCode = `export default defineNuxtConfig({
     helpers: true,
   },
 });`;
+
+const reactCode = `import { PromptApi } from "@desource/browser-ai-react";
+import "@desource/browser-ai-react/assets/lib.css";
+
+export function Assistant() {
+  return <PromptApi allowAttachments />;
+}`;
+
+const svelteCode = `<script lang="ts">
+  import { PromptApi } from "@desource/browser-ai-svelte";
+  import "@desource/browser-ai-svelte/assets/lib.css";
+<${'/'}script>
+
+<PromptApi allowAttachments />`;
+
+const angularCode = `import { Component } from "@angular/core";
+import { BrowserAiPromptApiComponent } from "@desource/browser-ai-angular";
+
+@Component({
+  selector: "app-assistant",
+  standalone: true,
+  imports: [BrowserAiPromptApiComponent],
+  template: '<browser-ai-prompt-api />',
+})
+export class AssistantComponent {}`;
+
+const coreCode = `import { createPromptApi } from "@desource/browser-ai";
+
+// Call from a button handler when a model download may be needed.
+async function ask() {
+  const prompt = createPromptApi();
+  try {
+    return await prompt.prompt("Explain local AI in one sentence.");
+  } finally {
+    prompt.dispose();
+  }
+}`;
 
 const longInputCode = `const summarizer = useSummarizer();
 
@@ -354,18 +455,22 @@ const result = await summarizer.summarizeWithDetails(article, {
   context: "Focus on decisions, owners, and unresolved risks.",
 });`;
 
-const webMcpCode = `const webMcp = useWebMcp();
+const webMcpCode = `<script setup lang="ts">
+import { onMounted } from "vue";
+import { useWebMcp } from "@desource/browser-ai-vue";
 
-const unregister = await webMcp.registerTool({
-  name: "get_cart_total",
-  description: "Return the current cart total without changing it.",
-  inputSchema: { type: "object", properties: {} },
-  annotations: { readOnlyHint: true },
-  execute: async () => {
-    await requireSignedInUser();
-    return { total: cart.total, currency: cart.currency };
-  },
-});`;
+const props = defineProps<{ total: number; currency: string }>();
+const webMcp = useWebMcp(); // Unregisters tools with the component scope.
+onMounted(async () => {
+  await webMcp.registerTool({
+    name: "get_cart_total",
+    description: "Return the displayed cart total without changing it.",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    annotations: { readOnlyHint: true },
+    execute: async () => ({ total: props.total, currency: props.currency }),
+  });
+});
+<${'/'}script>`;
 
 const nuxtOptions = [
   { name: 'css', default: 'true', purpose: 'Include the component stylesheet' },
@@ -420,7 +525,7 @@ const faq = [
   {
     question: 'Can I replace the provided interface?',
     answer:
-      'Yes. Components are optional. Every capability has a composable for a completely custom interface, and the composables preserve familiar native operations.'
+      'Yes. Components are optional. Every capability has a Vue composable, React hook, Svelte controller, Angular signal controller or service method, and a framework-neutral core factory.'
   },
   {
     question: "Is it production-ready if Chrome's APIs are experimental?",

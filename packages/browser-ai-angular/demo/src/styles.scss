@@ -1,0 +1,4 @@
+@use '../../../../common/demo/demo.css';
+@use '../../../../common/styles/components' as shared;
+
+@include shared.browser-ai-components;

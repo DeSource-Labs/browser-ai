@@ -1,0 +1,9 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["@types/dom-chromium-ai", "webmcp-types", "vite/client"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../src/**/*", "../../../common/demo/**/*.ts"]
+}

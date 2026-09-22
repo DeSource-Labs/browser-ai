@@ -12,7 +12,7 @@ export type Library = 'vue' | 'nuxt' | 'react' | 'angular' | 'svelte' | 'typescr
 export type LibItem = {
   id: Library;
   name: string;
-  status: 'available' | 'planned';
+  status: 'available';
   description: string;
 };
 
@@ -35,6 +35,7 @@ export type ApiUsageExample = {
 };
 
 export type ApiGuide = {
+  id: Tool;
   title: string;
   description: string;
   eyebrow: string;

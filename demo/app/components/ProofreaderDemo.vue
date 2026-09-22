@@ -2,6 +2,7 @@
   <div class="proofreader-demo">
     <Proofreader
       v-model="source"
+      :expected-input-languages="['en']"
       placeholder="Paste text to correct grammar, spelling, and punctuation with Chrome's local model..."
       empty-output-message="Run Proofread to review the corrected text and each suggested change side by side."
     />

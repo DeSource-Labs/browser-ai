@@ -1,11 +1,10 @@
-import { defineNuxtModule, addImports, addComponent } from '@nuxt/kit';
+import { addComponent, addImports, defineNuxtModule } from '@nuxt/kit';
 import type { NuxtModule } from '@nuxt/schema';
-import { fileURLToPath } from 'url';
 
 export interface ModuleOptions {
-  css?: boolean; // Whether to include default CSS, default true
-  component?: boolean; // Whether to register the component, default true
-  helpers?: boolean; // Whether to register shared helpers and types, default true
+  css?: boolean;
+  component?: boolean;
+  helpers?: boolean;
 }
 
 const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
@@ -21,16 +20,10 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
     helpers: true
   },
   async setup(options, nuxt) {
-    // Configure transpilation
-    const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url));
-    // Transpile runtime
-    nuxt.options.build.transpile.push(runtimeDir);
-
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ types: '@desource/browser-ai-nuxt' });
     });
 
-    // Add imports
     if (options.helpers) {
       // Import helpers from their defining package. Re-exporting them through a
       // Nuxt runtime chunk can create circular Rollup chunks in production apps.
@@ -178,7 +171,7 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
     }
 
     if (options.component) {
-      [
+      const components: ReadonlyArray<readonly [name: string, exportName: string]> = [
         ['PromptApi', 'PromptApi'],
         ['LanguageDetector', 'LanguageDetector'],
         ['MarkdownRenderer', 'MarkdownRenderer'],
@@ -198,7 +191,8 @@ const module: NuxtModule<ModuleOptions> = defineNuxtModule<ModuleOptions>({
         ['BrowserAiChatHistory', 'ChatHistory'],
         ['BrowserAiChatSidebar', 'ChatSidebar'],
         ['BrowserAiPromptInput', 'PromptInput']
-      ].forEach(([name, exportName]) => {
+      ];
+      components.forEach(([name, exportName]) => {
         addComponent({
           name,
           export: exportName,

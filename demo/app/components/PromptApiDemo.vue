@@ -1,8 +1,9 @@
 <template>
   <div class="prompt-demo">
     <PromptApi
+      allow-attachments
       :initial-messages="starterMessages"
-      placeholder="Ask about this project, draft copy, or test structured thinking..."
+      placeholder="Ask a question or attach an image, audio clip, or text file..."
     />
   </div>
 </template>

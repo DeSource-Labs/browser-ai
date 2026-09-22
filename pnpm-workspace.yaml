@@ -2,10 +2,28 @@ packages:
   - packages/*
   - demo
 
+minimumReleaseAge: 1440
+
 overrides:
   glob: ^13.0.6
+  # Babel's TypeScript and JSX syntax plugins have not declared Babel 8 support yet.
+  '@babel/core': ^7.29.0
+  # Patched transitive releases while Nuxt/Nitro upstream ranges lag behind advisories.
+  'brace-expansion@2': ^2.1.4
+  'brace-expansion@5': ^5.0.9
+  'nanoid@3': ^3.3.18
+  'postcss@8': ^8.5.26
+  'tar@7': ^7.5.22
+
+peerDependencyRules:
+  allowedVersions:
+    # module-builder and mkdist share the newer compatible transformer implementation.
+    'mkdist@2.4.1>vue-sfc-transformer': 0.2.5
 
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
+  # Native caches used by Angular's build tooling; approved to keep installs deterministic.
+  lmdb: true
+  msgpackr-extract: true
   sharp: true

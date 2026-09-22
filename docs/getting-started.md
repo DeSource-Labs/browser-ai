@@ -1,28 +1,25 @@
 # Getting started
 
-Browser AI Kit connects Vue and Nuxt applications to AI models built into Chrome. Inference runs on the user's device, so there is no model API key and no Browser AI Kit backend to deploy.
+Browser AI Kit connects framework applications to models and tools exposed by Chrome. Inference runs in the browser, so there is no Browser AI Kit backend or model API key.
 
-The browser remains in control: Chrome decides whether an API is supported, whether the device is eligible, and whether a model or language pack must be downloaded. A polished integration makes those states visible instead of assuming the model is ready.
+Chrome remains in control of eligibility, downloads, languages, storage, and model lifetime. Treat built-in AI as a progressive enhancement and keep the primary workflow usable when an API is absent.
 
 ## Choose a package
 
-For Vue 3:
-
 ```bash
-npm install @desource/browser-ai-vue
+pnpm add @desource/browser-ai          # Plain TypeScript
+pnpm add @desource/browser-ai-vue      # Vue 3
+pnpm add @desource/browser-ai-react    # React 18 or 19
+pnpm add @desource/browser-ai-svelte   # Svelte 5
+pnpm add @desource/browser-ai-angular  # Angular 22.1.7+
+pnpm add @desource/browser-ai-nuxt     # Nuxt 3.17+ or 4
 ```
 
-For Nuxt 3.17+ or Nuxt 4:
+Vue, React, Svelte, and Angular expose the same 11 components and eight headless capability adapters. Nuxt adds auto-imports around the Vue package. The plain package is the shared runtime with no framework dependency.
 
-```bash
-npm install @desource/browser-ai-nuxt
-```
+## Prepare Chrome
 
-The Nuxt package depends on the Vue core and adds auto-imports, client-only components, and optional global CSS.
-
-## Prepare Chrome for development
-
-Use a supported desktop Chrome build. Depending on the API and Chrome channel, enable the corresponding test flags:
+Use a supported desktop Chrome build. Depending on Chrome channel and the API being tested, enable the relevant flags:
 
 - `chrome://flags/#optimization-guide-on-device-model`
 - `chrome://flags/#prompt-api-for-gemini-nano`
@@ -33,106 +30,246 @@ Use a supported desktop Chrome build. Depending on the API and Chrome channel, e
 - `chrome://flags/#proofreader-api-for-gemini-nano`
 - `chrome://flags/#enable-webmcp-testing`
 
-Restart Chrome after changing flags. Flags are a development mechanism, not a deployment strategy; public availability is controlled by each API's Chrome release and eligibility rules.
+Restart Chrome after changing flags. Flags are for local development; production availability is controlled by the API's Chrome rollout and device requirements.
 
-## Start with an interface
+Inspect Gemini Nano state at `chrome://on-device-internals` and translation resources at `chrome://on-device-translation-internals/` where available.
+
+## Start with a component
+
+Import the package stylesheet once when using the starter components.
+
+### Vue
 
 ```vue
 <script setup lang="ts">
-import { Summarizer } from '@desource/browser-ai-vue';
+import { PromptApi } from '@desource/browser-ai-vue';
 import '@desource/browser-ai-vue/assets/lib.css';
 </script>
 
 <template>
-  <Summarizer />
+  <PromptApi />
 </template>
 ```
 
-The starter components already handle supported, downloadable, downloading, ready, processing, cancelled, and failed states. Generated prose supports Markdown—including headings, lists, tables, links, and code blocks—with raw HTML disabled. Their CSS uses custom properties and ordinary selectors, so it can be overridden by an application theme.
+### React
+
+```tsx
+import { PromptApi } from '@desource/browser-ai-react';
+import '@desource/browser-ai-react/assets/lib.css';
+
+export function Assistant() {
+  return <PromptApi />;
+}
+```
+
+### Svelte
+
+```svelte
+<script lang="ts">
+  import { PromptApi } from '@desource/browser-ai-svelte';
+  import '@desource/browser-ai-svelte/assets/lib.css';
+</script>
+
+<PromptApi />
+```
+
+### Angular
+
+```ts
+import { Component } from '@angular/core';
+import { BrowserAiPromptApiComponent } from '@desource/browser-ai-angular';
+import '@desource/browser-ai-angular/assets/lib.css';
+
+@Component({
+  selector: 'app-assistant',
+  imports: [BrowserAiPromptApiComponent],
+  template: '<browser-ai-prompt-api />'
+})
+export class AssistantComponent {}
+```
+
+### Nuxt
+
+```ts
+export default defineNuxtConfig({
+  modules: ['@desource/browser-ai-nuxt']
+});
+```
+
+```vue
+<template>
+  <PromptApi />
+</template>
+```
+
+Nuxt registers browser-dependent components in client mode and auto-imports composables, helpers, and types.
 
 ## Start headless
 
+The core controller uses a subscribable external store:
+
 ```ts
-import { useSummarizer } from '@desource/browser-ai-vue';
+import { createSummarizer } from '@desource/browser-ai';
 
-const summarizer = useSummarizer();
-
-await summarizer.init({
+const summarizer = createSummarizer({
   type: 'key-points',
   format: 'markdown',
   length: 'medium'
 });
 
-// Keep this call in a click/keyboard handler when availability is downloadable.
-await summarizer.create();
-
-const result = await summarizer.summarizeWithDetails(sourceText, {
-  context: 'Prioritize decisions, owners, and deadlines.'
+const unsubscribe = summarizer.state.subscribe(() => {
+  console.log(summarizer.state.getSnapshot());
 });
+
+await summarizer.init();
+await summarizer.create();
+const result = await summarizer.run('Long source text…', { context: 'Prioritize decisions, owners, and deadlines.' });
+
+unsubscribe();
+summarizer.dispose();
 ```
 
-Composables expose reactive state alongside native and production-oriented methods. Keep application policy—when to show the feature, what users may submit, and what fallback to use—in your own product layer.
+Framework adapters expose the same operations with native reactive state:
 
-## Design the availability experience
+| Capability        | Vue / React           | Svelte                   | Angular                         |
+| ----------------- | --------------------- | ------------------------ | ------------------------------- |
+| Prompt API        | `usePromptApi`        | `createPromptApi`        | `createAngularPromptApi`        |
+| Summarizer        | `useSummarizer`       | `createSummarizer`       | `createAngularSummarizer`       |
+| Writer            | `useWriter`           | `createWriter`           | `createAngularWriter`           |
+| Rewriter          | `useRewriter`         | `createRewriter`         | `createAngularRewriter`         |
+| Translator        | `useTranslator`       | `createTranslator`       | `createAngularTranslator`       |
+| Language Detector | `useLanguageDetector` | `createLanguageDetector` | `createAngularLanguageDetector` |
+| Proofreader       | `useProofreader`      | `createProofreader`      | `createAngularProofreader`      |
+| WebMCP            | `useWebMcp`           | `createWebMcp`           | `createAngularWebMcp`           |
 
-Chrome APIs generally report one of four states:
+## Design the availability flow
 
-| State          | Product response                                                            |
-| -------------- | --------------------------------------------------------------------------- |
-| `available`    | Enable the feature; `create()` prepares a session                           |
-| `downloadable` | Explain the local download and show a user-initiated action                 |
-| `downloading`  | Keep the page open, show progress, and allow cancellation where appropriate |
-| `unavailable`  | Keep the core workflow usable without local AI                              |
+Call `init()` or `requestAvailability()` with the exact options used for creation.
 
-Never start a download on page load. Chrome requires meaningful user activation, and an unexpected model download is poor product behavior even where the browser permits it.
+| State          | Product response                                           |
+| -------------- | ---------------------------------------------------------- |
+| `available`    | Enable the feature; create or reuse a session              |
+| `downloadable` | Explain the local download and expose a real user action   |
+| `downloading`  | Show progress, keep the page open, and expose cancellation |
+| `unavailable`  | Preserve the manual workflow and explain requirements      |
 
-## Plan a fallback
+Do not start downloads on page load. Chrome requires meaningful user activation for downloadable resources, and an unexpected model download is poor product behavior.
 
-Built-in AI may be unavailable because of Chrome version, channel, operating system, device capabilities, storage, language, region, enterprise policy, or model state. Pick a fallback before launch:
+## Multimodal and file input
 
-1. keep the manual workflow and hide the enhancement;
-2. let the user retry after explaining requirements;
-3. offer a hosted model only with clear disclosure and consent that data will leave the device.
-
-Do not silently turn a local feature into a cloud feature. Privacy is part of the product contract.
-
-## Understand model ownership
-
-Chrome installs, updates, stores, and removes its models. Browser AI Kit cannot list model files, force installation, pin a version, or prevent eviction.
-
-- Gemini Nano state can be inspected in `chrome://on-device-internals`.
-- Translation resources can be inspected in `chrome://on-device-translation-internals/` in supported builds.
-- A `downloadable` state can return after Chrome removes resources under storage pressure or policy changes.
-
-Applications should always start from `availability()` rather than remembering an earlier result.
-
-## Nuxt and SSR
-
-The Nuxt module registers browser-dependent components in client mode and auto-imports composables:
+Prompt API accepts text, image, and audio messages. `promptWithAttachments()` and `promptStreamingWithAttachments()` build the browser message and ensure the session declares every required modality:
 
 ```ts
-export default defineNuxtConfig({
-  modules: ['@desource/browser-ai-nuxt'],
-  browserAi: {
-    css: true,
-    component: true,
-    helpers: true
-  }
-});
+const result = await prompt.promptWithAttachments(
+  'Use the notes and recording to describe the image.',
+  [
+    { name: 'notes.md', value: notesFile },
+    { name: 'reference.png', value: imageFile },
+    { name: 'meeting.webm', value: audioBlob }
+  ],
+  { maxTextFileBytes: 2 * 1024 * 1024 }
+);
 ```
 
-Native sessions are never serialized into Nuxt payloads. If you use the Vue package directly in another SSR framework, create sessions after mounting and destroy them when the owning scope ends.
+Supported attachment values:
+
+- text: string, `Blob`/`File`, `ArrayBuffer`, or an array-buffer view;
+- image: any visual source accepted by Chrome's Prompt API, including image/canvas/video sources, `ImageBitmap`, `ImageData`, `VideoFrame`, and `Blob`;
+- audio: `AudioBuffer`, `ArrayBuffer`, array-buffer view, or `Blob`.
+
+Set `kind` explicitly when a value has no useful MIME type. Text files are decoded on-device and rejected above the configured byte limit. The library does not upload attachments.
+
+## Structured Prompt output
+
+```ts
+const classification = await prompt.promptJson<{ sentiment: 'positive' | 'negative' }>(
+  'Classify: The update fixed everything.',
+  {
+    type: 'object',
+    properties: {
+      sentiment: { type: 'string', enum: ['positive', 'negative'] }
+    },
+    required: ['sentiment'],
+    additionalProperties: false
+  }
+);
+```
+
+This uses Chrome's `responseConstraint` option and parses the constrained response. For lower-level control, pass `responseConstraint` and `omitResponseConstraintInput` to `prompt()` or `promptStreaming()` directly.
+
+## WebMCP
+
+Register tools only while their UI and authorization context exist:
+
+```ts
+const unregister = await webMcp.registerTool({
+  name: 'create_project_task',
+  description: 'Create a task in the project currently shown to the user.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string', minLength: 1 },
+      priority: { type: 'string', enum: ['low', 'normal', 'high'] }
+    },
+    required: ['title'],
+    additionalProperties: false
+  },
+  execute: async ({ title, priority = 'normal' }, { signal }) => {
+    signal.throwIfAborted();
+    return taskStore.add(String(title), String(priority));
+  }
+});
+
+unregister();
+```
+
+For a normal form, use `createWebMcpFormAttributes()` and `createWebMcpFieldAttributes(description)`. The human interface must remain functional without WebMCP. See the [WebMCP guide](webmcp.md).
+
+## Unsupported browsers and fallback policy
+
+Built-in AI may be absent because of browser version, operating system, device capability, storage, language, region, managed policy, or resource state.
+
+Choose the fallback before launch:
+
+1. keep the manual workflow and hide or disable the enhancement;
+2. explain requirements and let the user retry;
+3. offer a hosted model only after clearly disclosing that data will leave the device.
+
+Never silently change a local feature into a cloud request.
+
+## Test with and without Chrome AI
+
+The repository has two Playwright projects for each framework demo.
+
+The default suite launches ordinary bundled Chromium. It has no built-in AI globals and verifies all components render useful unsupported states:
+
+```bash
+pnpm test:e2e
+```
+
+The live suite attaches to the user's already-running Chrome, reusing enabled flags and downloaded models:
+
+1. Open `chrome://inspect/#remote-debugging` in that Chrome.
+2. Enable **Allow remote debugging for this browser instance**.
+3. Run:
+
+```bash
+BROWSER_AI_CDP_ENDPOINT=http://127.0.0.1:9222 pnpm test:e2e:live
+```
+
+The tests use Playwright's Chromium-only `connectOverCDP()` path with `noDefaults: true`. They open and close their own page, never close the user's browser, and do not trigger resources reported as `downloadable`. Set `BROWSER_AI_ALLOW_MODEL_DOWNLOADS=1` only for an intentional test-time download. Do not expose the DevTools endpoint outside the local machine.
 
 ## Production checklist
 
-- Feature-detect the API and render a useful unsupported state.
-- Begin downloads only from a real user action.
-- Keep an `AbortController` path for long work.
-- Treat generated output as untrusted content. The built-in Markdown renderer disables raw HTML; custom renderers must provide equivalent sanitization.
-- Avoid placing secrets in prompts or client-side tool definitions.
-- Test model-ready and first-download paths separately.
-- Test context limits and long content with representative data.
-- Verify keyboard use, mobile layout, reduced motion, and screen-reader labels.
-- For WebMCP, add deployment headers and enforce authorization inside each tool.
+- Feature-detect the exact API and options.
+- Begin downloads only from a genuine user action.
+- Preserve an abort path for creation, streaming, and long work.
+- Dispose sessions and WebMCP registrations with their owning scope.
+- Treat generated output and tool output as untrusted content.
+- Keep secrets out of client prompts and tool definitions.
+- Test first-download, ready, unsupported, abort, and quota-exhaustion paths.
+- Test keyboard use, mobile layout, reduced motion, and screen-reader names.
+- Deploy WebMCP origin-isolation and Permissions-Policy headers.
+- Re-check authorization and validate input inside every WebMCP executor.
 
-Continue with the [interactive documentation](https://ai.desource-labs.org/docs), the [verified API status](api-status.md), or the [WebMCP guide](webmcp.md).
+Continue with the [API status](api-status.md), [framework contract](framework-roadmap.md), and [WebMCP guide](webmcp.md).

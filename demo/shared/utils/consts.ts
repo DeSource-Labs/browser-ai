@@ -1,7 +1,7 @@
 import type { SocialMediaItem, SocialMediaKey, LibItem, Library, ToolItem } from '../types';
 
 export const socialMedia = {
-  email: 'mailto:hello@desource-labs.org',
+  email: 'mailto:hello@desourcelabs.com',
   github: 'https://github.com/DeSource-Labs',
   linkedin: 'https://www.linkedin.com/company/desource-labs',
   telegram: 'https://t.me/desource_labs'
@@ -51,52 +51,60 @@ export const LibItems: LibItem[] = [
   {
     id: 'react',
     name: 'React',
-    status: 'planned',
-    description: 'Hooks and accessible headless or ready-made components.'
+    status: 'available',
+    description: 'Hooks, external-store state, and accessible components.'
   },
   {
     id: 'angular',
     name: 'Angular',
-    status: 'planned',
+    status: 'available',
     description: 'Signals, injectable services, and standalone components.'
   },
   {
     id: 'svelte',
     name: 'Svelte',
-    status: 'planned',
-    description: 'Stores, actions, and native lifecycle integration.'
+    status: 'available',
+    description: 'Readable stores, controllers, and Svelte components.'
   },
   {
     id: 'typescript',
     name: 'TypeScript core',
-    status: 'planned',
-    description: 'Framework-neutral lifecycle and text-processing utilities.'
+    status: 'available',
+    description: 'Tree-shakeable lifecycle, text, attachment, and WebMCP controllers.'
   }
 ];
 
 export const NpmLinks: Partial<Record<Library, string>> = {
+  typescript: 'https://www.npmjs.com/package/@desource/browser-ai',
   vue: 'https://www.npmjs.com/package/@desource/browser-ai-vue',
-  nuxt: 'https://www.npmjs.com/package/@desource/browser-ai-nuxt'
+  nuxt: 'https://www.npmjs.com/package/@desource/browser-ai-nuxt',
+  react: 'https://www.npmjs.com/package/@desource/browser-ai-react',
+  svelte: 'https://www.npmjs.com/package/@desource/browser-ai-svelte',
+  angular: 'https://www.npmjs.com/package/@desource/browser-ai-angular'
 };
 
 export const NpmCommands: Partial<Record<Library, string>> = {
+  typescript: 'npm install @desource/browser-ai',
   vue: 'npm install @desource/browser-ai-vue',
-  nuxt: 'npm install @desource/browser-ai-nuxt'
+  nuxt: 'npm install @desource/browser-ai-nuxt',
+  react: 'npm install @desource/browser-ai-react',
+  svelte: 'npm install @desource/browser-ai-svelte',
+  angular: 'npm install @desource/browser-ai-angular'
 };
 
 export const DocLinks: Record<Library, string> = {
   vue: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-vue',
   nuxt: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-nuxt',
-  react: 'https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#react',
-  angular: 'https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#angular',
-  svelte: 'https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#svelte',
-  typescript: 'https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md#typescript-core'
+  react: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-react',
+  angular: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-angular',
+  svelte: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-svelte',
+  typescript: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/core'
 };
 
 export const Links = {
   coreRepo: 'https://github.com/DeSource-Labs/browser-ai',
   packages: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages',
-  org: 'https://desource-labs.org',
+  org: 'https://desourcelabs.com',
   contributing: 'https://github.com/DeSource-Labs/browser-ai/blob/main/CONTRIBUTING.md'
 };
 

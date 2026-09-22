@@ -18,7 +18,7 @@ Harassment, discrimination, threats, personal attacks, sexualized attention, tro
 
 ## Reporting
 
-Report conduct concerns privately to [hello@desource-labs.org](mailto:hello@desource-labs.org). Maintainers will review reports promptly, protect the reporter's privacy where possible, and take proportionate action. Do not use public issues for sensitive conduct reports.
+Report conduct concerns privately to [hello@desourcelabs.com](mailto:hello@desourcelabs.com). Maintainers will review reports promptly, protect the reporter's privacy where possible, and take proportionate action. Do not use public issues for sensitive conduct reports.
 
 Maintainers may edit, remove, or reject contributions and may temporarily or permanently ban participation when behavior harms the community.
 

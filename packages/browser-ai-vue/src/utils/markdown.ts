@@ -1,6 +1,6 @@
-import MarkdownIt from 'markdown-it';
+import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
 
-let markdown: MarkdownIt | undefined;
+let markdown: MarkdownItInstance | undefined;
 
 const createMarkdownRenderer = () => {
   const renderer = new MarkdownIt({
@@ -16,7 +16,7 @@ const createMarkdownRenderer = () => {
 
   renderer.renderer.rules.link_open = (tokens, index, options, environment, tokenRenderer) => {
     const token = tokens[index];
-    const href = token?.attrGet('href') ?? '';
+    const href = String(token?.attrGet('href') ?? '');
 
     if (/^https?:\/\//i.test(href)) {
       token?.attrSet('target', '_blank');

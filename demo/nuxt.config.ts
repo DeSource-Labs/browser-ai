@@ -9,14 +9,17 @@ const config: NuxtConfig = {
   css: ['~/assets/styles/index.css'],
   modules: ['@desource/browser-ai-nuxt'],
 
+  vite: {
+    build: {
+      // Preserve WebMCP's experimental :tool-*-active pseudo-classes.
+      cssMinify: 'esbuild'
+    }
+  },
+
   browserAi: {
     // The directory page does not render library components. Each API route
     // imports the component stylesheet lazily with its own route chunk.
     css: false
-  },
-
-  site: {
-    url: meta.url
   },
 
   nitro: {
@@ -84,17 +87,7 @@ const config: NuxtConfig = {
         },
         { rel: 'manifest', href: '/site.webmanifest' }
       ],
-      // TODO: Add analytics later
-      // script: [
-      //   {
-      //     key: 'plausible',
-      //     defer: true,
-      //     src: 'https://plausible.io/js/script.js',
-      //     'data-domain': meta.domain,
-      //   },
-      // ],
       meta: [
-        // TODO: Uncomment fields below when ready
         {
           name: 'description',
           content: meta.description
