@@ -292,6 +292,24 @@ function hasBaselineData(baselineByPath: Map<string, number | null>): boolean {
   return Array.from(baselineByPath.values()).some((value) => typeof value === 'number');
 }
 
+function safeOutputPath(filePath: string): string {
+  const baseDir = fs.realpathSync(process.cwd());
+  const absolutePath = path.resolve(filePath);
+  // Resolve the parent because a new report file does not have a real path yet.
+  const parentDir = fs.realpathSync(path.dirname(absolutePath));
+  const resolved = path.join(parentDir, path.basename(absolutePath));
+  const relative = path.relative(baseDir, resolved);
+
+  if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    throw new Error(`Coverage report path '${filePath}' is outside the allowed directory.`);
+  }
+  if (fs.lstatSync(resolved, { throwIfNoEntry: false })?.isSymbolicLink()) {
+    throw new Error(`Coverage report path '${filePath}' must not be a symbolic link.`);
+  }
+
+  return resolved;
+}
+
 function getReportConfig(): ReportConfig {
   return {
     outputPath: process.env.REPORT_FILE || process.argv[2] || DEFAULT_OUTPUT,
@@ -420,7 +438,16 @@ async function main(): Promise<void> {
     lines.push('Unit coverage workflow failed. See logs in the run link above.');
   }
 
-  fs.writeFileSync(config.outputPath, `${lines.join('\n')}\n`, 'utf8');
+  // Refuse a final symlink even if it appears after path validation.
+  const output = fs.openSync(
+    safeOutputPath(config.outputPath),
+    fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW
+  );
+  try {
+    fs.writeFileSync(output, `${lines.join('\n')}\n`, 'utf8');
+  } finally {
+    fs.closeSync(output);
+  }
 }
 
 await main();
