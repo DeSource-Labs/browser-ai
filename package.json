@@ -23,7 +23,7 @@
     "dev:demo": "pnpm --filter demo dev",
     "dev:prepare": "pnpm --filter demo prepare:deps",
     "build:demo": "pnpm --filter demo build",
-    "build:fixtures": "pnpm --filter \"./packages/**\" --parallel run build:demo",
+    "build:fixtures": "pnpm --filter \"./packages/**\" --if-present --parallel run build:demo",
     "vercel-build": "pnpm build && pnpm dev:prepare && pnpm build:demo",
     "build:all": "pnpm build && pnpm dev:prepare && pnpm build:demo && pnpm build:fixtures",
     "check:release": "pnpm format:check && pnpm lint && pnpm check:framework-parity && pnpm check:peers && pnpm audit:prod && pnpm build:all && pnpm check:bundles && pnpm typecheck && pnpm validate:packages && pnpm test:unit:coverage",
