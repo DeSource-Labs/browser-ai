@@ -11,8 +11,12 @@ body:
     attributes:
       label: Package or surface
       options:
+        - '@desource/browser-ai'
         - '@desource/browser-ai-vue'
         - '@desource/browser-ai-nuxt'
+        - '@desource/browser-ai-react'
+        - '@desource/browser-ai-svelte'
+        - '@desource/browser-ai-angular'
         - Demo and documentation site
         - Repository tooling
     validations:
