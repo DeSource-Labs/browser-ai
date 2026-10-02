@@ -4,7 +4,7 @@ WebMCP lets a page publish structured tools that a compatible browser agent can 
 
 Keep the interface usable by people, with the same application authorization and confirmation steps for tool calls.
 
-WebMCP is available in an origin trial from Chrome 149 and through the local testing flag at `chrome://flags/#enable-webmcp-testing`. See [Chrome's setup instructions](https://developer.chrome.com/docs/ai/webmcp). This library uses `document.modelContext` and the `webmcp-types@0.1.9` contract. Application calls accept object input and return the native response. The wrapper selects the native input format before execution to support Chrome builds on either side of the current API transition.
+WebMCP is available in an origin trial from Chrome 149 and through the local testing flag at `chrome://flags/#enable-webmcp-testing`. See [Chrome's setup instructions](https://developer.chrome.com/docs/ai/webmcp). This library uses `document.modelContext` and the `webmcp-types` contract. Application calls accept object input and return the native response. The wrapper selects the native input format before execution to support Chrome builds on either side of the current API transition.
 
 ## A useful tool: create a visible task
 
@@ -89,7 +89,7 @@ Unknown keywords and types are ignored. This is not a complete JSON Schema draft
 
 ## Tool annotations
 
-All four `webmcp-types@0.1.9` annotations pass through to Chrome:
+All `webmcp-types` annotations pass through to Chrome:
 
 | Annotation             | Use it when                                                                               |
 | ---------------------- | ----------------------------------------------------------------------------------------- |
@@ -129,7 +129,7 @@ if (tool) {
 }
 ```
 
-The public wrapper accepts an object or JSON text, parses text once, requires an object, and validates the discovered schema. It then selects the native input format described below. Although `webmcp-types@0.1.9` declares a string, the native IDL also permits `null` after navigation. The wrapper exposes `Promise<string | null>` and preserves that result. Parse a response as JSON only when the tool's output contract specifies JSON.
+The public wrapper accepts an object or JSON text, parses text once, requires an object, and validates the discovered schema. It then selects the native input format described below. Although `webmcp-types` declares a string, the native IDL also permits `null` after navigation. The wrapper exposes `Promise<string | null>` and preserves that result. Parse a response as JSON only when the tool's output contract specifies JSON.
 
 Discovery and registration start `toolchange` observation. Later changes refresh discovery with the most recent `fromOrigins` filter. An execution that changes the registered tool set still keeps its own result and execution status.
 

@@ -1,6 +1,6 @@
 # Browser API status
 
-Last source and documentation review: **September 19, 2026**. The repository targets `@types/dom-chromium-ai@0.0.17` and `webmcp-types@0.1.9`. The release checks passed. Native AI inference and imperative and declarative WebMCP execution were verified in the user’s enabled Chrome; the verification record below distinguishes those results from unit coverage and browser-dependent skips.
+Last source and documentation review: **September 19, 2026**. The repository targets `@types/dom-chromium-ai@0.0.17` and `webmcp-types@0.1.10`. The release checks passed. Native AI inference and imperative and declarative WebMCP execution were verified in the user’s enabled Chrome; the verification record below distinguishes those results from unit coverage and browser-dependent skips.
 
 Package types describe callable interfaces. Runtime support still depends on the browser, device, model resources, requested options, and document permissions. Check the exact API and options used by the application.
 
@@ -62,7 +62,7 @@ The lightweight controllers expose the native operations. The optional workflow 
 
 Each API is feature-detected independently. Applications select a workflow when its long-input policy fits their product; native controllers leave that policy to the caller.
 
-## WebMCP 0.1.9
+## WebMCP 0.1.10
 
 The wrapper targets `document.modelContext` and the current [WebMCP type definitions](https://github.com/webmachinelearning/webmcp-types/blob/main/index.d.ts):
 
@@ -71,7 +71,7 @@ The wrapper targets `document.modelContext` and the current [WebMCP type definit
 - `executeTool(tool, inputObject, { signal })`, preserving the native execution result;
 - `readOnlyHint`, `untrustedContentHint`, `consequentialHint`, and `debugging` annotations.
 
-Application calls accept an object or JSON text. The wrapper parses text, validates the object, and selects the installed browser's input format before execution. New application calls should pass objects. Native execution returns a string, or `null` when it triggers navigation; guard that case before parsing a JSON result. The nullable result appears in both the inspected [Chrome 153 IDL](https://chromium.googlesource.com/chromium/src/+/792bf6722e73a45aa9e47c163b9901bdc17f3230/third_party/blink/renderer/core/script_tools/model_context.idl) and the [current imperative documentation](https://developer.chrome.com/docs/ai/webmcp/imperative-api#execute-tool), even though `webmcp-types` 0.1.9 declares a string-only return.
+Application calls accept an object or JSON text. The wrapper parses text, validates the object, and selects the installed browser's input format before execution. New application calls should pass objects. Native execution returns a string, or `null` when it triggers navigation; guard that case before parsing a JSON result. The nullable result appears in both the inspected [Chrome 153 IDL](https://chromium.googlesource.com/chromium/src/+/792bf6722e73a45aa9e47c163b9901bdc17f3230/third_party/blink/renderer/core/script_tools/model_context.idl) and the [current imperative documentation](https://developer.chrome.com/docs/ai/webmcp/imperative-api#execute-tool), even though `webmcp-types` declares a string-only return.
 
 ```ts
 const resultText = await webMcp.executeTool(tool, { title: 'Review the itinerary' });

@@ -228,7 +228,7 @@ export function ProjectTools() {
 }
 ```
 
-The hook also disposes all remaining registrations on unmount. The wrapper targets `webmcp-types` 0.1.9. `executeTool(tool, inputObject)` accepts an object and returns `Promise<string | null>`; `null` can mean the tool navigated. Schema literals infer callback inputs, and annotations include `consequentialHint` and `debugging`.
+The hook also disposes all remaining registrations on unmount. `executeTool(tool, inputObject)` accepts an object and returns `Promise<string | null>`; `null` can mean the tool navigated. Schema literals infer callback inputs, and annotations include `consequentialHint` and `debugging`.
 
 Modern Chromium receives object input. Older implementations that require JSON text are detected before the call using the native method signature. Use the execution option `inputFormat: 'object'` or `inputFormat: 'json'` when a wrapper changes that signature. Each tool is invoked once; compatibility handling never retries a potentially state-changing operation.
 
