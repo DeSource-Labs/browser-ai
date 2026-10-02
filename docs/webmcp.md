@@ -2,11 +2,15 @@
 
 WebMCP lets a page publish structured tools that a compatible browser agent can discover and execute. The tool runs in the page, so the user sees the same state change as a manual interaction.
 
+For example, an agent can search your catalog, add an item to a shortlist, or fill a form using the actions your app already provides. Try the [workspace demo](https://ai.desourcelabs.com/webmcp) to see the results in the visible interface.
+
+WebMCP is separate from on-device AI inference. It exposes application tools; the agent and the tool implementation determine where data is processed or sent.
+
 Keep the interface usable by people, with the same application authorization and confirmation steps for tool calls.
 
-WebMCP is available in an origin trial from Chrome 149 and through the local testing flag at `chrome://flags/#enable-webmcp-testing`. See [Chrome's setup instructions](https://developer.chrome.com/docs/ai/webmcp). This library uses `document.modelContext` and the `webmcp-types` contract. Application calls accept object input and return the native response. The wrapper selects the native input format before execution to support Chrome builds on either side of the current API transition.
+For current availability, origin trials, and local testing flags, see [Chrome's setup instructions](https://developer.chrome.com/docs/ai/webmcp). This library uses `document.modelContext` and the `webmcp-types` contract. Application calls accept object input and return the native response. The wrapper selects the native input format before execution to support Chrome builds on either side of the current API transition.
 
-## A useful tool: create a visible task
+## Register a task tool
 
 The package-local framework demos share this workflow:
 
@@ -135,9 +139,7 @@ Discovery and registration start `toolchange` observation. Later changes refresh
 
 ### Chrome input-format transition
 
-Chromium changed `executeTool()` from a required JSON-text argument to an optional object argument on September 10, 2026. The change also made discovered `inputSchema` values objects. See the [Chromium change](https://chromium.googlesource.com/chromium/src/+/23cad65d6e6613d62542b27651c28925acfaffb2) and [specification discussion](https://github.com/webmachinelearning/webmcp/pull/246).
-
-An updated browser can still be on a release branch with the earlier interface. The inspected Chrome **153.0.8010.53 arm64** build uses revision `792bf6722e73a45aa9e47c163b9901bdc17f3230`; its [exact IDL](https://chromium.googlesource.com/chromium/src/+/792bf6722e73a45aa9e47c163b9901bdc17f3230/third_party/blink/renderer/core/script_tools/model_context.idl) requires JSON text and exposes schemas as strings.
+Browser versions can expose either the earlier JSON-text execution signature or the newer object-input signature. Application code can pass objects to the wrapper in both cases.
 
 The library checks the native method's declared argument count before making one call:
 
@@ -301,7 +303,7 @@ BROWSER_AI_CDP_ENDPOINT=http://127.0.0.1:9222 pnpm test:e2e:live
 
 The contract registers the framework demo's imperative task tool, discovers it, executes it, and checks that the task appears in the visible list. The live project is skipped without a CDP endpoint. Direct native calls in a test harness must use the installed browser's signature; wrapper calls use the detection described above. Reusing the profile avoids downloading another model.
 
-The September 19 verification passed native registration, discovery, execution, and cleanup in Chrome 153, plus declarative form execution with `agentInvoked` and `respondWith`. This browser uses the earlier JSON-input signature; modern object input has unit coverage. See the [API verification record](./api-status.md#verification-record) for the exact browser and remaining live-test limits.
+Run browser tests locally; GitHub workflows run unit coverage without launching browsers. See [Contributing](../CONTRIBUTING.md#local-browser-tests) for setup and optional resource downloads.
 
 ## Official references
 

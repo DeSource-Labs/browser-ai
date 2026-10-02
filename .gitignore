@@ -12,3 +12,4 @@ node_modules
 *.tsbuildinfo
 playwright-report
 test-results
+coverage-pr-report.md
