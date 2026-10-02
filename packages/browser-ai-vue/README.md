@@ -1,8 +1,17 @@
 # @desource/browser-ai-vue
 
-Vue components and composables for Chrome's on-device Prompt API, Summarizer, Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP. Existing composable signatures bind shared core engines to Vue refs and effect-scope cleanup.
+[![Vue](https://img.shields.io/npm/v/@desource/browser-ai-vue?color=blue&logo=vue.js)](https://www.npmjs.com/package/@desource/browser-ai-vue)
+[![Coverage](https://codecov.io/gh/DeSource-Labs/browser-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/DeSource-Labs/browser-ai)
+[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=DeSource-Labs_browser-ai&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DeSource-Labs_browser-ai)
+[![Ask Context7](https://img.shields.io/badge/Ask%20Context7-059669.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHZpZXdCb3g9IjAgMCAyOCAyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDBINEMxLjc5MDg2IDAgMCAxLjc5MDg2IDAgNFYyNEMwIDI2LjIwOTEgMS43OTA4NiAyOCA0IDI4SDI0QzI2LjIwOTEgMjggMjggMjYuMjA5MSAyOCAyNFY0QzI4IDEuNzkwODYgMjYuMjA5MSAwIDI0IDBaIiBmaWxsPSIjRjdGMkU4IiBmaWxsLW9wYWNpdHk9IjAuNjUiLz4KPHBhdGggZD0iTTEwLjYgMTUuMjk5MkMxMC42IDE3LjQ5OTIgOS43MDAwNSAxOS4zOTkyIDguMjAwMDUgMjEuMDk5MkgxMS42VjIyLjc5OTJINi4zMDAwNVYyMS4xOTkyQzguMDAwMDUgMTkuMzk5MiA4LjYwMDA1IDE3Ljg5OTIgOC42MDAwNSAxNS4yOTkySDEwLjZaTTE3LjQgMTUuMjk5MkMxNy40IDE3LjQ5OTIgMTguMyAxOS4zOTkyIDE5LjggMjEuMDk5MkgxNi40VjIyLjc5OTJIMjEuN1YyMS4xOTkyQzIwIDE5LjM5OTIgMTkuNCAxNy44OTkyIDE5LjQgMTUuMjk5MkgxNy40Wk0xMC42IDEyLjY5OTJDMTAuNiAxMC40OTkyIDkuNzAwMDUgOC41OTkyMiA4LjIwMDA1IDYuODk5MjJIMTEuNlY1LjE5OTIySDYuMzAwMDVWNi43OTkyMkM4LjAwMDA1IDguNTk5MjIgOC42MDAwNSAxMC4wOTkyIDguNjAwMDUgMTIuNjk5MkgxMC42Wk0xNy40IDEyLjY5OTJDMTcuNCAxMC40OTkyIDE4LjMgOC41OTkyMiAxOS44IDYuODk5MjJIMTYuNFY1LjE5OTIySDIxLjdWNi43OTkyMkMyMCA4LjU5OTIyIDE5LjQgMTAuMDk5MiAxOS40IDEyLjY5OTJIMTcuNFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=)](https://context7.com/desource-labs/browser-ai)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-1c398e.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0iI2NiY2JjYiIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0xOC42IDIwLjFxMS0uNiAyLjItLjZoLjNhNCA0IDAgMCAxIDIgLjdoLjJ2LjFsMSAxaC4xdi4yaC4xbC4xLjF2LjFxLjcgMSAuNyAyLjN0LS42IDIuMnYuMWwtLjIuMkE0IDQgMCAwIDEgMjMgMjhoLS4ydi4xbC0xLjQuNGgtLjVxLTEuMyAwLTIuMy0uNWwtNC4xLTIuNC04LjMgNC44djkuNWw4LjMgNC44IDguMi00LjhWMzVxMC0xLjIuNi0yLjJ2LS4xbC4yLS4yYTQgNCAwIDAgMSAxLjctMS41bDEuMy0uNGguNnExLjMgMCAyLjMuNmw0LjIgMi4zIDguMi00Ljd2LTkuNmwtOC4yLTQuNy00LjIgMi4zcS0xIC42LTIuMi42aC0uM2E0IDQgMCAwIDEtMi0uNmwtLjItLjEtMS0xaC0uMXYtLjJoLS4xbC0uMS0uMnYtLjFxLS43LTEtLjctMi4yVjguMmwtOC4yLTQuNy04LjMgNC43djkuNWw4LjIgNC44eiIvPjwvc3ZnPg==)](https://deepwiki.com/DeSource-Labs/browser-ai)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/DeSource-Labs/browser-ai/blob/main/LICENSE)
 
-[Live examples](https://ai.desourcelabs.com/#apis) · [Documentation](https://ai.desourcelabs.com/docs) · [GitHub](https://github.com/DeSource-Labs/browser-ai) · [Chrome API status](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md)
+[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [GitHub](https://github.com/DeSource-Labs/browser-ai)
+
+Vue components and composables for private, on-device AI. Add chat, summaries, writing assistance, translation, and proofreading with Chrome's local models. Model processing stays on the user's device, with no inference server or API key to configure.
+
+Start with a complete component or build your own interface with reactive state and automatic scope cleanup. WebMCP support also lets browser agents call tools exposed by your app.
 
 ## Why use it?
 
@@ -27,7 +36,9 @@ npm install @desource/browser-ai-vue
 
 Vue 3.4.33 or newer is required.
 
-## Start with a component
+Run your app in Chrome on HTTPS or localhost. Some APIs need a model or language-pack download before first use; components guide the user through it. See [Browser setup](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md#try-it-in-your-browser).
+
+## Quick start
 
 ```vue
 <script setup lang="ts">
@@ -42,7 +53,7 @@ import '@desource/browser-ai-vue/assets/lib.css';
 
 The component includes persisted chats, streaming Markdown responses, file attachments supported by the browser, model-download UX, stop controls, history navigation, and automatic recovery when a conversation outgrows the current context window. Raw HTML in model output is escaped rather than executed.
 
-The same 11 component names are available in React, Svelte, and Angular: `PromptApi`, `Summarizer`, `Writer`, `Rewriter`, `Translator`, `LanguageDetector`, `Proofreader`, `MarkdownRenderer`, `PromptInput`, `ChatHistory`, and `ChatSidebar`. Vue includes a richer persisted-chat interface; the other framework components have smaller interfaces and can use the shared engines through their optional bindings.
+The same 11 component names are available in React, Svelte, and Angular: `PromptApi`, `Summarizer`, `Writer`, `Rewriter`, `Translator`, `LanguageDetector`, `Proofreader`, `MarkdownRenderer`, `PromptInput`, `ChatHistory`, and `ChatSidebar`. All four frameworks use the shared conversation engine for saved chats, attachments, streaming, and context restoration.
 
 Generated prose is rendered as Markdown by default. Set `:render-markdown="false"` when a product needs literal text. Proofreader keeps correction-range highlighting by default; opt into Markdown with `render-markdown` when the corrected document is the primary output.
 
@@ -60,7 +71,7 @@ defineProps<{ answer: string }>();
 </template>
 ```
 
-## Build your own interface
+## Build a custom interface
 
 The AI composables are thin adapters over `@desource/browser-ai/workflows`; `useWebMcp` uses the native core controller. A shallow snapshot and computed refs keep native browser sessions unproxied. Existing names such as `usePromptApi()` and `useSummarizer()` retain their workflow method signatures.
 
@@ -98,7 +109,7 @@ Call `create()` from a genuine click or key action when `availability` is `downl
 For direct imports, add the core package to the application's dependencies:
 
 ```bash
-pnpm add @desource/browser-ai
+npm install @desource/browser-ai
 ```
 
 The native root entry exposes small controllers. Optional `@desource/browser-ai/workflows` exports the advanced engines used by Vue's AI composables. They can also run without Vue:
@@ -120,7 +131,7 @@ try {
 }
 ```
 
-`useBrowserAiWorkflow(controller)` can bind a custom disposable core controller to Vue's scope and refs. Root native controllers and advanced workflow engines expose different method signatures; choose the entry that provides the required behavior. See the [framework contract](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md).
+`useBrowserAiWorkflow(controller)` can bind a custom disposable core controller to Vue's scope and refs. Root native controllers and advanced workflow engines expose different method signatures; choose the entry that provides the required behavior. See the [core guide](https://github.com/DeSource-Labs/browser-ai/blob/main/packages/core/README.md#state-and-ownership).
 
 ## Structured output
 
@@ -253,17 +264,17 @@ WebMCP is experimental. Your production document needs origin isolation and `Per
 
 Result, option, progress, availability, message, correction, and tool types are exported from the package root.
 
-## Browser support and fallbacks
+## Browser support
 
 Built-in AI availability depends on the Chrome version, channel, operating system, hardware, storage, language, region, profile policy, and model state. The package reports `available`, `downloadable`, `downloading`, or `unavailable`; it cannot make an ineligible browser eligible.
 
-Plan an honest fallback: hide the feature, preserve manual editing, or route to a server feature only after obtaining the user's consent. Never imply that an unavailable local model is still private if you switch to a hosted service.
+Keep manual editing available when local AI cannot run. If your app offers a hosted fallback, explain that prompts will leave the device and let the user choose it.
 
-Experimental status differs by API. The [API status record](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) tracks browser verification separately from type support. See the [getting-started guide](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/getting-started.md) for flags and download behavior.
+See [Browser support](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md) for availability, downloads, and links to current Chrome requirements.
 
-## Native API or this package?
+## Development
 
-Use the native API directly for a small one-off call when you want to own every state. Use this package when you need a maintained framework boundary, streaming UI, long-input behavior, persistence, SSR safety, or consistent support across several built-in AI surfaces.
+See [Contributing](https://github.com/DeSource-Labs/browser-ai/blob/main/CONTRIBUTING.md) for setup, checks, and local browser tests. Package releases are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

@@ -1,18 +1,29 @@
 # @desource/browser-ai-svelte
 
-Svelte 5 stores and components for Chrome built-in AI and WebMCP. Native store factories bind the shared core controllers to Svelte. Optional workflow factories add long-input handling, batches, and chat restoration. Application owners dispose headless controllers when their scope ends.
+[![Svelte](https://img.shields.io/npm/v/@desource/browser-ai-svelte?color=blue&logo=svelte)](https://www.npmjs.com/package/@desource/browser-ai-svelte)
+[![Coverage](https://codecov.io/gh/DeSource-Labs/browser-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/DeSource-Labs/browser-ai)
+[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=DeSource-Labs_browser-ai&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DeSource-Labs_browser-ai)
+[![Ask Context7](https://img.shields.io/badge/Ask%20Context7-059669.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHZpZXdCb3g9IjAgMCAyOCAyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDBINEMxLjc5MDg2IDAgMCAxLjc5MDg2IDAgNFYyNEMwIDI2LjIwOTEgMS43OTA4NiAyOCA0IDI4SDI0QzI2LjIwOTEgMjggMjggMjYuMjA5MSAyOCAyNFY0QzI4IDEuNzkwODYgMjYuMjA5MSAwIDI0IDBaIiBmaWxsPSIjRjdGMkU4IiBmaWxsLW9wYWNpdHk9IjAuNjUiLz4KPHBhdGggZD0iTTEwLjYgMTUuMjk5MkMxMC42IDE3LjQ5OTIgOS43MDAwNSAxOS4zOTkyIDguMjAwMDUgMjEuMDk5MkgxMS42VjIyLjc5OTJINi4zMDAwNVYyMS4xOTkyQzguMDAwMDUgMTkuMzk5MiA4LjYwMDA1IDE3Ljg5OTIgOC42MDAwNSAxNS4yOTkySDEwLjZaTTE3LjQgMTUuMjk5MkMxNy40IDE3LjQ5OTIgMTguMyAxOS4zOTkyIDE5LjggMjEuMDk5MkgxNi40VjIyLjc5OTJIMjEuN1YyMS4xOTkyQzIwIDE5LjM5OTIgMTkuNCAxNy44OTkyIDE5LjQgMTUuMjk5MkgxNy40Wk0xMC42IDEyLjY5OTJDMTAuNiAxMC40OTkyIDkuNzAwMDUgOC41OTkyMiA4LjIwMDA1IDYuODk5MjJIMTEuNlY1LjE5OTIySDYuMzAwMDVWNi43OTkyMkM4LjAwMDA1IDguNTk5MjIgOC42MDAwNSAxMC4wOTkyIDguNjAwMDUgMTIuNjk5MkgxMC42Wk0xNy40IDEyLjY5OTJDMTcuNCAxMC40OTkyIDE4LjMgOC41OTkyMiAxOS44IDYuODk5MjJIMTYuNFY1LjE5OTIySDIxLjdWNi43OTkyMkMyMCA4LjU5OTIyIDE5LjQgMTAuMDk5MiAxOS40IDEyLjY5OTJIMTcuNFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=)](https://context7.com/desource-labs/browser-ai)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-1c398e.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0iI2NiY2JjYiIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0xOC42IDIwLjFxMS0uNiAyLjItLjZoLjNhNCA0IDAgMCAxIDIgLjdoLjJ2LjFsMSAxaC4xdi4yaC4xbC4xLjF2LjFxLjcgMSAuNyAyLjN0LS42IDIuMnYuMWwtLjIuMkE0IDQgMCAwIDEgMjMgMjhoLS4ydi4xbC0xLjQuNGgtLjVxLTEuMyAwLTIuMy0uNWwtNC4xLTIuNC04LjMgNC44djkuNWw4LjMgNC44IDguMi00LjhWMzVxMC0xLjIuNi0yLjJ2LS4xbC4yLS4yYTQgNCAwIDAgMSAxLjctMS41bDEuMy0uNGguNnExLjMgMCAyLjMuNmw0LjIgMi4zIDguMi00Ljd2LTkuNmwtOC4yLTQuNy00LjIgMi4zcS0xIC42LTIuMi42aC0uM2E0IDQgMCAwIDEtMi0uNmwtLjItLjEtMS0xaC0uMXYtLjJoLS4xbC0uMS0uMnYtLjFxLS43LTEtLjctMi4yVjguMmwtOC4yLTQuNy04LjMgNC43djkuNWw4LjIgNC44eiIvPjwvc3ZnPg==)](https://deepwiki.com/DeSource-Labs/browser-ai)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/DeSource-Labs/browser-ai/blob/main/LICENSE)
 
-[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [API status](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) · [GitHub](https://github.com/DeSource-Labs/browser-ai)
+[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [GitHub](https://github.com/DeSource-Labs/browser-ai)
+
+Svelte 5 stores and components for private, on-device AI. Add chat, summaries, writing tools, and translation powered by Chrome's local models. Model processing stays on the user's device, with no inference server or API key to set up.
+
+Drop in a component or subscribe to a controller's readable store for your own UI. Optional workflows add long-input handling, batches, and chat restoration. WebMCP controllers also let browser agents use tools from your app.
 
 ## Install
 
 ```bash
-pnpm add @desource/browser-ai-svelte
+npm install @desource/browser-ai-svelte
 ```
 
 Svelte 5.29 or newer is supported.
 
-## Use the chat component
+Run your app in Chrome on HTTPS or localhost. Some APIs need a model or language-pack download before first use; components guide the user through it. See [Browser setup](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md#try-it-in-your-browser).
+
+## Quick start
 
 ```svelte
 <script lang="ts">
@@ -104,7 +115,9 @@ Call session creation from the user's click or key action when Chrome reports `d
 
 ## Store factories
 
-All eight browser surfaces have dedicated files:
+Native store factories bind shared core controllers to Svelte. Call `dispose()` when the owning component is destroyed; unsubscribing from a store only removes that subscriber.
+
+The package exports eight store factories:
 
 - `createPromptApi`
 - `createSummarizer`
@@ -183,7 +196,7 @@ The workflow entry also exports `createSvelteAiChats(chatKey)` for persistence w
 </script>
 ```
 
-Call `load()` to read saved chats, `send(text, attachments)` to generate a turn, and `configure(options)` to update conversation settings. Subscribe through `chatState`; the owner must still call `dispose()` when its scope ends. See the [framework contract](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md) for import and lifecycle boundaries.
+Call `load()` to read saved chats, `send(text, attachments)` to generate a turn, and `configure(options)` to update conversation settings. Subscribe through `chatState`; the owner must still call `dispose()` when its scope ends. See the [core guide](https://github.com/DeSource-Labs/browser-ai/blob/main/packages/core/README.md#state-and-ownership) for import and lifecycle boundaries.
 
 ## Attachments and structured output
 
@@ -249,9 +262,15 @@ Modern Chromium receives object input. Older implementations that require JSON t
 
 Validate tool input and re-check authorization inside every executor. Production pages require origin isolation and a `tools` Permissions Policy; see the [WebMCP guide](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md).
 
-## Unsupported browsers
+## Browser support
 
-Availability and experimental status differ by API and depend on Chrome version, platform, device, language, storage, policy, and downloaded resources. The [dated API record](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) separates type support from verified browser behavior. Components remain interactive when browser globals are absent. Keep a manual path and disclose any hosted fallback before data leaves the device.
+Availability and experimental status differ by API and depend on Chrome version, platform, device, language, storage, policy, and downloaded resources. Components remain interactive when browser globals are absent. Keep a manual path and disclose any hosted fallback before data leaves the device.
+
+See [Browser support](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md) for availability and downloads.
+
+## Development
+
+See [Contributing](https://github.com/DeSource-Labs/browser-ai/blob/main/CONTRIBUTING.md) for setup, checks, and local browser tests. Package releases are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

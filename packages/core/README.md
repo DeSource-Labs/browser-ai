@@ -1,18 +1,29 @@
 # @desource/browser-ai
 
-Framework-independent controllers for Chrome built-in AI and WebMCP. Use the native entry for session operations, streaming, attachments, and observable state. Optional entries add measured long-input handling, batches, saved chats, and context restoration.
+[![Core](https://img.shields.io/npm/v/@desource/browser-ai?color=blue&logo=typescript)](https://www.npmjs.com/package/@desource/browser-ai)
+[![Coverage](https://codecov.io/gh/DeSource-Labs/browser-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/DeSource-Labs/browser-ai)
+[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=DeSource-Labs_browser-ai&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DeSource-Labs_browser-ai)
+[![Ask Context7](https://img.shields.io/badge/Ask%20Context7-059669.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHZpZXdCb3g9IjAgMCAyOCAyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDBINEMxLjc5MDg2IDAgMCAxLjc5MDg2IDAgNFYyNEMwIDI2LjIwOTEgMS43OTA4NiAyOCA0IDI4SDI0QzI2LjIwOTEgMjggMjggMjYuMjA5MSAyOCAyNFY0QzI4IDEuNzkwODYgMjYuMjA5MSAwIDI0IDBaIiBmaWxsPSIjRjdGMkU4IiBmaWxsLW9wYWNpdHk9IjAuNjUiLz4KPHBhdGggZD0iTTEwLjYgMTUuMjk5MkMxMC42IDE3LjQ5OTIgOS43MDAwNSAxOS4zOTkyIDguMjAwMDUgMjEuMDk5MkgxMS42VjIyLjc5OTJINi4zMDAwNVYyMS4xOTkyQzguMDAwMDUgMTkuMzk5MiA4LjYwMDA1IDE3Ljg5OTIgOC42MDAwNSAxNS4yOTkySDEwLjZaTTE3LjQgMTUuMjk5MkMxNy40IDE3LjQ5OTIgMTguMyAxOS4zOTkyIDE5LjggMjEuMDk5MkgxNi40VjIyLjc5OTJIMjEuN1YyMS4xOTkyQzIwIDE5LjM5OTIgMTkuNCAxNy44OTkyIDE5LjQgMTUuMjk5MkgxNy40Wk0xMC42IDEyLjY5OTJDMTAuNiAxMC40OTkyIDkuNzAwMDUgOC41OTkyMiA4LjIwMDA1IDYuODk5MjJIMTEuNlY1LjE5OTIySDYuMzAwMDVWNi43OTkyMkM4LjAwMDA1IDguNTk5MjIgOC42MDAwNSAxMC4wOTkyIDguNjAwMDUgMTIuNjk5MkgxMC42Wk0xNy40IDEyLjY5OTJDMTcuNCAxMC40OTkyIDE4LjMgOC41OTkyMiAxOS44IDYuODk5MjJIMTYuNFY1LjE5OTIySDIxLjdWNi43OTkyMkMyMCA4LjU5OTIyIDE5LjQgMTAuMDk5MiAxOS40IDEyLjY5OTJIMTcuNFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=)](https://context7.com/desource-labs/browser-ai)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-1c398e.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0iI2NiY2JjYiIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0xOC42IDIwLjFxMS0uNiAyLjItLjZoLjNhNCA0IDAgMCAxIDIgLjdoLjJ2LjFsMSAxaC4xdi4yaC4xbC4xLjF2LjFxLjcgMSAuNyAyLjN0LS42IDIuMnYuMWwtLjIuMkE0IDQgMCAwIDEgMjMgMjhoLS4ydi4xbC0xLjQuNGgtLjVxLTEuMyAwLTIuMy0uNWwtNC4xLTIuNC04LjMgNC44djkuNWw4LjMgNC44IDguMi00LjhWMzVxMC0xLjIuNi0yLjJ2LS4xbC4yLS4yYTQgNCAwIDAgMSAxLjctMS41bDEuMy0uNGguNnExLjMgMCAyLjMuNmw0LjIgMi4zIDguMi00Ljd2LTkuNmwtOC4yLTQuNy00LjIgMi4zcS0xIC42LTIuMi42aC0uM2E0IDQgMCAwIDEtMi0uNmwtLjItLjEtMS0xaC0uMXYtLjJoLS4xbC0uMS0uMnYtLjFxLS43LTEtLjctMi4yVjguMmwtOC4yLTQuNy04LjMgNC43djkuNWw4LjIgNC44eiIvPjwvc3ZnPg==)](https://deepwiki.com/DeSource-Labs/browser-ai)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/DeSource-Labs/browser-ai/blob/main/LICENSE)
 
-This package also supplies the shared engines used by Browser AI Kit's Vue, React, Svelte, Angular, and Nuxt integrations.
+[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [GitHub](https://github.com/DeSource-Labs/browser-ai)
 
-[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [API status](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) · [Framework contract](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md)
+Private, on-device AI for plain TypeScript and custom interfaces. Use Chrome's local models for chat, summaries, writing, translation, language detection, and proofreading. Prompts are processed on the user's device, with no inference server or API key to configure.
+
+Controllers expose availability, download progress, streaming, cancellation, and observable state. Optional entries add long-input handling, saved chats, and context restoration. WebMCP controllers register application tools for browser agents.
+
+This is also the shared core behind the Vue, React, Svelte, Angular, and Nuxt packages. It has no framework runtime dependency.
 
 ## Install
 
 ```bash
-pnpm add @desource/browser-ai
+npm install @desource/browser-ai
 ```
 
-The package adds no framework runtime, inference server, account, or API key. Native model objects remain outside proxy-based reactivity.
+Run model operations in Chrome on HTTPS or localhost. First use may require a model or language-pack download from a user action. See [Browser setup](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md#try-it-in-your-browser).
+
+### Choose an entry
 
 | Entry                               | Use it for                                             |
 | ----------------------------------- | ------------------------------------------------------ |
@@ -23,7 +34,7 @@ The package adds no framework runtime, inference server, account, or API key. Na
 
 The native entry does not import the optional engines. Vue, React, Svelte, and Angular text components use the shared advanced workflows; their chat components use the conversation engine. Headless applications can choose these behaviors independently.
 
-## Native Prompt controller
+## Quick start
 
 ```ts
 import { createPromptApi } from '@desource/browser-ai';
@@ -45,14 +56,34 @@ async function ask(message: string) {
   return prompt.prompt(message);
 }
 
-// When the owning screen or application closes:
-unsubscribe();
-prompt.dispose();
+// Connect this cleanup to the owning screen or application's lifecycle.
+function disposeAssistant() {
+  unsubscribe();
+  prompt.dispose();
+}
 ```
 
 `prompt()` creates a session when needed and reuses it for subsequent calls. Creation that needs model resources must run from a genuine user action. Read availability and show download progress in the application.
 
 The controller also exposes `promptStreaming()`, `promptStreamingToText()`, `append()`, `clone()`, `measureContextUsage()`, `promptJson()`, attachment methods, and interruption. Its snapshot includes context usage and context overflow counts. Destroy cloned sessions when finished; they belong to the caller.
+
+### Structured output
+
+Use `promptJson()` when your interface needs data it can render directly:
+
+```ts
+const classification = await prompt.promptJson<{ sentiment: 'positive' | 'negative' }>(
+  'Classify: The update fixed everything.',
+  {
+    type: 'object',
+    properties: { sentiment: { type: 'string', enum: ['positive', 'negative'] } },
+    required: ['sentiment'],
+    additionalProperties: false
+  }
+);
+```
+
+This passes a JSON Schema through Chrome's `responseConstraint` option and parses the response. The TypeScript type describes the expected result; validate any application-specific rules before using it for an action.
 
 ## Attachments and text files
 
@@ -270,7 +301,7 @@ Registration infers callback inputs from literal schemas. Callers pass input obj
 
 Pass an object to `executeTool()`. Parse a non-null response only if the tool's output contract specifies JSON.
 
-The inspected **Chrome 153.0.8010.53 arm64** build still requires JSON text at its native execution boundary. The wrapper detects the earlier required-input signature from `executeTool.length` and serializes the validated object once. The current optional-object signature receives the object directly. Selection happens before the native call, with no automatic retry: a tool may already have changed application state when an error arrives.
+The wrapper chooses object or JSON input from the native method signature before execution. It never retries a tool call automatically, because a failed call may already have changed application state.
 
 Wrapped native implementations can override detection explicitly:
 
@@ -279,7 +310,7 @@ Wrapped native implementations can override detection explicitly:
 await webMcp.executeTool(tool, { title: 'Review local AI demo' }, { inputFormat: 'json' });
 ```
 
-Use `inputFormat: 'object'` for a wrapper around the current native signature. The [browser verification record](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md#verification-record) links the IDL at the inspected Chrome revision.
+Use `inputFormat: 'object'` for a wrapper around the current native signature. See [input-format compatibility](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md#chrome-input-format-transition).
 
 The controller owns registration signals and listeners, observes `toolchange`, supports `exposedTo` and `fromOrigins`, and exposes support diagnostics. Tool annotations include `readOnlyHint`, `untrustedContentHint`, `consequentialHint`, and `debugging`. The bundled JSON Schema validator covers a subset of keywords; use `validateInput` for additional validation and enforce application permissions inside the executor. Annotations do not enforce those rules.
 
@@ -296,15 +327,28 @@ const unsubscribe = client.state.subscribe(onChange);
 
 Controllers publish new snapshots as state changes. Treat snapshots as read-only; native model instances remain unproxied. Unsubscribing removes a listener. Call `dispose()` separately when the controller's owner ends.
 
-Framework packages bind state through Vue refs, React `useSyncExternalStore`, Svelte stores, or Angular signals. The [framework contract](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md) documents their optional workflow imports, ownership, and component differences.
+Framework packages bind state through Vue refs, React `useSyncExternalStore`, Svelte stores, or Angular signals. See the [framework package guides](https://github.com/DeSource-Labs/browser-ai#packages) for their bindings and lifecycle methods.
 
-Representative single-adapter consumer bundles currently measure about 3.30–6.07 KB minified gzip across the framework packages, with framework runtimes external. This range covers selected headless imports, not component UI, styles, or every combination of optional engines. `pnpm check:bundles` measures the built candidate and rejects unrelated UI or Markdown code in those imports.
+| Framework  | Custom controller binding                        | Cleanup                                                      |
+| ---------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| Vue / Nuxt | `useBrowserAiWorkflow(controller)`               | Disposed with the active Vue effect scope                    |
+| React      | `useBrowserAiWorkflow(factory)`                  | Disposed by the hook's effect cleanup                        |
+| Svelte     | `createBrowserAiWorkflow(controller)`            | The owner calls `dispose()`, usually from `onDestroy`        |
+| Angular    | `createAngularWorkflow(controller, destroyRef?)` | Pass `DestroyRef` for automatic cleanup, or call `dispose()` |
 
-## Browser support and verification
+React and Svelte export workflow bindings from their `/workflows` entries; Angular uses `/controllers`. Constructor arguments initialize a controller. Use its configuration, creation, or operation methods to change options after creation.
+
+The framework packages share core behavior and CSS source without pulling in one another's UI runtimes. Headless imports do not need component styles, and the native core entry does not load the optional workflow or conversation engines.
+
+## Browser support
 
 Support and experimental status differ by API. Feature detection and availability checks use the requested options; server imports do not create browser sessions. Model creation may require user activation, downloaded resources, an eligible device, and document permissions. WebMCP requires its current browser rollout or local testing flag.
 
-The [dated API status](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) records reviewed types, official sources, and live verification. Release checks and manual native Chrome tests passed; the record identifies untested browser paths and downloadable Translator resources. Type-package versions and unit tests do not establish which models or modalities a particular browser exposes.
+See [Browser support](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md) for availability, downloads, and links to current Chrome requirements.
+
+## Development
+
+See [Contributing](https://github.com/DeSource-Labs/browser-ai/blob/main/CONTRIBUTING.md) for setup, checks, and local browser tests. Package releases are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
