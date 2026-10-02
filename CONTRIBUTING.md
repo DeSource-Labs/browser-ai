@@ -30,15 +30,15 @@ pnpm --filter @desource/browser-ai-angular dev
 
 ## Repository structure
 
-| Path                                             | Contents                                                            |
-| ------------------------------------------------ | ------------------------------------------------------------------- |
-| `packages/core`                                  | Native controllers, workflows, chat storage, and conversation state |
-| `packages/browser-ai-{vue,react,svelte,angular}` | Framework bindings, components, tests, and demos                    |
-| `packages/browser-ai-nuxt`                       | Nuxt registration and auto-imports                                  |
-| `common/styles`                                  | Shared component styles                                             |
-| `common/tests`                                   | Shared component contracts and browser scenarios                    |
-| `demo`                                           | Nuxt documentation site and interactive examples                    |
-| `scripts`                                        | Coverage, release, parity, bundle, and type-update tooling          |
+| Path                                  | Contents                                                            |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `packages/core`                       | Native controllers, workflows, chat storage, and conversation state |
+| `packages/{vue,react,svelte,angular}` | Framework bindings, components, tests, and demos                    |
+| `packages/nuxt`                       | Nuxt registration and auto-imports                                  |
+| `common/styles`                       | Shared component styles                                             |
+| `common/tests`                        | Shared component contracts and browser scenarios                    |
+| `demo`                                | Nuxt documentation site and interactive examples                    |
+| `scripts`                             | Coverage, release, parity, bundle, and type-update tooling          |
 
 Keep browser and model behavior in core. Framework packages own rendering, subscriptions, and lifecycle cleanup. Shared component behavior belongs in `common/tests/unit`; framework-specific tests belong in the owning package. Preserve server imports without browser globals and dispose sessions with their owner.
 

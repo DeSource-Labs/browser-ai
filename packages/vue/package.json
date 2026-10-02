@@ -21,7 +21,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
-    "directory": "packages/browser-ai-vue"
+    "directory": "packages/vue"
   },
   "bugs": {
     "url": "https://github.com/DeSource-Labs/browser-ai/issues"

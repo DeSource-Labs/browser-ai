@@ -40,14 +40,14 @@ A direct native call can be enough for a small experiment. The kit is useful whe
 
 Choose the package for your framework. Each package guide includes components, custom interfaces, and API examples. Add the core package directly when importing its helpers or optional entries.
 
-| Package                                                     | Integration                                                  |
-| ----------------------------------------------------------- | ------------------------------------------------------------ |
-| [@desource/browser-ai](packages/core)                       | Framework-independent controllers and external stores        |
-| [@desource/browser-ai-vue](packages/browser-ai-vue)         | Vue 3 components and composables                             |
-| [@desource/browser-ai-react](packages/browser-ai-react)     | React hooks and components                                   |
-| [@desource/browser-ai-svelte](packages/browser-ai-svelte)   | Svelte 5 stores and components                               |
-| [@desource/browser-ai-angular](packages/browser-ai-angular) | Angular signals, services, and standalone components         |
-| [@desource/browser-ai-nuxt](packages/browser-ai-nuxt)       | Nuxt module with client components, auto-imports, and styles |
+| Package                                          | Integration                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| [@desource/browser-ai](packages/core)            | Framework-independent controllers and external stores        |
+| [@desource/browser-ai-vue](packages/vue)         | Vue 3 components and composables                             |
+| [@desource/browser-ai-react](packages/react)     | React hooks and components                                   |
+| [@desource/browser-ai-svelte](packages/svelte)   | Svelte 5 stores and components                               |
+| [@desource/browser-ai-angular](packages/angular) | Angular signals, services, and standalone components         |
+| [@desource/browser-ai-nuxt](packages/nuxt)       | Nuxt module with client components, auto-imports, and styles |
 
 ## Quick start
 

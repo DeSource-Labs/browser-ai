@@ -94,11 +94,11 @@ export const NpmCommands: Partial<Record<Library, string>> = {
 };
 
 export const DocLinks: Record<Library, string> = {
-  vue: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-vue',
-  nuxt: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-nuxt',
-  react: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-react',
-  angular: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-angular',
-  svelte: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/browser-ai-svelte',
+  vue: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/vue',
+  nuxt: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/nuxt',
+  react: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/react',
+  angular: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/angular',
+  svelte: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/svelte',
   typescript: 'https://github.com/DeSource-Labs/browser-ai/tree/main/packages/core'
 };
 

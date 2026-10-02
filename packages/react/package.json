@@ -1,12 +1,12 @@
 {
-  "name": "@desource/browser-ai-svelte",
+  "name": "@desource/browser-ai-react",
   "version": "0.1.0",
   "engines": {
     "node": ">=20.19.0"
   },
-  "description": "Svelte stores and components for Chrome built-in AI and WebMCP.",
+  "description": "React hooks and components for Chrome built-in AI and WebMCP.",
   "keywords": [
-    "svelte",
+    "react",
     "chrome",
     "built-in-ai",
     "gemini-nano",
@@ -21,14 +21,13 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "svelte": "./dist/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "svelte": "./dist/index.js",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
-    "./assets/lib.css": "./dist/browser-ai-svelte.css",
+    "./assets/lib.css": "./dist/browser-ai-react.css",
     "./package.json": "./package.json",
     "./workflows": {
       "types": "./dist/workflows.d.ts",
@@ -44,11 +43,11 @@
   ],
   "author": "DeSource Labs <hello@desourcelabs.com>",
   "license": "MIT",
-  "homepage": "https://ai.desourcelabs.com/docs#svelte",
+  "homepage": "https://ai.desourcelabs.com/docs#react",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
-    "directory": "packages/browser-ai-svelte"
+    "directory": "packages/react"
   },
   "bugs": "https://github.com/DeSource-Labs/browser-ai/issues",
   "private": false,
@@ -56,13 +55,15 @@
     "access": "public"
   },
   "scripts": {
-    "clean": "rimraf dist coverage test-results .svelte-kit",
+    "clean": "rimraf dist coverage test-results",
     "clean:modules": "rimraf node_modules",
     "dev": "vite demo --config demo/vite.config.ts",
     "build": "pnpm clean && pnpm build:internal",
-    "build:internal": "svelte-package --tsconfig ./tsconfig.build.json && sass src/lib/style.scss dist/browser-ai-svelte.css --no-source-map --style=compressed && node scripts/prepare-package.mjs",
+    "build:internal": "pnpm build:lib && pnpm build:types",
     "build:demo": "vite build demo --config demo/vite.config.ts",
-    "typecheck": "svelte-check --tsconfig ./tsconfig.json && svelte-check --tsconfig ./demo/tsconfig.json",
+    "build:lib": "vite build",
+    "build:types": "tsc -p tsconfig.build.json && node scripts/fix-dts.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p demo/tsconfig.json --noEmit",
     "test:unit": "vitest run",
     "test:unit:coverage": "vitest run --coverage.enabled",
     "test:e2e": "playwright test",
@@ -76,14 +77,15 @@
     "webmcp-types": "^0.1.10"
   },
   "peerDependencies": {
-    "svelte": "^5.29.0"
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@sveltejs/package": "^2.5.8",
-    "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "sass": "^1.105.1",
-    "svelte": "^5.57.1",
-    "svelte-check": "^4.7.6"
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "typesVersions": {
     "*": {
