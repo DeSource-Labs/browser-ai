@@ -12,7 +12,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.{ts,vue}'],
       exclude: ['src/index.ts', 'src/env.d.ts'],
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'html', ['lcov', { projectRoot: fileURLToPath(new URL('../..', import.meta.url)) }]],
       thresholds: { statements: 95, branches: 95, functions: 95, lines: 95 }
     }
   },
