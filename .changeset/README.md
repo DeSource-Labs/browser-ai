@@ -1,3 +1,5 @@
 # Changesets
 
-Run `pnpm changeset` for user-visible package changes. The generated Markdown file records the release type and becomes part of the package changelog during release.
+Run `pnpm changeset` for changes to published packages. Select all six public packages and write one shared summary. The fixed group keeps their release versions aligned.
+
+See [Contributing](../CONTRIBUTING.md#releases) for versioning and publishing commands.

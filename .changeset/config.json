@@ -1,11 +1,25 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "DeSource-Labs/browser-ai" }],
+  "changelog": [
+    "@changesets/changelog-github",
+    {
+      "repo": "DeSource-Labs/browser-ai"
+    }
+  ],
   "commit": false,
-  "fixed": [],
-  "linked": [["@desource/browser-ai-vue", "@desource/browser-ai-nuxt"]],
+  "fixed": [
+    [
+      "@desource/browser-ai",
+      "@desource/browser-ai-vue",
+      "@desource/browser-ai-react",
+      "@desource/browser-ai-svelte",
+      "@desource/browser-ai-angular",
+      "@desource/browser-ai-nuxt"
+    ]
+  ],
+  "linked": [],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": ["demo"]
 }
