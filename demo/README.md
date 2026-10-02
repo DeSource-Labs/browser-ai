@@ -21,6 +21,13 @@ pnpm dev:demo
 
 Open the local URL in a supported Chrome profile with the required API flags and models. The page must also remain useful in browsers where every AI global is absent.
 
+## Production deployment
+
+```bash
+pnpm vercel-build
+pnpm --filter demo start
+```
+
 ## WebMCP workspace
 
 The WebMCP page lets people and browser agents use the same Lisbon workspace catalog, shortlist, and visit form. Its implementation is in `app/components/WebMcpDemo.vue`.
@@ -31,7 +38,7 @@ The declarative visit form collects a workspace, date, attendee count, and notes
 
 Use **Run discovery → tool chain** for the scripted sequence, or Chrome's [Model Context Tool Inspector](https://developer.chrome.com/docs/ai/webmcp) to call the tools through an agent. Tool registration follows the page lifetime; the page also lets you unregister its tools explicitly.
 
-The integration uses `webmcp-types@0.1.9`. Public execution accepts objects or validated JSON text. The wrapper selects native object input or the older JSON-string signature before calling Chrome, with an explicit `inputFormat` override for wrapped implementations. It never retries tool execution. Results are strings, or `null` when a tool navigates the document. The sample parses catalog responses only when they are present. The “Save through WebMCP” control exercises the declarative visit form through discovery and the same library execution path.
+The integration uses `webmcp-types`. Public execution accepts objects or validated JSON text. The wrapper selects native object input or the older JSON-string signature before calling Chrome, with an explicit `inputFormat` override for wrapped implementations. It never retries tool execution. Results are strings, or `null` when a tool navigates the document. The sample parses catalog responses only when they are present. The “Save through WebMCP” control exercises the declarative visit form through discovery and the same library execution path.
 
 The [WebMCP guide](../docs/webmcp.md) covers schema-literal type inference, `readOnlyHint`, `untrustedContentHint`, `consequentialHint`, `debugging`, cross-origin access, and cleanup. Its small schema validator checks the documented subset; use `validateInput` for additional application or full JSON Schema rules. Execution signals let tools cancel pending work when the caller or controller disposes the operation.
 

@@ -242,7 +242,7 @@ export class ProjectToolsComponent {
 }
 ```
 
-`DestroyRef` removes registrations with the component. The wrapper follows `webmcp-types` 0.1.9: `executeTool(tool, inputObject)` takes an object and returns a string, or `null` when execution navigates the document. Input format is selected before execution: modern Chrome receives the object, while older Chrome's required JSON-string signature receives serialized input. An `inputFormat` override is available for wrappers; tools are never retried automatically. Schema literals infer callback input, and annotations include `consequentialHint` and `debugging`. Validate tool input and re-check authorization inside every executor. Production pages require origin isolation and a `tools` Permissions Policy; see the [WebMCP guide](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md).
+`DestroyRef` removes registrations with the component. `executeTool(tool, inputObject)` takes an object and returns a string, or `null` when execution navigates the document. Input format is selected before execution: modern Chrome receives the object, while older Chrome's required JSON-string signature receives serialized input. An `inputFormat` override is available for wrappers; tools are never retried automatically. Schema literals infer callback input, and annotations include `consequentialHint` and `debugging`. Validate tool input and re-check authorization inside every executor. Production pages require origin isolation and a `tools` Permissions Policy; see the [WebMCP guide](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md).
 
 ## Unsupported browsers
 

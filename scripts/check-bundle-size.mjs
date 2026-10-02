@@ -14,7 +14,7 @@ const { NodeJSFileSystem, ConsoleLogger, LogLevel } = await import(compilerPath)
 const { createEs2015LinkerPlugin } = await import(angularRequire.resolve('@angular/compiler-cli/linker/babel'));
 const { transformAsync } = createRequire(compilerPath)('@babel/core');
 const { transform: optimizeAngular } = angularRequire(
-  resolve(dirname(angularRequire.resolve('@angular/build')), 'tools/babel/plugins/oxc-transform.js')
+  resolve(dirname(angularRequire.resolve('@angular/build')), 'tools/oxc/oxc-transform.js')
 );
 
 // These are consumer bundles: include our complete runtime, exclude framework

@@ -75,7 +75,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.9",
     "fake-indexeddb": "^6.2.5",
-    "rollup": "^4.63.3",
+    "rollup": "^4.63.6",
     "rollup-plugin-dts": "^6.5.1",
     "vue": "^3.5.43",
     "vue-tsc": "^3.3.11"
@@ -84,7 +84,7 @@
     "@desource/browser-ai": "workspace:*",
     "@types/dom-chromium-ai": "^0.0.17",
     "markdown-it": "^15.0.2",
-    "webmcp-types": "^0.1.9"
+    "webmcp-types": "^0.1.10"
   },
   "peerDependencies": {
     "vue": "^3.4.33"

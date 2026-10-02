@@ -7,12 +7,12 @@ minimumReleaseAge: 1440
 overrides:
   glob: ^13.0.6
   # Babel's TypeScript and JSX syntax plugins have not declared Babel 8 support yet.
-  '@babel/core': ^7.29.0
+  '@babel/core': ^7.29.7
   # Patched transitive releases while Nuxt/Nitro upstream ranges lag behind advisories.
-  'brace-expansion@2': ^2.1.4
-  'brace-expansion@5': ^5.0.9
-  'nanoid@3': ^3.3.18
-  'postcss@8': ^8.5.26
+  'brace-expansion@2': ^2.1.7
+  'brace-expansion@5': ^5.0.12
+  'nanoid@3': ^3.3.19
+  'postcss@8': ^8.5.28
   'tar@7': ^7.5.22
 
 peerDependencyRules:

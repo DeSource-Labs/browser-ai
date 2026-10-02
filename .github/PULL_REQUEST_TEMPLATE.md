@@ -1,25 +1,34 @@
-## What changed
+## Description
 
-<!-- Describe the user-visible outcome and why it belongs in Browser AI Kit. -->
+- **What does this PR do?**
+  - _A brief explanation of the change, its purpose, and how it impacts the codebase._
 
-## Verification
+- **Why is this change needed?**
+  - _Describe the problem the PR solves or the feature it adds, and link any related issue._
 
-- [ ] `pnpm check`
-- [ ] `pnpm format:check`
-- [ ] Tests added or updated where behavior changed
-- [ ] Tested in a supported Chrome build when native API behavior changed
-- [ ] Desktop and mobile layouts checked when UI changed
+## Type of Change
 
-Chrome version, operating system, flags, and API availability state:
+- [ ] Bug fix (non-breaking)
+- [ ] New feature (non-breaking)
+- [ ] Breaking change
+- [ ] Documentation update
+- [ ] Tests
+- [ ] Maintenance
 
-## Release
+## Testing
 
-- [ ] Changeset added for a user-visible package change
-- [ ] No changeset needed (documentation or repository maintenance only)
+Describe how you tested your changes
 
-## Security and compatibility
+## Screenshots (if applicable)
 
-- [ ] Browser globals remain SSR-safe
-- [ ] Abort, cleanup, availability, and download states are handled
-- [ ] WebMCP tools re-check authorization and validate inputs where applicable
-- [ ] No secrets or private data are included
+Add screenshots for UI changes
+
+## Checklist
+
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex code
+- [ ] Documentation updated
+- [ ] No new warnings generated
+- [ ] Tests added/updated
+- [ ] All tests passing

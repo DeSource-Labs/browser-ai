@@ -231,8 +231,6 @@ Conversation attachments keep their raw values in memory. Image and audio bytes 
 
 ## WebMCP
 
-The wrapper targets `webmcp-types` 0.1.9. Registration infers callback inputs from literal schemas. Callers pass input objects, and execution returns the native `string | null` result; `null` can indicate navigation of the target document.
-
 ```ts
 import { createWebMcp } from '@desource/browser-ai';
 
@@ -267,6 +265,8 @@ try {
   webMcp.dispose();
 }
 ```
+
+Registration infers callback inputs from literal schemas. Callers pass input objects, and execution returns the native `string | null` result; `null` can indicate navigation of the target document.
 
 Pass an object to `executeTool()`. Parse a non-null response only if the tool's output contract specifies JSON.
 

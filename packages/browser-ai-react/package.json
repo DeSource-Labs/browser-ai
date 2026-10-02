@@ -74,7 +74,7 @@
     "@desource/browser-ai": "workspace:*",
     "@types/dom-chromium-ai": "^0.0.17",
     "markdown-it": "^15.0.2",
-    "webmcp-types": "^0.1.9"
+    "webmcp-types": "^0.1.10"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0",

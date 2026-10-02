@@ -207,7 +207,7 @@ unregister();
 webMcp.dispose();
 ```
 
-The wrapper targets `webmcp-types` 0.1.9. Pass an input object and receive the native `string | null` result; `null` can indicate that execution navigated the target document. Schema literals infer callback input types, and annotations include `consequentialHint` and `debugging`.
+Pass an input object and receive the native `string | null` result; `null` can indicate that execution navigated the target document. Schema literals infer callback input types, and annotations include `consequentialHint` and `debugging`.
 
 The inspected **Chrome 153.0.8010.53 arm64** build still uses the earlier JSON-text native argument. The wrapper selects object or JSON input from the native method's declared argument count before execution. It never retries a tool call automatically. For wrapped implementations that hide this distinction, pass `{ inputFormat: 'object' }` or `{ inputFormat: 'json' }` as the third argument. See the [exact browser revision and verification boundary](docs/api-status.md#verification-record). Executors remain responsible for application authorization and business validation.
 
@@ -243,7 +243,7 @@ pnpm install
 pnpm run ci
 ```
 
-`pnpm run ci` checks formatting, lint, framework parity, peer ranges, production audit, every library and demo build, headless bundle budgets, types, package exports, unit coverage, and unsupported-browser e2e behavior. Each coverage metric has a 95% minimum.
+`pnpm run ci` checks formatting, lint, workflow scripts, framework parity, peer ranges, production audit, every library and demo build, headless bundle budgets, types, package exports, unit coverage, and unsupported-browser e2e behavior. Each coverage metric has a 95% minimum.
 
 Live tests attach to an already-running Chrome profile so they reuse the user's downloaded models and enabled flags:
 
