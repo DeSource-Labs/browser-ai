@@ -6,7 +6,7 @@
           <img src="/logo/android-chrome-192x192.png" alt="" width="32" height="32" />
           <span>Browser AI Kit</span>
         </NuxtLink>
-        <p>Chrome's on-device AI, shaped into framework APIs you can ship.</p>
+        <p>Private, on-device AI for your web app. Components and APIs for the framework you use.</p>
       </div>
 
       <nav class="footer__links" aria-label="Footer navigation">

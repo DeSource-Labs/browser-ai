@@ -30,9 +30,9 @@ body:
         - Framework-agnostic
         - Vue
         - Nuxt
-        - React (roadmap)
-        - Angular (roadmap)
-        - Svelte (roadmap)
+        - React
+        - Angular
+        - Svelte
         - Documentation or demo
     validations:
       required: true

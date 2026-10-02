@@ -1,6 +1,17 @@
 import { access, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
+interface FrameworkSpecification {
+  name: string;
+  component: (name: string) => string;
+  service: (name: string) => string;
+  barrel: string;
+  componentBarrel?: string;
+  serviceBarrel?: string;
+  componentExport: (name: string) => string;
+  serviceExport: (name: string) => string;
+}
+
 const root = fileURLToPath(new URL('..', import.meta.url));
 const components = [
   'ChatHistory',
@@ -26,9 +37,9 @@ const services = [
   'Writer'
 ];
 
-const kebab = (value) => value.replaceAll(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-const lowerFirst = (value) => value[0].toLowerCase() + value.slice(1);
-const specifications = [
+const kebab = (value: string) => value.replaceAll(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+const lowerFirst = (value: string) => value[0].toLowerCase() + value.slice(1);
+const specifications: FrameworkSpecification[] = [
   {
     name: 'Vue',
     component: (name) => `packages/browser-ai-vue/src/components/${name}.vue`,
@@ -67,41 +78,46 @@ const specifications = [
   }
 ];
 
-const failures = [];
-const exists = async (framework, kind, name, path) => {
+const exists = async (framework: string, kind: 'component' | 'service', name: string, path: string) => {
   try {
     await access(`${root}/${path}`);
   } catch {
-    failures.push(`${framework}: missing ${kind} ${name} (${path})`);
+    return `${framework}: missing ${kind} ${name} (${path})`;
   }
 };
 
-for (const specification of specifications) {
-  await Promise.all([
-    ...components.map((name) => exists(specification.name, 'component', name, specification.component(name))),
-    ...services.map((name) => exists(specification.name, 'service', name, specification.service(name)))
-  ]);
+const frameworkFailures = await Promise.all(
+  specifications.map(async (specification) => {
+    const fileFailures = await Promise.all([
+      ...components.map((name) => exists(specification.name, 'component', name, specification.component(name))),
+      ...services.map((name) => exists(specification.name, 'service', name, specification.service(name)))
+    ]);
+    const failures = fileFailures.filter((failure) => failure !== undefined);
 
-  const componentBarrelPath = specification.componentBarrel ?? specification.barrel;
-  const serviceBarrelPath = specification.serviceBarrel ?? specification.barrel;
-  const [componentBarrel, serviceBarrel] = await Promise.all([
-    readFile(`${root}/${componentBarrelPath}`, 'utf8'),
-    readFile(`${root}/${serviceBarrelPath}`, 'utf8')
-  ]);
-  for (const name of components) {
-    if (!componentBarrel.includes(specification.componentExport(name))) {
-      failures.push(`${specification.name}: ${name} is not exported from ${componentBarrelPath}`);
+    const componentBarrelPath = specification.componentBarrel ?? specification.barrel;
+    const serviceBarrelPath = specification.serviceBarrel ?? specification.barrel;
+    const [componentBarrel, serviceBarrel] = await Promise.all([
+      readFile(`${root}/${componentBarrelPath}`, 'utf8'),
+      readFile(`${root}/${serviceBarrelPath}`, 'utf8')
+    ]);
+    for (const name of components) {
+      if (!componentBarrel.includes(specification.componentExport(name))) {
+        failures.push(`${specification.name}: ${name} is not exported from ${componentBarrelPath}`);
+      }
     }
-  }
-  for (const name of services) {
-    if (!serviceBarrel.includes(specification.serviceExport(name))) {
-      failures.push(`${specification.name}: ${lowerFirst(name)} service is not exported from ${serviceBarrelPath}`);
+    for (const name of services) {
+      if (!serviceBarrel.includes(specification.serviceExport(name))) {
+        failures.push(`${specification.name}: ${lowerFirst(name)} service is not exported from ${serviceBarrelPath}`);
+      }
     }
-  }
-}
+    return failures;
+  })
+);
 
+const failures = frameworkFailures.flat();
 if (failures.length) {
-  throw new Error(`Framework parity check failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}`);
+  const details = failures.map((failure) => `- ${failure}`).join('\n');
+  throw new Error(`Framework parity check failed:\n${details}`);
 }
 
 console.log(`Framework parity: ${components.length} components and ${services.length} services across 4 packages.`);

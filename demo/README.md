@@ -1,75 +1,60 @@
 # Browser AI Kit demo
 
-This Nuxt application is the full product demo for all six packages:
+Try private, on-device AI at [ai.desourcelabs.com](https://ai.desourcelabs.com): chat with a local model, summarize text, rewrite a draft, or translate between supported languages. The AI examples use Chrome's built-in models and process your inputs on your device, with no API key or hosted-model fallback.
 
-- `@desource/browser-ai`
-- `@desource/browser-ai-vue`
-- `@desource/browser-ai-react`
-- `@desource/browser-ai-svelte`
-- `@desource/browser-ai-angular`
-- `@desource/browser-ai-nuxt`
+This Nuxt app is also the documentation site for all six packages. Each API page runs the Vue component through the Nuxt module and shows equivalent Vue, React, Svelte, Angular, Nuxt, and plain TypeScript code.
 
-Each API page renders a working Nuxt/Vue example plus equivalent Vue, React, Svelte, Angular, Nuxt, and plain TypeScript code. The implementation is in `app/components/ApiPage.vue`; framework snippets live in `shared/utils/frameworkExamples.ts`.
+## Run locally
 
-## Run
+From the repository root:
 
-```bash
-pnpm install
+```sh
+pnpm install --frozen-lockfile
+pnpm build
 pnpm dev:prepare
 pnpm dev:demo
 ```
 
-Open the local URL in a supported Chrome profile with the required API flags and models. The page must also remain useful in browsers where every AI global is absent.
+Open `http://localhost:3000`. API availability is checked in the browser. Downloads start from user actions; unsupported browsers show the unavailable state.
 
-## Production deployment
+See [Browser setup](../docs/browser-support.md#try-it-in-your-browser) if an API cannot run in your Chrome profile.
 
-```bash
+## Try the examples
+
+- Open **Prompt API** for streaming chat, saved conversations, and supported image, audio, or text-file inputs.
+- Try **Summarizer**, **Writer**, **Rewriter**, and **Proofreader** for local text tools with settings, progress, and stop controls.
+- Use **Translator** to prepare a language pair and translate text, or **Language Detector** to see ranked language results.
+- Open **WebMCP** to let browser tools search workspaces, build a shortlist, and save a visit draft.
+
+The WebMCP page uses the same workspace catalog, shortlist, and form for people and agents. **Run discovery → tool chain** searches the catalog and adds a result to the visible shortlist. **Save through WebMCP** fills the visit draft through the registered form. These are local demo actions; no workspace is booked. Manual controls remain usable when WebMCP is unavailable.
+
+## Build and preview
+
+```sh
 pnpm vercel-build
 pnpm --filter demo start
 ```
 
-## WebMCP workspace
+`vercel-build` builds packages, prepares Nuxt types, and builds this site. `pnpm build:all` also builds the four framework fixtures. Run `pnpm --filter demo typecheck` after preparing dependencies.
 
-The WebMCP page lets people and browser agents use the same Lisbon workspace catalog, shortlist, and visit form. Its implementation is in `app/components/WebMcpDemo.vue`.
+## Editing
 
-The sample tool chain discovers the page's tools, calls `search_lisbon_workspaces` to find quiet workspaces within a daily budget, then adds one result with `shortlist_lisbon_workspace`. A nonempty shortlist registers `get_lisbon_workspace_shortlist` and `clear_lisbon_workspace_shortlist`; clearing it removes those tools again. The activity list shows each step, and manual shortlist controls update the same state.
+- `app/pages/index.vue`: landing page and package quick starts.
+- `app/pages/docs.vue`: installation, lifecycle, and configuration guide.
+- `app/components/ApiPage.vue`: shared API-page layout.
+- `shared/utils/frameworkExamples.ts`: framework snippets shared by the landing page and API pages.
+- `public/marketing.js`: copy buttons, package selection, and availability checks on pages served without Nuxt hydration.
+- `app/components/WebMcpDemo.vue`: workspace search, shortlist tools, and a local visit-draft form.
 
-The declarative visit form collects a workspace, date, attendee count, and notes. Submitting it saves a visible local draft. It remains usable without WebMCP.
+Keep examples usable when an API is unavailable. Show required downloads before starting them, and keep displayed results and code snippets consistent. See the [WebMCP guide](../docs/webmcp.md) for tool registration, validation, and deployment requirements.
 
-Use **Run discovery → tool chain** for the scripted sequence, or Chrome's [Model Context Tool Inspector](https://developer.chrome.com/docs/ai/webmcp) to call the tools through an agent. Tool registration follows the page lifetime; the page also lets you unregister its tools explicitly.
+## Framework fixtures and browser tests
 
-The integration uses `webmcp-types`. Public execution accepts objects or validated JSON text. The wrapper selects native object input or the older JSON-string signature before calling Chrome, with an explicit `inputFormat` override for wrapped implementations. It never retries tool execution. Results are strings, or `null` when a tool navigates the document. The sample parses catalog responses only when they are present. The “Save through WebMCP” control exercises the declarative visit form through discovery and the same library execution path.
-
-The [WebMCP guide](../docs/webmcp.md) covers schema-literal type inference, `readOnlyHint`, `untrustedContentHint`, `consequentialHint`, `debugging`, cross-origin access, and cleanup. Its small schema validator checks the documented subset; use `validateInput` for additional application or full JSON Schema rules. Execution signals let tools cancel pending work when the caller or controller disposes the operation.
-
-## Smaller framework demos
-
-Vue, React, Svelte, and Angular each have a package-local demo containing all 11 shared components, all eight capability checks, and the same visible WebMCP task workflow:
-
-```bash
-pnpm build:framework-demos
+```sh
+pnpm build:fixtures
 pnpm --filter @desource/browser-ai-react dev
 ```
 
-Replace the filter with the Vue, Svelte, or Angular package name to run another demo.
+Use the Vue, Svelte, or Angular package name to run another fixture. Each contains the shared components and a WebMCP task example.
 
-## Browser tests
-
-Ordinary bundled Chromium verifies unsupported behavior:
-
-```bash
-pnpm test:e2e
-```
-
-To reuse an already-running Chrome profile with downloaded models:
-
-1. enable **Allow remote debugging for this browser instance** at `chrome://inspect/#remote-debugging`;
-2. run:
-
-```bash
-BROWSER_AI_CDP_ENDPOINT=http://127.0.0.1:9222 pnpm test:e2e:live
-```
-
-The live suite opens and closes only its own pages. It does not close the user's browser or install resources reported as `downloadable`. Set `BROWSER_AI_ALLOW_MODEL_DOWNLOADS=1` only when a deliberate test-time download is acceptable.
-
-The [September 19 verification record](../docs/api-status.md#verification-record) contains the passing build and test results, native Chrome inference and WebMCP checks, and the browser paths that were skipped or not live-tested.
+Browser tests run locally only. See [Contributing](../CONTRIBUTING.md#local-browser-tests) for bundled Chromium and optional live Chrome commands.

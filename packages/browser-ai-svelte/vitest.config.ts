@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vitest/config';
 
@@ -14,7 +15,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/lib/**/*.{ts,svelte}'],
       exclude: ['src/lib/index.ts'],
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'html', ['lcov', { projectRoot: fileURLToPath(new URL('../..', import.meta.url)) }]],
       thresholds: { statements: 95, branches: 95, functions: 95, lines: 95 }
     }
   }

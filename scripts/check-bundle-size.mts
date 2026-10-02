@@ -5,6 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
 
+type PackageExport = string | { [condition: string]: PackageExport | undefined } | null;
+
+interface PackageManifest {
+  name: string;
+  exports?: Record<string, PackageExport>;
+  module?: string;
+}
+
 const root = fileURLToPath(new URL('..', import.meta.url));
 const svelteRequire = createRequire(resolve(root, 'packages/browser-ai-svelte/package.json'));
 const { compile } = svelteRequire('svelte/compiler');
@@ -31,9 +39,9 @@ const specifications = [
   ['browser-ai-svelte', 'createWebMcp', 5000],
   ['browser-ai-angular', 'createAngularPromptApi', 5000],
   ['browser-ai-angular', 'createAngularWebMcp', 5000]
-];
+] as const;
 
-const resolveExport = (value) => {
+const resolveExport = (value: PackageExport | undefined): string | undefined => {
   if (typeof value === 'string') return value;
   for (const condition of ['import', 'svelte', 'default']) {
     const target = value?.[condition] && resolveExport(value[condition]);
@@ -42,16 +50,16 @@ const resolveExport = (value) => {
   return undefined;
 };
 
-const external = (id) => /^(?:vue|react|react-dom|svelte|tslib)(?:\/|$)/.test(id) || id.startsWith('@angular/');
-const failures = [];
+const external = (id: string) => /^(?:vue|react|react-dom|svelte|tslib)(?:\/|$)/.test(id) || id.startsWith('@angular/');
 
-for (const [directory, exported, limit] of specifications) {
+const bundleChecks = specifications.map(async ([directory, exported, limit]) => {
+  const failures: string[] = [];
   const packageDirectory = resolve(root, 'packages', directory);
   const manifestPath = resolve(
     packageDirectory,
     directory === 'browser-ai-angular' ? 'dist/package.json' : 'package.json'
   );
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const manifest: PackageManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   const target =
     resolveExport(manifest.exports?.[directory === 'browser-ai-angular' ? './controllers' : '.']) ?? manifest.module;
   if (!target) throw new Error(`No ESM entry point found for ${manifest.name}.`);
@@ -107,12 +115,15 @@ for (const [directory, exported, limit] of specifications) {
       rolldownOptions: { external, output: { minify: true } }
     }
   });
-  const outputs = (Array.isArray(result) ? result : [result]).flatMap((item) => item.output);
+  const outputs = (Array.isArray(result) ? result : [result]).flatMap((item) => {
+    if (!('output' in item)) throw new Error('Bundle size checks require a completed build.');
+    return item.output;
+  });
   const chunks = outputs.filter((item) => item.type === 'chunk');
   const code = chunks.map((item) => item.code).join('\n');
   const bytes = gzipSync(code).length;
   const label = `${manifest.name} ${exported}`;
-  console.log(`${label}: ${bytes} B gzip (limit ${limit} B)`);
+  const message = `${label}: ${bytes} B gzip (limit ${limit} B)`;
   if (bytes > limit) failures.push(`${label}: ${bytes} B exceeds ${limit} B gzip.`);
   if (code.includes('markdown-it')) failures.push(`${label}: retains the Markdown renderer dependency.`);
   const retainedMarkdown = chunks
@@ -122,20 +133,32 @@ for (const [directory, exported, limit] of specifications) {
   if (/(?:chat-history|chat-message__|prompt-api__|writing-tool__|browser-ai-markdown)/.test(code)) {
     failures.push(`${label}: retains unrelated component code.`);
   }
-}
+  return { message, failures };
+});
 
 // Styles are an explicit component import. Keep obsolete component layouts from
 // accumulating in every framework's published stylesheet.
-for (const framework of ['vue', 'react', 'svelte', 'angular']) {
+const styleChecks = ['vue', 'react', 'svelte', 'angular'].map(async (framework) => {
+  const failures: string[] = [];
   const file = resolve(root, `packages/browser-ai-${framework}/dist/browser-ai-${framework}.css`);
   const css = await readFile(file, 'utf8');
   const bytes = gzipSync(css).length;
   const limit = 6000;
-  console.log(`@desource/browser-ai-${framework} styles: ${bytes} B gzip (limit ${limit} B)`);
+  const message = `@desource/browser-ai-${framework} styles: ${bytes} B gzip (limit ${limit} B)`;
   if (bytes > limit) failures.push(`${framework} styles: ${bytes} B exceeds ${limit} B gzip.`);
   if (/\.(?:language-detector|proofreader|summarizer|translator)(?:__|\s*\{)/.test(css)) {
     failures.push(`${framework} styles: retains obsolete tool layouts.`);
   }
+  return { message, failures };
+});
+
+const results = await Promise.all([...bundleChecks, ...styleChecks]);
+for (const result of results) {
+  console.log(result.message);
 }
 
-if (failures.length) throw new Error(`Bundle checks failed:\n${failures.map((failure) => `- ${failure}`).join('\n')}`);
+const failures = results.flatMap((result) => result.failures);
+if (failures.length) {
+  const details = failures.map((failure) => `- ${failure}`).join('\n');
+  throw new Error(`Bundle checks failed:\n${details}`);
+}

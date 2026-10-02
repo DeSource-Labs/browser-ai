@@ -11,22 +11,22 @@
         <div class="hero__copy">
           <p class="eyebrow">
             <span class="eyebrow__dot" />
-            Private AI. Native to Chrome. Ready for your framework.
+            Vue · React · Svelte · Angular · Nuxt · TypeScript
           </p>
           <h1 id="hero-title">
-            Ship on-device AI<br />
-            <span>without the browser plumbing.</span>
+            Private, <span class="hero__device">on-device</span> AI.<br />
+            <span>Built for your app.</span>
           </h1>
           <p class="hero__lede">
-            Production-ready components and composables for Chrome's Prompt API, writing tools, translation,
-            Proofreader, and WebMCP. No inference server. No API key. No deep-reactivity slowdown.
+            Add chat, summaries, writing tools, and translation to your app. Chrome runs the models locally; the kit
+            provides components and APIs for your framework. No inference server or API key needed.
           </p>
           <div class="hero__actions">
             <NuxtLink class="button button--primary" to="/#apis">
               Try the live APIs
               <span aria-hidden="true">→</span>
             </NuxtLink>
-            <NuxtLink class="button button--secondary" to="/docs"> Read the docs </NuxtLink>
+            <NuxtLink class="button button--secondary" to="/#quick-start"> Start building </NuxtLink>
           </div>
           <ul class="hero__proof" aria-label="Project qualities">
             <li><span>✓</span> MIT licensed</li>
@@ -36,7 +36,7 @@
           </ul>
         </div>
 
-        <div class="hero__product" aria-label="Vue installation example">
+        <div class="hero__product" aria-label="Illustration of a local chat">
           <div class="hero__product-top">
             <span class="window-dots" aria-hidden="true"><i /><i /><i /></span>
             <span>Local AI session</span>
@@ -60,8 +60,8 @@
           </div>
           <div class="hero__local">
             <span class="hero__local-icon" aria-hidden="true">⌁</span>
-            Running on-device with Gemini Nano
-            <span>0 network requests</span>
+            AI processing stays on-device
+            <span>No API key</span>
           </div>
         </div>
       </section>
@@ -69,16 +69,16 @@
       <div class="trust-strip" aria-label="Supported capabilities">
         <span>Prompt API</span><i /> <span>Structured output</span><i /> <span>Long-input handling</span><i />
         <span>WebMCP</span><i />
-        <span>Vue + Nuxt</span>
+        <span>Frameworks integration</span>
       </div>
 
       <section id="why" class="content-section why-section">
         <div class="section-heading">
-          <p class="section-kicker">A production layer, not another model SDK</p>
-          <h2>The native API is powerful.<br />The lifecycle is the hard part.</h2>
+          <p class="section-kicker">Why Browser AI Kit</p>
+          <h2>Chrome provides the models.<br />The kit makes them part of your app.</h2>
           <p>
-            Chrome provides the model. Browser AI Kit handles the states and limits that turn a browser experiment into
-            a feature people can depend on.
+            A useful AI feature needs more than a response. Give users clear download progress, streamed answers, saved
+            conversations, and a way to stop, with state and cleanup that fit your framework.
           </p>
         </div>
 
@@ -86,10 +86,10 @@
           <article class="benefit-card benefit-card--wide">
             <span class="benefit-card__number">01</span>
             <div class="benefit-card__icon" aria-hidden="true">◫</div>
-            <h3>Every browser state has a product state.</h3>
+            <h3>Show availability and download progress</h3>
             <p>
-              Feature detection, downloads, progress, cancellation, quotas, context overflow, failure, and cleanup are
-              reactive and typed.
+              Know whether the model is ready, needs a download, or is unavailable. Components show these states for
+              you; typed APIs give a custom interface the same information.
             </p>
             <div class="state-row" aria-hidden="true">
               <span>Available</span>
@@ -101,35 +101,35 @@
           <article class="benefit-card">
             <span class="benefit-card__number">02</span>
             <div class="benefit-card__icon" aria-hidden="true">↯</div>
-            <h3>Responsive while the model works.</h3>
+            <h3>Stay responsive while AI works</h3>
             <p>
-              Native sessions stay outside deep reactivity. Stream rendering is frame-coalesced so typing remains crisp
-              during local inference.
+              Show answers as they arrive and let users stop a request. Stream updates are batched to keep the interface
+              responsive, and sessions are reused across compatible requests.
             </p>
           </article>
 
           <article class="benefit-card">
             <span class="benefit-card__number">03</span>
             <div class="benefit-card__icon" aria-hidden="true">∞</div>
-            <h3>Long input is a supported path.</h3>
+            <h3>Handle long text and conversations</h3>
             <p>
-              Measure real browser quotas, split at safe boundaries, and merge with API-specific strategies instead of
-              arbitrary character caps.
+              Summarize long documents in chunks, translate text in order, and restore chat context as conversations
+              grow. Shared workflows account for the model's input limits.
             </p>
           </article>
 
           <article class="benefit-card benefit-card--wide">
             <span class="benefit-card__number">04</span>
             <div class="benefit-card__icon" aria-hidden="true">◇</div>
-            <h3>Choose the interface level that fits.</h3>
+            <h3>Use components or build your own UI</h3>
             <p>
-              Start with accessible components, move to composables for a fully custom UI, and keep direct access to
-              familiar native operations.
+              Start with a complete chat or writing tool. Keep your own design with Vue composables, React hooks, Svelte
+              stores, Angular signals, or plain TypeScript controllers.
             </p>
             <div class="layer-row" aria-hidden="true">
               <span>Components</span>
               <b>→</b>
-              <span>Composables</span>
+              <span>Headless APIs</span>
               <b>→</b>
               <span>Chrome APIs</span>
             </div>
@@ -137,13 +137,13 @@
         </div>
       </section>
 
-      <section class="content-section install-section">
+      <section id="quick-start" class="content-section install-section">
         <div class="install-section__copy">
-          <p class="section-kicker">From install to local response in minutes</p>
-          <h2>Small API. Serious defaults.</h2>
+          <p class="section-kicker">Quick start</p>
+          <h2>Choose your framework.</h2>
           <p>
-            Drop in a complete chat interface or keep the UI entirely yours. Browser AI Kit stays close to Chrome's
-            vocabulary, so the native documentation and your application code still line up.
+            Install one package and add a chat component, or connect the APIs to your own interface. Component styles
+            are a single import; Nuxt adds them automatically.
           </p>
           <div class="package-switch" role="group" aria-label="Package example">
             <button
@@ -152,18 +152,33 @@
               type="button"
               :data-package-tab="item.id"
               :class="{ active: selectedPackage === item.id }"
+              :aria-pressed="selectedPackage === item.id"
               @click="selectedPackage = item.id"
             >
               {{ item.name }}
             </button>
           </div>
-          <CodeBlock :label="`${selectedPackage === 'vue' ? 'Vue' : 'Nuxt'} quick start`" :code="packageCode" />
+          <div
+            v-for="item in availablePackages"
+            :key="item.id"
+            :data-package-example="item.id"
+            :hidden="selectedPackage !== item.id"
+          >
+            <CodeBlock :label="`${item.name} quick start`" :code="item.code" />
+            <a class="text-link" :href="DocLinks[item.id]" target="_blank" rel="noopener noreferrer">
+              {{ item.name }} package guide →
+            </a>
+          </div>
+          <p>
+            Open your app in Chrome on HTTPS or localhost. The first use may need a model download.
+            <NuxtLink class="text-link" to="/docs#lifecycle"> Check browser setup → </NuxtLink>
+          </p>
         </div>
 
         <div class="comparison-card">
           <div class="comparison-card__head">
-            <span>Production concern</span>
-            <span>Native</span>
+            <span>Application behavior</span>
+            <span>Native API</span>
             <span>Kit</span>
           </div>
           <div v-for="row in comparisonRows" :key="row.label" class="comparison-card__row">
@@ -172,8 +187,8 @@
             <span class="comparison-card__kit">{{ row.kit }}</span>
           </div>
           <p>
-            Calling the native API directly is a good fit for one-off tasks. The kit earns its place when lifecycle,
-            persistence, SSR, or long content matters.
+            A direct native call can be enough for a small experiment. Use the kit when your app needs download
+            progress, streaming UI, saved chats, or long-input handling.
           </p>
         </div>
       </section>
@@ -182,11 +197,11 @@
         <div class="section-heading section-heading--split">
           <div>
             <p class="section-kicker">Live in your browser</p>
-            <h2>Eight surfaces.<br />One consistent experience.</h2>
+            <h2>Try local AI<br />in your browser.</h2>
           </div>
           <p>
-            Availability below is detected from this Chrome profile. Open an example to test the real local API—there is
-            no mocked response or hosted fallback behind these demos.
+            Open an example to see what your browser can do. AI demos use the local models available on your device;
+            WebMCP lets you try application tools. Required downloads start when you choose to use a feature.
           </p>
         </div>
         <Tools />
@@ -195,12 +210,12 @@
       <section id="frameworks" class="content-section framework-section">
         <div class="section-heading section-heading--split">
           <div>
-            <p class="section-kicker">Built for more than one ecosystem</p>
-            <h2>Native to your framework.<br />Consistent underneath.</h2>
+            <p class="section-kicker">Packages</p>
+            <h2>At home in<br />your framework.</h2>
           </div>
           <p>
-            Vue, Nuxt, React, Angular, Svelte, and a framework-neutral TypeScript core ship from one repository and
-            share one tested browser-behavior contract.
+            Use familiar refs, hooks, stores, or signals. All four UI frameworks include the same chat and text tools.
+            Nuxt adds client-safe auto-imports, and the TypeScript core works without a UI framework.
           </p>
         </div>
 
@@ -233,11 +248,12 @@
             <span class="privacy-lock">⌾</span>
           </div>
           <div>
-            <p class="section-kicker">A privacy boundary users can understand</p>
-            <h2>No inference endpoint hiding in the fine print.</h2>
+            <p class="section-kicker">Private, on-device AI</p>
+            <h2>Your users' prompts stay with them.</h2>
             <p>
-              The library does not send prompts, outputs, or telemetry to DeSource Labs. Chrome owns model execution and
-              storage. If your app adds a hosted fallback, that becomes a separate product and consent decision.
+              Chrome processes AI requests locally. The kit sends no prompts, responses, or telemetry to DeSource Labs.
+              Once the model is downloaded, inference can work offline too. Your app's WebMCP tools and any cloud
+              services you connect have their own data flows.
             </p>
             <NuxtLink class="text-link" to="/docs#privacy"> Read the privacy and fallback guide → </NuxtLink>
           </div>
@@ -245,12 +261,9 @@
       </section>
 
       <section class="content-section final-cta">
-        <p class="section-kicker">Open source and ready to build on</p>
-        <h2>Make the browser the AI runtime.</h2>
-        <p>
-          Start with a package guide, run every API against your local Chrome profile, or inspect the shared contracts
-          that keep every framework adapter aligned.
-        </p>
+        <p class="section-kicker">Open source · MIT</p>
+        <h2>Give your app its first local AI feature.</h2>
+        <p>Choose your framework, add a component, and try it with a model running on your device.</p>
         <div class="hero__actions final-cta__actions">
           <NuxtLink class="button button--primary" to="/docs">
             Start building <span aria-hidden="true">→</span>
@@ -268,43 +281,23 @@
 
 <script setup lang="ts">
 import type { Library } from '~~/shared/types';
+import { meta } from '~~/shared/utils/meta';
 
 useSeoMeta({
-  title: 'Browser AI Kit — Chrome built-in AI for Vue, React, Svelte, Angular, and Nuxt',
-  description:
-    'Ship private, on-device AI in Vue, React, Svelte, Angular, Nuxt, or TypeScript with production-ready components, framework APIs, attachments, long-input handling, and WebMCP.'
+  title: meta.title,
+  description: meta.description
 });
 
 useHead({
   script: [{ src: '/marketing.js', defer: true }]
 });
 
-const selectedPackage = ref<'vue' | 'nuxt'>('vue');
-const availablePackages = LibItems.filter(
-  (item): item is (typeof LibItems)[number] & { id: 'vue' | 'nuxt' } => item.id === 'vue' || item.id === 'nuxt'
-);
-
-const packageCode = computed(() =>
-  selectedPackage.value === 'vue'
-    ? `npm install @desource/browser-ai-vue
-
-<script setup lang="ts">
-import { PromptApi } from "@desource/browser-ai-vue";
-import "@desource/browser-ai-vue/assets/lib.css";
-<${'/'}script>
-
-<template>
-  <PromptApi context-strategy="summarize" />
-</template>`
-    : `npm install @desource/browser-ai-nuxt
-
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ["@desource/browser-ai-nuxt"],
-});
-
-// PromptApi and usePromptApi are now auto-imported.`
-);
+const selectedPackage = ref<Library>('vue');
+const examples = getFrameworkExamples('prompt-api');
+const availablePackages = LibItems.map((item) => ({
+  ...item,
+  code: `${NpmCommands[item.id]}\n\n${examples.find((example) => example.label === item.name)!.code}`
+}));
 
 const comparisonRows = [
   { label: 'Download and readiness UX', native: 'Build it', kit: 'Included' },
@@ -476,6 +469,11 @@ const frameworkMarks: Record<Library, string> = {
 
 .hero h1 span {
   color: rgba(255, 255, 255, 0.46);
+}
+
+.hero h1 .hero__device {
+  color: inherit;
+  white-space: nowrap;
 }
 
 .hero__lede {
@@ -908,6 +906,11 @@ const frameworkMarks: Record<Library, string> = {
   grid-template-columns: minmax(0, 1fr) minmax(390px, 0.78fr);
   align-items: center;
   gap: clamp(3rem, 8vw, 7rem);
+  scroll-margin-top: 6rem;
+}
+
+.install-section > * {
+  min-width: 0;
 }
 
 .package-switch {
@@ -915,6 +918,7 @@ const frameworkMarks: Record<Library, string> = {
   margin: 2rem 0 0.8rem;
   padding: 0.28rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.2rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.7rem;

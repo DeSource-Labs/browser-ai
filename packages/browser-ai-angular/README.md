@@ -1,18 +1,29 @@
 # @desource/browser-ai-angular
 
-Angular signals, injectable services, and standalone components for Chrome built-in AI and WebMCP. Shared core controllers provide native operations; optional workflow and chat engines provide long-input handling, history restoration, and local persistence. Angular binds their state to signals and `DestroyRef` cleanup.
+[![Angular](https://img.shields.io/npm/v/@desource/browser-ai-angular?color=blue&logo=angular&logoColor=white)](https://www.npmjs.com/package/@desource/browser-ai-angular)
+[![Coverage](https://codecov.io/gh/DeSource-Labs/browser-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/DeSource-Labs/browser-ai)
+[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=DeSource-Labs_browser-ai&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DeSource-Labs_browser-ai)
+[![Ask Context7](https://img.shields.io/badge/Ask%20Context7-059669.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHZpZXdCb3g9IjAgMCAyOCAyOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI0IDBINEMxLjc5MDg2IDAgMCAxLjc5MDg2IDAgNFYyNEMwIDI2LjIwOTEgMS43OTA4NiAyOCA0IDI4SDI0QzI2LjIwOTEgMjggMjggMjYuMjA5MSAyOCAyNFY0QzI4IDEuNzkwODYgMjYuMjA5MSAwIDI0IDBaIiBmaWxsPSIjRjdGMkU4IiBmaWxsLW9wYWNpdHk9IjAuNjUiLz4KPHBhdGggZD0iTTEwLjYgMTUuMjk5MkMxMC42IDE3LjQ5OTIgOS43MDAwNSAxOS4zOTkyIDguMjAwMDUgMjEuMDk5MkgxMS42VjIyLjc5OTJINi4zMDAwNVYyMS4xOTkyQzguMDAwMDUgMTkuMzk5MiA4LjYwMDA1IDE3Ljg5OTIgOC42MDAwNSAxNS4yOTkySDEwLjZaTTE3LjQgMTUuMjk5MkMxNy40IDE3LjQ5OTIgMTguMyAxOS4zOTkyIDE5LjggMjEuMDk5MkgxNi40VjIyLjc5OTJIMjEuN1YyMS4xOTkyQzIwIDE5LjM5OTIgMTkuNCAxNy44OTkyIDE5LjQgMTUuMjk5MkgxNy40Wk0xMC42IDEyLjY5OTJDMTAuNiAxMC40OTkyIDkuNzAwMDUgOC41OTkyMiA4LjIwMDA1IDYuODk5MjJIMTEuNlY1LjE5OTIySDYuMzAwMDVWNi43OTkyMkM4LjAwMDA1IDguNTk5MjIgOC42MDAwNSAxMC4wOTkyIDguNjAwMDUgMTIuNjk5MkgxMC42Wk0xNy40IDEyLjY5OTJDMTcuNCAxMC40OTkyIDE4LjMgOC41OTkyMiAxOS44IDYuODk5MjJIMTYuNFY1LjE5OTIySDIxLjdWNi43OTkyMkMyMCA4LjU5OTIyIDE5LjQgMTAuMDk5MiAxOS40IDEyLjY5OTJIMTcuNFoiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPgo=)](https://context7.com/desource-labs/browser-ai)
+[![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-1c398e.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0iI2NiY2JjYiIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0xOC42IDIwLjFxMS0uNiAyLjItLjZoLjNhNCA0IDAgMCAxIDIgLjdoLjJ2LjFsMSAxaC4xdi4yaC4xbC4xLjF2LjFxLjcgMSAuNyAyLjN0LS42IDIuMnYuMWwtLjIuMkE0IDQgMCAwIDEgMjMgMjhoLS4ydi4xbC0xLjQuNGgtLjVxLTEuMyAwLTIuMy0uNWwtNC4xLTIuNC04LjMgNC44djkuNWw4LjMgNC44IDguMi00LjhWMzVxMC0xLjIuNi0yLjJ2LS4xbC4yLS4yYTQgNCAwIDAgMSAxLjctMS41bDEuMy0uNGguNnExLjMgMCAyLjMuNmw0LjIgMi4zIDguMi00Ljd2LTkuNmwtOC4yLTQuNy00LjIgMi4zcS0xIC42LTIuMi42aC0uM2E0IDQgMCAwIDEtMi0uNmwtLjItLjEtMS0xaC0uMXYtLjJoLS4xbC0uMS0uMnYtLjFxLS43LTEtLjctMi4yVjguMmwtOC4yLTQuNy04LjMgNC43djkuNWw4LjIgNC44eiIvPjwvc3ZnPg==)](https://deepwiki.com/DeSource-Labs/browser-ai)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/DeSource-Labs/browser-ai/blob/main/LICENSE)
 
-[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [API status](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) · [GitHub](https://github.com/DeSource-Labs/browser-ai)
+[Documentation](https://ai.desourcelabs.com/docs) · [Examples](https://ai.desourcelabs.com/#apis) · [GitHub](https://github.com/DeSource-Labs/browser-ai)
+
+Private, on-device AI for Angular, with signals, injectable services, and standalone components. Build chat, summaries, writing tools, and translation using Chrome's local models. Prompts are processed on the user's device, without an inference server or API key.
+
+Use a component for a complete interface or a signal controller for your own UI. Shared workflows handle long inputs, saved chats, and context restoration. WebMCP tools let browser agents use your application actions, with registrations tied to `DestroyRef` cleanup.
 
 ## Install
 
 ```bash
-pnpm add @desource/browser-ai-angular
+npm install @desource/browser-ai-angular
 ```
 
 Angular 22.1.7 or newer within major version 22 is supported.
 
-## Use the chat component
+Run your app in Chrome on HTTPS or localhost. Some APIs need a model or language-pack download before first use; components guide the user through it. See [Browser setup](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md#try-it-in-your-browser).
+
+## Quick start
 
 ```ts
 import { Component } from '@angular/core';
@@ -88,7 +99,7 @@ export class PromptButtonComponent {
 
 ## Factories and service
 
-All eight browser surfaces have dedicated factory files:
+The headless entry exports eight factories:
 
 - `createAngularPromptApi`
 - `createAngularSummarizer`
@@ -244,9 +255,15 @@ export class ProjectToolsComponent {
 
 `DestroyRef` removes registrations with the component. `executeTool(tool, inputObject)` takes an object and returns a string, or `null` when execution navigates the document. Input format is selected before execution: modern Chrome receives the object, while older Chrome's required JSON-string signature receives serialized input. An `inputFormat` override is available for wrappers; tools are never retried automatically. Schema literals infer callback input, and annotations include `consequentialHint` and `debugging`. Validate tool input and re-check authorization inside every executor. Production pages require origin isolation and a `tools` Permissions Policy; see the [WebMCP guide](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/webmcp.md).
 
-## Unsupported browsers
+## Browser support
 
-Availability and experimental status differ by API and depend on Chrome version, platform, device, language, storage, policy, and downloaded resources. The [API status record](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/api-status.md) tracks actual browser verification separately from the type definitions. Components remain usable when browser globals are absent. Preserve the manual workflow and disclose any hosted fallback before data leaves the device.
+Availability and experimental status differ by API and depend on Chrome version, platform, device, language, storage, policy, and downloaded resources. Components remain usable when browser globals are absent. Preserve the manual workflow and disclose any hosted fallback before data leaves the device.
+
+See [Browser support](https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md) for availability and downloads.
+
+## Development
+
+See [Contributing](https://github.com/DeSource-Labs/browser-ai/blob/main/CONTRIBUTING.md) for setup, checks, and local browser tests. Package releases are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

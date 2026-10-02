@@ -5,10 +5,10 @@
     <header class="docs-hero">
       <div class="docs-hero__orbit" aria-hidden="true"><i /><i /><i /></div>
       <p class="docs-kicker">Browser AI Kit documentation</p>
-      <h1>Build the local AI feature<br />users expect.</h1>
+      <h1>Build with private,<br />on-device AI.</h1>
       <p>
-        Start with a complete interface or compose your own. The same typed lifecycle handles readiness, downloads,
-        streaming, long input, context, cancellation, and cleanup.
+        Add chat, summaries, writing assistance, and translation that run locally on the user's device. Start with a
+        component, then use the same APIs to build an interface of your own.
       </p>
       <div class="docs-hero__actions">
         <a class="docs-button docs-button--primary" href="#install">
@@ -41,18 +41,17 @@
       <article class="docs-content">
         <section id="overview" class="doc-section doc-intro">
           <p class="docs-kicker">Overview</p>
-          <h2>Chrome provides the model.<br />The kit provides the product layer.</h2>
+          <h2>Chrome runs the models.<br />You build the experience.</h2>
           <p>
-            Browser AI Kit wraps Chrome's built-in AI APIs in framework-native state and optional interfaces. It does
-            not proxy prompts through a server or flatten every capability into one generic abstraction. Prompt,
-            Summarizer, Writer, Rewriter, Translator, Language Detector, Proofreader, and WebMCP keep their distinct
-            strengths.
+            Browser AI Kit brings private, on-device AI to Vue, React, Svelte, Angular, Nuxt, and TypeScript. Chrome
+            processes prompts locally, without an inference server or API key. The kit adds download progress,
+            streaming, stop controls, saved chats, and session cleanup.
           </p>
           <div class="callout callout--note">
             <span aria-hidden="true">i</span>
             <p>
-              The library is production-oriented; the browser APIs are still evolving. Always keep an unsupported state
-              and a non-AI path for essential work.
+              Use Chrome on HTTPS or localhost. Each API has its own device and language requirements, and first use may
+              need a model download. The examples check availability in your browser.
             </p>
           </div>
           <div class="principle-grid">
@@ -66,10 +65,10 @@
 
         <section id="install" class="doc-section">
           <p class="docs-kicker">Installation</p>
-          <h2>Choose the framework boundary.</h2>
+          <h2>Install your framework package.</h2>
           <p>
-            Six packages expose one runtime behavior contract. Each adapter maps it to native framework lifecycle and
-            state primitives; Nuxt adds client-safe auto-imports around Vue.
+            Choose one package for your app. Vue, React, Svelte, and Angular include components and APIs for a custom
+            UI. Nuxt sets up the Vue integration for you. Use the TypeScript core when you do not need a UI framework.
           </p>
           <div class="install-grid">
             <div v-for="item in packageItems" :key="item.id" class="install-card">
@@ -83,46 +82,45 @@
               <a :href="item.href" target="_blank" rel="noopener noreferrer">Package guide →</a>
             </div>
           </div>
-          <div class="roadmap-note">
-            <strong>One browser runtime; native framework ergonomics.</strong>
-            The 11 public components and eight headless APIs are checked for parity across Vue, React, Svelte, and
-            Angular. Shared contract tests keep markup and behavior aligned without proxying browser-owned model
-            objects.
+          <div class="package-note">
+            Vue, React, Svelte, and Angular share the same chat and text-tool behavior. Nuxt registers the Vue package
+            on the client. Use the core package when your app needs direct controller access.
             <a
-              href="https://github.com/DeSource-Labs/browser-ai/blob/main/docs/framework-roadmap.md"
+              href="https://github.com/DeSource-Labs/browser-ai/blob/main/packages/core/README.md"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Read the framework contract →
+              Read the core guide →
             </a>
           </div>
         </section>
 
         <section id="vue" class="doc-section">
           <p class="docs-kicker">Vue quick start</p>
-          <h2>Use the full interface.</h2>
+          <h2>Add a complete chat interface.</h2>
           <p>
             Import the stylesheet once, then render a component. The Prompt API interface includes saved chats,
-            streaming, attachments supported by Chrome, stop controls, download UX, and context recovery.
+            streaming Markdown, attachments supported by Chrome, stop controls, download progress, and context recovery.
           </p>
           <CodeBlock label="PromptExperience.vue" :code="vueComponentCode" />
 
-          <h3 class="doc-subheading">Or own every pixel.</h3>
+          <h3 class="doc-subheading">Build a custom interface</h3>
           <p>
-            Composables expose reactive state and direct operations. A native session lives in a shallow ref, avoiding
-            expensive traversal while the rest of your UI updates.
+            Composables give your own UI reactive availability, progress, results, and errors. Call the model from a
+            button handler; the composable releases its sessions when the component unmounts.
           </p>
           <CodeBlock label="LocalPrompt.vue" :code="vueComposableCode" />
         </section>
 
         <section id="nuxt" class="doc-section">
           <p class="docs-kicker">Nuxt quick start</p>
-          <h2>One module, no browser globals on the server.</h2>
+          <h2>Add the module. Use the components.</h2>
           <p>
-            Components are registered in client mode. Composables, helpers, language options, and public types are
-            auto-imported.
+            The module registers components on the client, includes their styles, and auto-imports composables, helpers,
+            and types. Model operations stay in the browser while the rest of your app can render on the server.
           </p>
           <CodeBlock label="nuxt.config.ts" :code="nuxtCode" />
+          <CodeBlock label="app/pages/index.vue" :code="'<template>\n  <PromptApi />\n</template>'" />
           <div class="option-table" role="table" aria-label="Nuxt module options">
             <div class="option-table__head" role="row">
               <span role="columnheader">Option</span>
@@ -139,26 +137,25 @@
 
         <section id="frameworks" class="doc-section">
           <p class="docs-kicker">Every framework package</p>
-          <h2>Keep the browser behavior. Choose the state model.</h2>
+          <h2>Use your framework's state and lifecycle.</h2>
           <p>
-            React uses hooks backed by <code>useSyncExternalStore</code>. Svelte exposes readable stores and controller
-            factories. Angular provides signal controllers, standalone components, and <code>BrowserAiService</code>.
-            The core package works in vanilla TypeScript and is the only place browser lifecycle logic is implemented.
+            Start with the same chat component in React, Svelte, or Angular. For a custom UI, use React hooks, Svelte
+            stores, or Angular signals and services. The core controller works in plain TypeScript.
           </p>
           <div class="api-doc-grid">
-            <CodeBlock label="React" :code="reactCode" />
-            <CodeBlock label="Svelte" :code="svelteCode" />
-            <CodeBlock label="Angular" :code="angularCode" />
-            <CodeBlock label="TypeScript core" :code="coreCode" />
+            <div id="react"><CodeBlock label="React" :code="reactCode" /></div>
+            <div id="svelte"><CodeBlock label="Svelte" :code="svelteCode" /></div>
+            <div id="angular"><CodeBlock label="Angular" :code="angularCode" /></div>
+            <div id="core"><CodeBlock label="TypeScript core" :code="coreCode" /></div>
           </div>
         </section>
 
         <section id="lifecycle" class="doc-section">
           <p class="docs-kicker">Browser lifecycle</p>
-          <h2>Availability is part of the interface.</h2>
+          <h2>Prepare the browser for its first request.</h2>
           <p>
-            Chrome decides whether a capability is ready, needs local resources, is already downloading, or is
-            unavailable on the current profile. Check again when the feature starts; model state can change.
+            Chrome may need to download a model or language pack before it can answer. Components handle the states
+            below. In a custom interface, check availability with the languages and options your feature will use.
           </p>
           <div class="state-grid">
             <div v-for="state in availabilityStates" :key="state.name">
@@ -174,12 +171,22 @@
               action. Programmatic clicks and page-load effects do not satisfy Chrome's activation requirement.
             </p>
           </div>
+          <p class="docs-caption">
+            If an API is unavailable, check its Chrome requirements, supported languages, and any local testing flags.
+            <a
+              href="https://github.com/DeSource-Labs/browser-ai/blob/main/docs/browser-support.md#try-it-in-your-browser"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Browser setup and troubleshooting →
+            </a>
+          </p>
 
-          <h3 class="doc-subheading">Long work stays measurable and cancellable.</h3>
+          <h3 class="doc-subheading">Work with long text.</h3>
           <p>
-            Specialized composables measure the browser's real quota and apply a strategy that fits the task: recursive
-            summary rollups, ordered translation chunks, optional-context fitting, confidence merging, or normalized
-            proofreader ranges.
+            The text components and optional workflows handle input that exceeds one model request. Summarizer combines
+            summaries from measured chunks, Translator keeps translated chunks in order, and Proofreader maps
+            corrections back to the original text. You can show progress and stop long work.
           </p>
           <CodeBlock label="Summarizer example" :code="longInputCode" />
         </section>
@@ -198,17 +205,18 @@
             </NuxtLink>
           </div>
           <p class="docs-caption">
-            Every example calls the native API in this browser profile. No demo response is mocked and no hosted model
-            is used as a fallback.
+            The AI examples run real models on your device. They show an unavailable state when an API cannot run and
+            never switch to a hosted model.
           </p>
         </section>
 
         <section id="webmcp" class="doc-section">
           <p class="docs-kicker">WebMCP</p>
-          <h2>Make your application legible to browser agents.</h2>
+          <h2>Expose application tools to browser agents.</h2>
           <p>
-            Register imperative tools, annotate existing forms, discover tools, execute them manually during
-            development, and observe lifecycle changes through one composable.
+            Let compatible browser agents use actions your app already offers: search a catalog, read a cart total, or
+            submit a form. Register a typed tool or annotate an existing HTML form. Its result updates the same state
+            your users see.
           </p>
           <CodeBlock label="CartTools.vue" :code="webMcpCode" />
           <div class="callout callout--warning">
@@ -235,25 +243,27 @@
 
         <section id="privacy" class="doc-section">
           <p class="docs-kicker">Privacy and fallback</p>
-          <h2>Be precise about where data goes.</h2>
+          <h2>AI processing stays on the device.</h2>
           <p>
-            Browser AI Kit does not send prompts, outputs, or telemetry to DeSource Labs. Built-in model execution
-            remains inside Chrome, which owns the model files and resource lifecycle.
+            Chrome's built-in models process prompts and generate responses locally. Browser AI Kit does not send that
+            content or telemetry to DeSource Labs. Chrome manages model downloads and updates; once the resources are
+            installed, model processing can work offline.
           </p>
           <div class="privacy-flow" aria-label="Local inference data flow">
             <span>Your interface</span>
             <b>→</b>
             <span>Browser AI Kit</span>
             <b>→</b>
-            <span>Chrome model</span>
+            <span>On-device model</span>
           </div>
           <p>
-            Your own application code, extensions, monitoring software, and WebMCP tools can still transmit information.
-            Audit those paths and never put secrets in client-side prompts or tool descriptions.
+            Saved chat text stays in the browser's IndexedDB. Image and audio attachments stay in memory for the current
+            conversation controller and need to be reattached after a reload.
           </p>
           <p>
-            If local AI is unavailable, keep the manual workflow, explain how to retry, or offer a hosted model only
-            after disclosing that content will leave the device. Do not silently cross that privacy boundary.
+            WebMCP connects agents to your application tools; the agent and tool code determine where tool data goes. If
+            your app offers a cloud model when local AI is unavailable, explain that prompts will leave the device and
+            let the user choose it. The kit does not provide an automatic cloud fallback.
           </p>
         </section>
 
@@ -270,9 +280,10 @@
 
         <section class="docs-next">
           <p class="docs-kicker">Next step</p>
-          <h2>Run the real API.</h2>
+          <h2>Try your first local response.</h2>
           <p>
-            The example directory detects capabilities in this Chrome profile and lets you test every available surface.
+            Open an example to check support, prepare any required model, and try chat, writing, or translation on your
+            own device.
           </p>
           <NuxtLink class="docs-button docs-button--primary" to="/#apis"> Open interactive examples → </NuxtLink>
         </section>
@@ -289,7 +300,7 @@ import type { Tool } from '~~/shared/types';
 useSeoMeta({
   title: 'Documentation — Browser AI Kit',
   description:
-    'Install and ship Chrome built-in AI in Vue, Nuxt, React, Svelte, Angular, or TypeScript with production lifecycle, multimodal Prompt API, long-input, and WebMCP guidance.'
+    'Add private, on-device AI to your app. Follow quick starts for Vue, React, Svelte, Angular, Nuxt, and TypeScript, with browser setup and working examples.'
 });
 
 useHead({
@@ -300,17 +311,17 @@ const principles = [
   {
     icon: '⌁',
     title: 'On-device by design',
-    body: 'No package-owned inference endpoint, credentials, or usage meter.'
+    body: 'Prompts are processed locally. No inference server, API key, or per-request fee from the kit.'
   },
   {
     icon: '↯',
-    title: 'Fast framework state',
-    body: 'Native sessions stay outside deep reactive proxies and are reused across compatible requests.'
+    title: 'Ready for your interface',
+    body: 'Show download progress, stream answers, and stop a request with state that fits your framework.'
   },
   {
     icon: '◇',
-    title: 'Composable by default',
-    body: 'Use the interface, the headless state, or direct native-shaped operations.'
+    title: 'Make it your own',
+    body: 'Use a complete component, theme its styles, or connect the APIs to your own design.'
   }
 ];
 
@@ -319,7 +330,7 @@ const packageItems = [
     id: 'typescript',
     mark: 'TS',
     name: 'TypeScript core',
-    description: 'Tree-shakeable browser lifecycle and WebMCP controllers.',
+    description: 'Local AI and WebMCP controllers without a UI framework.',
     command: NpmCommands.typescript!,
     href: DocLinks.typescript
   },
@@ -351,7 +362,7 @@ const packageItems = [
     id: 'svelte',
     mark: 'S',
     name: 'Svelte',
-    description: 'Readable controllers and components for Svelte 5.',
+    description: 'Readable stores and components for Svelte 5.',
     command: NpmCommands.svelte!,
     href: DocLinks.svelte
   },
@@ -423,6 +434,7 @@ const svelteCode = `<script lang="ts">
 
 const angularCode = `import { Component } from "@angular/core";
 import { BrowserAiPromptApiComponent } from "@desource/browser-ai-angular";
+import "@desource/browser-ai-angular/assets/lib.css";
 
 @Component({
   selector: "app-assistant",
@@ -508,19 +520,24 @@ const apiMarks: Record<Tool, string> = {
 
 const faq = [
   {
+    question: 'Where are my prompts processed?',
+    answer:
+      "On your device, using Chrome's built-in AI models. The kit does not send prompts to a cloud model or require an API key. WebMCP agents and tools have their own data flows, separate from local model processing."
+  },
+  {
     question: 'Does Browser AI Kit work in every browser?',
     answer:
-      "No. It intentionally targets Chrome's built-in AI surfaces. Support also varies by Chrome version, platform, device, region, language, profile policy, and model state."
+      "It uses Chrome's built-in AI APIs, and availability varies by API, device, language, and browser configuration. The live examples show what your browser supports. Keep essential tasks usable when local AI is unavailable."
   },
   {
     question: 'Does it cost anything per request?',
     answer:
-      "The kit has no request fee and uses no DeSource Labs inference service. Local inference still consumes the user's device resources, and your own hosting or optional cloud fallback may have costs."
+      "The kit is MIT licensed and has no per-request fee. Models run on the user's device, so there is no inference service to pay for or API key to manage. Your app's hosting and any cloud services you add have their own costs."
   },
   {
     question: 'Will it work offline?',
     answer:
-      'A ready local model can run without an inference network request, but Chrome may need network access to install or update the model or a language pack. Chrome can also remove resources under storage pressure.'
+      'Model processing can work offline once the required model or language pack is installed. Your app must also be available offline. Downloads and updates need a connection, and Chrome may remove unused resources or reclaim storage.'
   },
   {
     question: 'Can I replace the provided interface?',
@@ -528,9 +545,9 @@ const faq = [
       'Yes. Components are optional. Every capability has a Vue composable, React hook, Svelte controller, Angular signal controller or service method, and a framework-neutral core factory.'
   },
   {
-    question: "Is it production-ready if Chrome's APIs are experimental?",
+    question: 'How should I handle an unavailable API?',
     answer:
-      'The library handles production concerns and is tested against the documented and verified runtime surface. Your product must still feature-detect, present an unsupported state, and accept that browser behavior can evolve.'
+      'Keep the manual workflow usable, explain the current requirements, and let the user retry. Check availability with the exact languages and model options your feature needs.'
   },
   {
     question: 'Is the native browser API a better choice?',
@@ -848,7 +865,7 @@ const faq = [
 
 .principle-grid p,
 .install-card p,
-.roadmap-note,
+.package-note,
 .docs-caption {
   color: rgba(255, 255, 255, 0.64);
   font-size: 0.75rem;
@@ -921,7 +938,7 @@ const faq = [
 }
 
 .install-card > a,
-.roadmap-note a,
+.package-note a,
 .docs-caption a {
   margin-top: 1rem;
   display: inline-block;
@@ -929,7 +946,7 @@ const faq = [
   font-weight: 700;
 }
 
-.roadmap-note {
+.package-note {
   margin-top: 0.9rem;
   padding: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -937,7 +954,7 @@ const faq = [
   background: rgba(255, 255, 255, 0.02);
 }
 
-.roadmap-note strong {
+.package-note strong {
   display: block;
   color: rgba(255, 255, 255, 0.76);
   font-size: 0.8rem;

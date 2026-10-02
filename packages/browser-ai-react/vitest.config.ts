@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
@@ -11,7 +12,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/index.ts'],
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'html', ['lcov', { projectRoot: fileURLToPath(new URL('../..', import.meta.url)) }]],
       thresholds: { statements: 95, branches: 95, functions: 95, lines: 95 }
     }
   }

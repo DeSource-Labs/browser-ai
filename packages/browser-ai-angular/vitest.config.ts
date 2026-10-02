@@ -13,7 +13,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/lib/**/*.ts'],
       exclude: ['src/lib/types.ts'],
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'html', ['lcov', { projectRoot: fileURLToPath(new URL('../..', import.meta.url)) }]],
       thresholds: { lines: 95, functions: 95, statements: 95, branches: 95 }
     }
   }

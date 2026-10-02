@@ -1,31 +1,4 @@
 (() => {
-  const packageExamples = {
-    vue: {
-      label: 'Vue quick start',
-      code: `npm install @desource/browser-ai-vue
-
-<script setup lang="ts">
-import { PromptApi } from "@desource/browser-ai-vue";
-import "@desource/browser-ai-vue/assets/lib.css";
-</script>
-
-<template>
-  <PromptApi context-strategy="summarize" />
-</template>`
-    },
-    nuxt: {
-      label: 'Nuxt quick start',
-      code: `npm install @desource/browser-ai-nuxt
-
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ["@desource/browser-ai-nuxt"],
-});
-
-// PromptApi and usePromptApi are now auto-imported.`
-    }
-  };
-
   const availabilityLabel = (status) => {
     if (status === 'available') return 'Ready now';
     if (status === 'downloadable') return 'Download first';
@@ -144,17 +117,16 @@ export default defineNuxtConfig({
     const packageButton = target.closest('[data-package-tab]');
     if (!(packageButton instanceof HTMLButtonElement)) return;
     const key = packageButton.dataset.packageTab;
-    const example = key ? packageExamples[key] : undefined;
     const container = packageButton.closest('.install-section__copy');
-    if (!example || !container) return;
+    if (!key || !container) return;
 
-    container
-      .querySelectorAll('[data-package-tab]')
-      .forEach((button) => button.classList.toggle('active', button === packageButton));
-    const label = container.querySelector('.code-block__bar > span');
-    const code = container.querySelector('.code-block code');
-    if (label) label.textContent = example.label;
-    if (code) code.textContent = example.code;
+    container.querySelectorAll('[data-package-tab]').forEach((button) => {
+      button.classList.toggle('active', button === packageButton);
+      button.setAttribute('aria-pressed', String(button === packageButton));
+    });
+    container.querySelectorAll('[data-package-example]').forEach((example) => {
+      if (example instanceof HTMLElement) example.hidden = example.dataset.packageExample !== key;
+    });
   });
 
   const start = () => {

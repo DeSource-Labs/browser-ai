@@ -17,11 +17,11 @@
 
 ## Testing
 
-Describe how you tested your changes
+Describe how you tested your changes. Include local e2e results when applicable.
 
 ## Screenshots (if applicable)
 
-Add screenshots for UI changes
+Add screenshots for component or demo changes.
 
 ## Checklist
 
@@ -32,3 +32,9 @@ Add screenshots for UI changes
 - [ ] No new warnings generated
 - [ ] Tests added/updated
 - [ ] All tests passing
+
+## Manual Coverage (Optional)
+
+[![Run Coverage Workflow](https://img.shields.io/badge/Run%20Coverage%20Workflow-GitHub%20Actions-2ea44f?logo=githubactions&logoColor=white)](https://github.com/DeSource-Labs/browser-ai/actions/workflows/coverage.yml)
+
+_Maintainers with write, maintain, or admin access: open the workflow, click `Run workflow`, and set `pr_number` to this PR's number to post or update its coverage comment._
