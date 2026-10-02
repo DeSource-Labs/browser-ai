@@ -30,8 +30,6 @@ pnpm --filter demo start
 
 Deploy `demo/.output`, which contains the generated server and its runtime dependencies. The server starts with `node .output/server/index.mjs` from the demo directory and does not require the source workspace or its development dependencies.
 
-`nuxt` and `@desource/browser-ai-nuxt` are development dependencies because the CLI and module configure and build the application. Install development dependencies in the build environment; `pnpm install --prod` alone cannot build the demo. Vue and the Vue adapter remain production dependencies. This distinction also keeps `pnpm audit:prod` scoped to production dependencies. A full `pnpm audit` still reports the unresolved `node-forge` advisory inherited by Nuxt's development tooling through `listhen`.
-
 ## WebMCP workspace
 
 The WebMCP page lets people and browser agents use the same Lisbon workspace catalog, shortlist, and visit form. Its implementation is in `app/components/WebMcpDemo.vue`.
