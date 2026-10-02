@@ -4,7 +4,7 @@
   "engines": {
     "node": ">=20.19.0"
   },
-  "description": "Production-ready Vue components and composables for Chrome built-in AI and WebMCP.",
+  "description": "Vue components and composables for Chrome built-in AI and WebMCP.",
   "keywords": [
     "vue",
     "chrome",
