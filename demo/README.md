@@ -28,8 +28,6 @@ pnpm vercel-build
 pnpm --filter demo start
 ```
 
-Deploy `demo/.output`, which contains the generated server and its runtime dependencies. The server starts with `node .output/server/index.mjs` from the demo directory and does not require the source workspace or its development dependencies.
-
 ## WebMCP workspace
 
 The WebMCP page lets people and browser agents use the same Lisbon workspace catalog, shortlist, and visit form. Its implementation is in `app/components/WebMcpDemo.vue`.
