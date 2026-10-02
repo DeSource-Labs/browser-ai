@@ -1,6 +1,17 @@
 import { access, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
+interface FrameworkSpecification {
+  name: string;
+  component: (name: string) => string;
+  service: (name: string) => string;
+  barrel: string;
+  componentBarrel?: string;
+  serviceBarrel?: string;
+  componentExport: (name: string) => string;
+  serviceExport: (name: string) => string;
+}
+
 const root = fileURLToPath(new URL('..', import.meta.url));
 const components = [
   'ChatHistory',
@@ -26,9 +37,9 @@ const services = [
   'Writer'
 ];
 
-const kebab = (value) => value.replaceAll(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-const lowerFirst = (value) => value[0].toLowerCase() + value.slice(1);
-const specifications = [
+const kebab = (value: string) => value.replaceAll(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+const lowerFirst = (value: string) => value[0].toLowerCase() + value.slice(1);
+const specifications: FrameworkSpecification[] = [
   {
     name: 'Vue',
     component: (name) => `packages/browser-ai-vue/src/components/${name}.vue`,
@@ -67,8 +78,8 @@ const specifications = [
   }
 ];
 
-const failures = [];
-const exists = async (framework, kind, name, path) => {
+const failures: string[] = [];
+const exists = async (framework: string, kind: 'component' | 'service', name: string, path: string) => {
   try {
     await access(`${root}/${path}`);
   } catch {

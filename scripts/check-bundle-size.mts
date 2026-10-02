@@ -5,6 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
 
+type PackageExport = string | { [condition: string]: PackageExport | undefined } | null;
+
+interface PackageManifest {
+  name: string;
+  exports?: Record<string, PackageExport>;
+  module?: string;
+}
+
 const root = fileURLToPath(new URL('..', import.meta.url));
 const svelteRequire = createRequire(resolve(root, 'packages/browser-ai-svelte/package.json'));
 const { compile } = svelteRequire('svelte/compiler');
@@ -31,9 +39,9 @@ const specifications = [
   ['browser-ai-svelte', 'createWebMcp', 5000],
   ['browser-ai-angular', 'createAngularPromptApi', 5000],
   ['browser-ai-angular', 'createAngularWebMcp', 5000]
-];
+] as const;
 
-const resolveExport = (value) => {
+const resolveExport = (value: PackageExport | undefined): string | undefined => {
   if (typeof value === 'string') return value;
   for (const condition of ['import', 'svelte', 'default']) {
     const target = value?.[condition] && resolveExport(value[condition]);
@@ -42,8 +50,8 @@ const resolveExport = (value) => {
   return undefined;
 };
 
-const external = (id) => /^(?:vue|react|react-dom|svelte|tslib)(?:\/|$)/.test(id) || id.startsWith('@angular/');
-const failures = [];
+const external = (id: string) => /^(?:vue|react|react-dom|svelte|tslib)(?:\/|$)/.test(id) || id.startsWith('@angular/');
+const failures: string[] = [];
 
 for (const [directory, exported, limit] of specifications) {
   const packageDirectory = resolve(root, 'packages', directory);
@@ -51,7 +59,7 @@ for (const [directory, exported, limit] of specifications) {
     packageDirectory,
     directory === 'browser-ai-angular' ? 'dist/package.json' : 'package.json'
   );
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const manifest: PackageManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   const target =
     resolveExport(manifest.exports?.[directory === 'browser-ai-angular' ? './controllers' : '.']) ?? manifest.module;
   if (!target) throw new Error(`No ESM entry point found for ${manifest.name}.`);
@@ -107,7 +115,10 @@ for (const [directory, exported, limit] of specifications) {
       rolldownOptions: { external, output: { minify: true } }
     }
   });
-  const outputs = (Array.isArray(result) ? result : [result]).flatMap((item) => item.output);
+  const outputs = (Array.isArray(result) ? result : [result]).flatMap((item) => {
+    if (!('output' in item)) throw new Error('Bundle size checks require a completed build.');
+    return item.output;
+  });
   const chunks = outputs.filter((item) => item.type === 'chunk');
   const code = chunks.map((item) => item.code).join('\n');
   const bytes = gzipSync(code).length;
