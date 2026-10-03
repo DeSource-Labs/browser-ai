@@ -678,7 +678,7 @@ const faq = [
 .docs-button--primary {
   color: #fff;
   border-color: transparent;
-  background: linear-gradient(135deg, #7659e6, #5275df);
+  background: linear-gradient(135deg, #7659e6, #4667d0);
   box-shadow: 0 14px 34px rgba(91, 91, 223, 0.22);
 }
 
@@ -1243,6 +1243,8 @@ const faq = [
 }
 
 .docs-next .docs-button {
+  position: relative;
+  z-index: 1;
   margin-top: 1.5rem;
 }
 
