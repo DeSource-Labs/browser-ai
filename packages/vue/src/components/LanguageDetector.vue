@@ -6,18 +6,7 @@
     output-label="Detected language"
     action-label="Detect"
     busy-action-label="Detecting"
-    :placeholder="placeholder"
-    :empty-output-message="emptyOutputMessage"
-    :settings-summary="expectedLanguagesLabel"
-    :input-meta="inputMeta"
-    :output-meta="resultMetaLabel"
-    :availability="availability"
-    :download-progress="downloadProgress"
-    :busy="api.isProcessing.value"
-    :disabled="disabled"
-    :can-run="canDetect"
-    :progress-percent="progressPercent"
-    :error-message="errorMessage"
+    v-bind="textToolBindings"
     @interrupt="api.interrupt()"
     @run="handleDetect"
   >
@@ -95,7 +84,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
+import { useLanguageList } from '../composables/useLanguageList';
+import { useTextToolBindings } from '../composables/useTextToolBindings';
 import {
   getLanguageDetectorLanguageName,
   useLanguageDetector,
@@ -151,18 +142,14 @@ const sourceText = useSyncedString(
   (value) => emit('update:modelValue', value)
 );
 const errorMessage = ref('');
-const expectedLanguagesText = ref((props.expectedInputLanguages ?? []).join(', '));
+const { text: expectedLanguagesText, languages: parsedExpectedInputLanguages } = useLanguageList(
+  () => props.expectedInputLanguages
+);
 const stripHtmlInput = ref(props.stripHtml);
 const largeInputMode = ref(props.largeInputStrategy);
 const minimumConfidence = ref(props.minConfidence);
 const maximumResults = ref(props.maxResults);
 
-const parsedExpectedInputLanguages = computed(() =>
-  expectedLanguagesText.value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-);
 const createOptions = computed<LanguageDetectorCreate>(() => ({
   expectedInputLanguages: parsedExpectedInputLanguages.value
 }));
@@ -203,6 +190,15 @@ const progressPercent = computed(() => {
   return state.phase === 'ready' ? 100 : 8;
 });
 
+const textToolBindings = useTextToolBindings(props, api, () => ({
+  settingsSummary: expectedLanguagesLabel.value,
+  inputMeta: inputMeta.value,
+  outputMeta: resultMetaLabel.value,
+  canRun: canDetect.value,
+  progressPercent: progressPercent.value,
+  errorMessage: errorMessage.value
+}));
+
 const handleDetect = async () => {
   if (!canDetect.value) return;
   try {
@@ -224,12 +220,6 @@ const handleDetect = async () => {
 };
 const copyTopLanguage = () => copyText(api.lastResult.value?.detectedLanguage ?? '');
 
-watch(
-  () => props.expectedInputLanguages,
-  (value) => {
-    expectedLanguagesText.value = (value ?? []).join(', ');
-  }
-);
 useToolLifecycle({
   availability: api.availability,
   createOptions,
@@ -239,5 +229,5 @@ useToolLifecycle({
   onAvailability: (value) => emit('availability-change', value)
 });
 
-const { availability, downloadProgress, results, lastResult } = api;
+const { results, lastResult } = api;
 </script>

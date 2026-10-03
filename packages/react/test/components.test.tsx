@@ -1,5 +1,7 @@
-import { act, createElement, StrictMode, useState, type ComponentType, type ReactElement } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { installPromptApi, installTextApi as installNativeTextApi } from '../../../common/tests/helpers/native-apis';
+import { textStream as stream } from '../../../common/tests/helpers/streams';
+import { render } from './helpers/render';
+import { act, createElement, StrictMode, useState, type ComponentType } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createBrowserAiStore } from '@desource/browser-ai';
 import * as conversationCore from '@desource/browser-ai/conversation';
@@ -17,25 +19,7 @@ import {
   type ChatAttachment
 } from '../src/components';
 
-const roots = new Set<Root>();
-
-const render = async (element: ReactElement) => {
-  const container = document.createElement('div');
-  document.body.append(container);
-  const root = createRoot(container);
-  roots.add(root);
-  await act(() => root.render(element));
-  return {
-    container,
-    async update(next: ReactElement) {
-      await act(() => root.render(next));
-    },
-    async cleanup() {
-      if (roots.delete(root)) await act(() => root.unmount());
-      container.remove();
-    }
-  };
-};
+const installTextApi = (...args: Parameters<typeof installNativeTextApi>) => installNativeTextApi(...args).native;
 
 const settle = async () => {
   await act(async () => {
@@ -60,14 +44,6 @@ const selectFiles = async (input: HTMLInputElement, files: File[]) => {
   await act(() => input.dispatchEvent(new Event('change', { bubbles: true })));
 };
 
-const stream = (...chunks: string[]) =>
-  new ReadableStream<string>({
-    start(controller) {
-      chunks.forEach((chunk) => controller.enqueue(chunk));
-      controller.close();
-    }
-  });
-
 beforeEach(() => {
   Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true });
   let url = 0;
@@ -79,9 +55,6 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  for (const root of roots) await act(() => root.unmount());
-  roots.clear();
-  document.body.replaceChildren();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -235,38 +208,6 @@ describe('React presentation components', () => {
     expect(withoutDelete.container.querySelector('[aria-label^="Delete"]')).toBeNull();
   });
 });
-
-const installPromptApi = ({
-  output = 'Native answer',
-  chunks = ['Native ', 'answer'],
-  failure
-}: {
-  output?: string;
-  chunks?: string[];
-  failure?: Error;
-} = {}) => {
-  const native = Object.assign(new EventTarget(), {
-    contextUsage: 2,
-    contextWindow: 128,
-    prompt: failure ? vi.fn().mockRejectedValue(failure) : vi.fn().mockResolvedValue(output),
-    promptStreaming: failure
-      ? vi.fn().mockReturnValue(
-          new ReadableStream<string>({
-            pull(controller) {
-              controller.error(failure);
-            }
-          })
-        )
-      : vi.fn().mockReturnValue(stream(...chunks)),
-    append: vi.fn(),
-    measureContextUsage: vi.fn().mockResolvedValue(1),
-    clone: vi.fn(),
-    destroy: vi.fn()
-  });
-  const create = vi.fn().mockResolvedValue(native);
-  vi.stubGlobal('LanguageModel', { availability: vi.fn().mockResolvedValue('available'), create });
-  return { native, create };
-};
 
 describe('React PromptApi', () => {
   it('streams a text response and reports controlled message updates', async () => {
@@ -459,30 +400,6 @@ describe('React PromptApi', () => {
     expect(rendered.container.querySelector('.chat-history')?.textContent).toContain('First answer');
   });
 });
-
-const installTextApi = (name: string, overrides: Record<string, unknown> = {}) => {
-  const native = {
-    inputQuota: 1024,
-    measureInputUsage: vi.fn().mockResolvedValue(5),
-    summarize: vi.fn().mockResolvedValue('Short summary'),
-    summarizeStreaming: vi.fn().mockReturnValue(stream('Short ', 'summary')),
-    write: vi.fn().mockResolvedValue('Draft'),
-    writeStreaming: vi.fn().mockReturnValue(stream('Generated ', 'draft')),
-    rewrite: vi.fn().mockResolvedValue('Rewrite'),
-    rewriteStreaming: vi.fn().mockReturnValue(stream('Clear ', 'rewrite')),
-    translate: vi.fn().mockResolvedValue('Bonjour'),
-    translateStreaming: vi.fn().mockReturnValue(stream('Bon', 'jour')),
-    detect: vi.fn().mockResolvedValue([{ detectedLanguage: 'en', confidence: 0.96 }]),
-    proofread: vi.fn().mockResolvedValue({ correctedInput: 'Correct text.', corrections: [] }),
-    destroy: vi.fn(),
-    ...overrides
-  };
-  vi.stubGlobal(name, {
-    availability: vi.fn().mockResolvedValue('available'),
-    create: vi.fn().mockResolvedValue(native)
-  });
-  return native;
-};
 
 describe('React text tools', () => {
   it.each([

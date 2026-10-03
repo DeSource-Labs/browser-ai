@@ -6,18 +6,7 @@
     output-label="Corrected text"
     action-label="Proofread"
     busy-action-label="Checking"
-    :placeholder="placeholder"
-    :empty-output-message="emptyOutputMessage"
-    :settings-summary="expectedLanguagesLabel"
-    :input-meta="`${sourceText.length.toLocaleString()} chars`"
-    :output-meta="resultMetaLabel"
-    :availability="availability"
-    :download-progress="downloadProgress"
-    :busy="api.isProcessing.value"
-    :disabled="disabled"
-    :can-run="canProofread"
-    :progress-percent="progressPercent"
-    :error-message="errorMessage"
+    v-bind="textToolBindings"
     @interrupt="api.interrupt()"
     @run="handleProofread"
   >
@@ -111,7 +100,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
+import { useLanguageList } from '../composables/useLanguageList';
+import { useTextToolBindings } from '../composables/useTextToolBindings';
 import {
   getProofreaderLanguageName,
   useProofreader,
@@ -180,7 +171,9 @@ const sourceText = useSyncedString(
   (value) => emit('update:modelValue', value)
 );
 const errorMessage = ref('');
-const expectedLanguagesText = ref((props.expectedInputLanguages ?? []).join(', '));
+const { text: expectedLanguagesText, languages: parsedExpectedInputLanguages } = useLanguageList(
+  () => props.expectedInputLanguages
+);
 const includeTypes = ref(props.includeCorrectionTypes);
 const includeExplanations = ref(props.includeCorrectionExplanations);
 const explanationLanguage = ref(props.correctionExplanationLanguage);
@@ -188,12 +181,6 @@ const stripHtmlInput = ref(props.stripHtml);
 const largeInputMode = ref(props.largeInputStrategy);
 const chunkCharacterLimit = ref(props.maxChunkCharacters);
 
-const parsedExpectedInputLanguages = computed(() =>
-  expectedLanguagesText.value
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-);
 const createOptions = computed<ProofreaderCreate>(() => ({
   expectedInputLanguages: parsedExpectedInputLanguages.value,
   includeCorrectionTypes: includeTypes.value,
@@ -248,6 +235,15 @@ const correctionTitle = (correction: NormalizedProofreadCorrection) =>
     .filter(Boolean)
     .join('\n');
 
+const textToolBindings = useTextToolBindings(props, api, () => ({
+  settingsSummary: expectedLanguagesLabel.value,
+  inputMeta: `${sourceText.value.length.toLocaleString()} chars`,
+  outputMeta: resultMetaLabel.value,
+  canRun: canProofread.value,
+  progressPercent: progressPercent.value,
+  errorMessage: errorMessage.value
+}));
+
 const handleProofread = async () => {
   if (!canProofread.value) return;
   try {
@@ -267,12 +263,6 @@ const handleProofread = async () => {
   }
 };
 
-watch(
-  () => props.expectedInputLanguages,
-  (value) => {
-    expectedLanguagesText.value = (value ?? []).join(', ');
-  }
-);
 useToolLifecycle({
   availability: api.availability,
   createOptions,
@@ -282,5 +272,5 @@ useToolLifecycle({
   onAvailability: (value) => emit('availability-change', value)
 });
 
-const { availability, downloadProgress, corrections, lastResult } = api;
+const { corrections, lastResult } = api;
 </script>

@@ -1,5 +1,5 @@
 import { act, createElement, useState, type ComponentType, type ReactElement } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { render as renderElement } from '../helpers/render';
 import { afterEach, vi } from 'vitest';
 import type {
   ChatHistorySetup,
@@ -25,8 +25,6 @@ import {
   Writer,
   type ChatAttachment
 } from '../../src/components';
-
-const roots = new Set<Root>();
 
 const flush = async () => {
   await act(async () => {
@@ -66,28 +64,11 @@ const actions: ContractActions = {
 
 const render = async (element: ReactElement) => {
   Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true });
-  const container = document.createElement('div');
-  document.body.append(container);
-  const root = createRoot(container);
-  roots.add(root);
-  await act(() => root.render(element));
-  return {
-    container,
-    actions,
-    async update(element: ReactElement) {
-      await act(() => root.render(element));
-    },
-    async cleanup() {
-      if (roots.delete(root)) await act(() => root.unmount());
-      container.remove();
-    }
-  };
+  const rendered = await renderElement(element);
+  return { ...rendered, actions };
 };
 
 afterEach(async () => {
-  for (const root of roots) await act(() => root.unmount());
-  roots.clear();
-  document.body.replaceChildren();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });

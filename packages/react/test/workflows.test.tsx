@@ -1,19 +1,13 @@
 import { createBrowserAiStore } from '@desource/browser-ai';
+import { observedWorkflow, workflowBindingCases } from '../../../common/tests/helpers/workflow-bindings';
 import { act, StrictMode, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const coreMocks = vi.hoisted(() => ({
-  createPromptWorkflow: vi.fn(),
-  createSummarizerWorkflow: vi.fn(),
-  createWriterWorkflow: vi.fn(),
-  createRewriterWorkflow: vi.fn(),
-  createTranslatorWorkflow: vi.fn(),
-  createLanguageDetectorWorkflow: vi.fn(),
-  createProofreaderWorkflow: vi.fn()
-}));
-
-const chatsMocks = vi.hoisted(() => ({ createAiChats: vi.fn() }));
+const { coreMocks, chatsMocks } = await vi.hoisted(async () => {
+  const { workflowMocks } = await import('../../../common/tests/helpers/workflow-bindings');
+  return workflowMocks();
+});
 
 vi.mock('@desource/browser-ai/workflows', () => coreMocks);
 vi.mock('@desource/browser-ai/chats', () => chatsMocks);
@@ -51,48 +45,25 @@ const render = async (node: ReactNode) => {
   await act(() => root?.render(node));
 };
 
-const promptOptions = { onContextOverflow: vi.fn() };
-const translatorOptions = { sourceLanguage: 'en', targetLanguage: 'fr' };
-const detectorOptions = { expectedInputLanguages: ['en'] };
-const proofreaderOptions = { includeCorrectionTypes: true };
+const bindings = {
+  chats: useAiChats,
+  prompt: usePromptWorkflow,
+  summarizer: useSummarizerWorkflow,
+  writer: useWriterWorkflow,
+  rewriter: useRewriterWorkflow,
+  translator: useTranslatorWorkflow,
+  detector: useLanguageDetectorWorkflow,
+  proofreader: useProofreaderWorkflow
+};
+const cases = workflowBindingCases<ReturnType<(typeof bindings)[keyof typeof bindings]>>(
+  bindings,
+  coreMocks,
+  chatsMocks.createAiChats
+);
 
 describe('React workflow bindings', () => {
-  it.each([
-    ['Chat persistence', chatsMocks.createAiChats, () => useAiChats('prompt'), ['prompt']],
-    ['Prompt API', coreMocks.createPromptWorkflow, () => usePromptWorkflow(promptOptions), [promptOptions]],
-    ['Summarizer', coreMocks.createSummarizerWorkflow, () => useSummarizerWorkflow(), []],
-    ['Writer', coreMocks.createWriterWorkflow, () => useWriterWorkflow(), []],
-    ['Rewriter', coreMocks.createRewriterWorkflow, () => useRewriterWorkflow(), []],
-    [
-      'Translator',
-      coreMocks.createTranslatorWorkflow,
-      () => useTranslatorWorkflow(translatorOptions),
-      [translatorOptions]
-    ],
-    [
-      'Language detector',
-      coreMocks.createLanguageDetectorWorkflow,
-      () => useLanguageDetectorWorkflow(detectorOptions),
-      [detectorOptions]
-    ],
-    [
-      'Proofreader',
-      coreMocks.createProofreaderWorkflow,
-      () => useProofreaderWorkflow(proofreaderOptions),
-      [proofreaderOptions]
-    ]
-  ])('binds %s snapshots, arguments, and cleanup', async (_name, factory, useHook, args) => {
-    const state = createBrowserAiStore({ processing: '', isReady: true, isProcessing: false, output: '' });
-    const dispose = vi.fn();
-    const stopObserving = vi.fn();
-    const subscribe = state.subscribe;
-    const observe = vi.spyOn(state, 'subscribe').mockImplementation((listener) => {
-      const stop = subscribe(listener);
-      return () => {
-        stopObserving();
-        stop();
-      };
-    });
+  it.each(cases)('binds %s snapshots, arguments, and cleanup', async (_name, factory, useHook, args) => {
+    const { state, dispose, stopObserving, observe } = observedWorkflow(createBrowserAiStore);
     factory.mockReturnValue({ state, dispose });
     let latest: ReturnType<typeof useHook> | undefined;
     const Probe = () => {

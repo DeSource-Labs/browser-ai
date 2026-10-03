@@ -1,18 +1,12 @@
 import { createBrowserAiStore } from '@desource/browser-ai';
+import { observedWorkflow, workflowBindingCases } from '../../../common/tests/helpers/workflow-bindings';
 import { get } from 'svelte/store';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const coreMocks = vi.hoisted(() => ({
-  createPromptWorkflow: vi.fn(),
-  createSummarizerWorkflow: vi.fn(),
-  createWriterWorkflow: vi.fn(),
-  createRewriterWorkflow: vi.fn(),
-  createTranslatorWorkflow: vi.fn(),
-  createLanguageDetectorWorkflow: vi.fn(),
-  createProofreaderWorkflow: vi.fn()
-}));
-
-const chatsMocks = vi.hoisted(() => ({ createAiChats: vi.fn() }));
+const { coreMocks, chatsMocks } = await vi.hoisted(async () => {
+  const { workflowMocks } = await import('../../../common/tests/helpers/workflow-bindings');
+  return workflowMocks();
+});
 
 vi.mock('@desource/browser-ai/workflows', () => coreMocks);
 vi.mock('@desource/browser-ai/chats', () => chatsMocks);
@@ -34,10 +28,21 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const promptOptions = { onContextOverflow: vi.fn() };
-const translatorOptions = { sourceLanguage: 'en', targetLanguage: 'fr' };
-const detectorOptions = { expectedInputLanguages: ['en'] };
-const proofreaderOptions = { includeCorrectionTypes: true };
+const bindings = {
+  chats: createSvelteAiChats,
+  prompt: createSveltePromptWorkflow,
+  summarizer: createSvelteSummarizerWorkflow,
+  writer: createSvelteWriterWorkflow,
+  rewriter: createSvelteRewriterWorkflow,
+  translator: createSvelteTranslatorWorkflow,
+  detector: createSvelteLanguageDetectorWorkflow,
+  proofreader: createSvelteProofreaderWorkflow
+};
+const cases = workflowBindingCases<ReturnType<(typeof bindings)[keyof typeof bindings]>>(
+  bindings,
+  coreMocks,
+  chatsMocks.createAiChats
+);
 
 interface WorkflowStatus {
   isReady: boolean;
@@ -46,67 +51,36 @@ interface WorkflowStatus {
 }
 
 describe('Svelte workflow bindings', () => {
-  it.each([
-    ['Chat persistence', chatsMocks.createAiChats, () => createSvelteAiChats('prompt'), ['prompt']],
-    ['Prompt API', coreMocks.createPromptWorkflow, () => createSveltePromptWorkflow(promptOptions), [promptOptions]],
-    ['Summarizer', coreMocks.createSummarizerWorkflow, () => createSvelteSummarizerWorkflow(), []],
-    ['Writer', coreMocks.createWriterWorkflow, () => createSvelteWriterWorkflow(), []],
-    ['Rewriter', coreMocks.createRewriterWorkflow, () => createSvelteRewriterWorkflow(), []],
-    [
-      'Translator',
-      coreMocks.createTranslatorWorkflow,
-      () => createSvelteTranslatorWorkflow(translatorOptions),
-      [translatorOptions]
-    ],
-    [
-      'Language detector',
-      coreMocks.createLanguageDetectorWorkflow,
-      () => createSvelteLanguageDetectorWorkflow(detectorOptions),
-      [detectorOptions]
-    ],
-    [
-      'Proofreader',
-      coreMocks.createProofreaderWorkflow,
-      () => createSvelteProofreaderWorkflow(proofreaderOptions),
-      [proofreaderOptions]
-    ]
-  ])('binds %s snapshots and arguments without deriving readiness from instance', (_name, factory, bind, args) => {
-    const state = createBrowserAiStore({ processing: '', isReady: true, isProcessing: false, output: '' });
-    const dispose = vi.fn();
-    const stopObserving = vi.fn();
-    const subscribe = state.subscribe;
-    const observe = vi.spyOn(state, 'subscribe').mockImplementation((listener) => {
-      const stop = subscribe(listener);
-      return () => {
-        stopObserving();
-        stop();
-      };
-    });
-    factory.mockReturnValue({ state, dispose });
-    const workflow = bind();
-    const listener = vi.fn();
-    const unsubscribe = workflow.state.subscribe(listener);
+  it.each(cases)(
+    'binds %s snapshots and arguments without deriving readiness from instance',
+    (_name, factory, bind, args) => {
+      const { state, dispose, stopObserving, observe } = observedWorkflow(createBrowserAiStore);
+      factory.mockReturnValue({ state, dispose });
+      const workflow = bind();
+      const listener = vi.fn();
+      const unsubscribe = workflow.state.subscribe(listener);
 
-    expect(factory).toHaveBeenCalledExactlyOnceWith(...args);
-    expect(observe).toHaveBeenCalledOnce();
-    expect(workflow.coreState).toBe(state);
-    expect(workflow.dispose).toBe(dispose);
-    expect(listener).toHaveBeenLastCalledWith(state.getSnapshot());
-    expect(get<WorkflowStatus>(workflow.state)).toMatchObject({ isReady: true, isProcessing: false });
-    expect(state.getSnapshot()).not.toHaveProperty('instance');
+      expect(factory).toHaveBeenCalledExactlyOnceWith(...args);
+      expect(observe).toHaveBeenCalledOnce();
+      expect(workflow.coreState).toBe(state);
+      expect(workflow.dispose).toBe(dispose);
+      expect(listener).toHaveBeenLastCalledWith(state.getSnapshot());
+      expect(get<WorkflowStatus>(workflow.state)).toMatchObject({ isReady: true, isProcessing: false });
+      expect(state.getSnapshot()).not.toHaveProperty('instance');
 
-    state.update({ processing: 'create', isReady: false, isProcessing: true });
-    expect(listener).toHaveBeenLastCalledWith(state.getSnapshot());
-    expect(get<WorkflowStatus>(workflow.state)).toMatchObject({
-      isReady: false,
-      isProcessing: true,
-      processing: 'create'
-    });
-    unsubscribe();
-    workflow.dispose();
-    expect(dispose).toHaveBeenCalledOnce();
-    expect(stopObserving).toHaveBeenCalledOnce();
-  });
+      state.update({ processing: 'create', isReady: false, isProcessing: true });
+      expect(listener).toHaveBeenLastCalledWith(state.getSnapshot());
+      expect(get<WorkflowStatus>(workflow.state)).toMatchObject({
+        isReady: false,
+        isProcessing: true,
+        processing: 'create'
+      });
+      unsubscribe();
+      workflow.dispose();
+      expect(dispose).toHaveBeenCalledOnce();
+      expect(stopObserving).toHaveBeenCalledOnce();
+    }
+  );
 
   it('shares one core subscription, resumes with the current snapshot, and disposes explicitly', async () => {
     const { createWriterWorkflow } = await vi.importActual<typeof import('@desource/browser-ai/workflows')>(

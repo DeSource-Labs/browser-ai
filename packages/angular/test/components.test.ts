@@ -1,3 +1,13 @@
+import {
+  busyProofreaderOptions,
+  expectBusyProofreader,
+  setting,
+  testTextToolLanguageSettings,
+  testTextToolFileLifecycle,
+  type TextToolControlsSetup
+} from '../../../common/tests/unit/TextToolControls';
+import { installPromptApi, installTextApi } from '../../../common/tests/helpers/native-apis';
+import { deferred } from '../../../common/tests/helpers/streams';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrowserAiChatSidebarComponent } from '../src/lib/chat.component';
@@ -58,24 +68,6 @@ const renderTool = async (inputs: Record<string, unknown> = {}) => {
   };
 };
 
-const deferred = <T>() => {
-  let resolve!: (value: T) => void;
-  let reject!: (reason: unknown) => void;
-  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
-    resolve = resolvePromise;
-    reject = rejectPromise;
-  });
-  return { promise, resolve, reject };
-};
-
-const setting = (container: HTMLElement, name: string) => {
-  const label = Array.from(container.querySelectorAll('.writing-tool__settings label')).find(
-    (label) => label.firstChild?.textContent?.trim() === name
-  );
-  if (!label) throw new Error(`Missing setting: ${name}`);
-  return label.querySelector('input, select, textarea') as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-};
-
 const changeSetting = async (
   rendered: { container: HTMLElement; fixture: ComponentFixture<unknown> },
   name: string,
@@ -121,13 +113,37 @@ const selectFiles = async (
   await settle(rendered.fixture);
 };
 
-const stream = (...chunks: string[]) =>
-  new ReadableStream<string>({
-    start(controller) {
-      chunks.forEach((chunk) => controller.enqueue(chunk));
-      controller.close();
+const setupToolControls: TextToolControlsSetup = async (props) => {
+  const rendered = await renderTool(props);
+  const onRun = vi.fn();
+  rendered.instance.configuredRun.subscribe(({ input, configuration }) => onRun(input, configuration));
+  const file = rendered.container.querySelector('input[type="file"]') as HTMLInputElement;
+  let destroyed = false;
+  return {
+    ...rendered,
+    onRun,
+    changeSetting: (name, value) => changeSetting(rendered, name, value),
+    async submit() {
+      rendered.instance.submit(new Event('submit'));
+      await settle(rendered.fixture);
+    },
+    selectFiles: (files) => selectFiles(rendered, file, files),
+    setValue: (value) => setValue(rendered, rendered.container.querySelector('textarea')!, value),
+    async flush() {
+      if (!destroyed) await settle(rendered.fixture);
+      else {
+        await Promise.resolve();
+        await Promise.resolve();
+      }
+    },
+    value: () => rendered.instance.value(),
+    error: () => rendered.instance.fileError(),
+    cleanup() {
+      destroyed = true;
+      rendered.cleanup();
     }
-  });
+  };
+};
 
 beforeEach(() => {
   let url = 0;
@@ -246,30 +262,6 @@ describe('Angular presentation components', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:angular-1');
   });
 });
-
-const installPromptApi = ({ output = 'Native answer', failure }: { output?: string; failure?: unknown } = {}) => {
-  const native = Object.assign(new EventTarget(), {
-    contextUsage: 2,
-    contextWindow: 128,
-    prompt: failure ? vi.fn().mockRejectedValue(failure) : vi.fn().mockResolvedValue(output),
-    promptStreaming: failure
-      ? vi.fn().mockReturnValue(
-          new ReadableStream<string>({
-            pull(controller) {
-              controller.error(failure);
-            }
-          })
-        )
-      : vi.fn().mockReturnValue(stream('Native ', 'answer')),
-    append: vi.fn(),
-    measureContextUsage: vi.fn().mockResolvedValue(1),
-    clone: vi.fn(),
-    destroy: vi.fn()
-  });
-  const create = vi.fn().mockResolvedValue(native);
-  vi.stubGlobal('LanguageModel', { availability: vi.fn().mockResolvedValue('available'), create });
-  return { native, create };
-};
 
 describe('Angular PromptApi', () => {
   it('streams a text prompt and renders message updates', async () => {
@@ -550,69 +542,17 @@ describe('Angular TextTool', () => {
     expect(setting(rendered.container, 'Additional context').value).toBe('Replacement');
   });
 
-  it('edits language lists, numeric limits, and correction settings through native controls', async () => {
-    const rendered = await renderTool({
-      kind: 'language-detector',
-      value: 'Bonjour',
-      createOptions: { expectedInputLanguages: ['en', 'fr'] }
-    });
-    const configuredRun = vi.fn();
-    rendered.instance.configuredRun.subscribe(configuredRun);
-    expect(setting(rendered.container, 'Expected languages').value).toBe('en, fr');
-    await changeSetting(rendered, 'Expected languages', 'es, de');
-    await changeSetting(rendered, 'Confidence', '0.75');
-    await changeSetting(rendered, 'Results', '3');
-    rendered.instance.submit(new Event('submit'));
-    expect(configuredRun).toHaveBeenLastCalledWith({
-      input: 'Bonjour',
-      configuration: expect.objectContaining({
-        createOptions: expect.objectContaining({ expectedInputLanguages: ['es', 'de'] }),
-        runOptions: expect.objectContaining({ minConfidence: 0.75, maxResults: 3 })
-      })
-    });
-    await rendered.update({ kind: 'proofreader', createOptions: { expectedInputLanguages: null } });
-    await changeSetting(rendered, 'Correction types', true);
-    await changeSetting(rendered, 'Explanations', true);
-    await changeSetting(rendered, 'Explanation language', 'fr');
-    rendered.instance.submit(new Event('submit'));
-    expect(configuredRun).toHaveBeenLastCalledWith({
-      input: 'Bonjour',
-      configuration: expect.objectContaining({
-        createOptions: expect.objectContaining({
-          includeCorrectionTypes: true,
-          includeCorrectionExplanations: true,
-          correctionExplanationLanguage: 'fr'
-        })
-      })
-    });
-  });
+  testTextToolLanguageSettings(setupToolControls);
 
   it('shows progress and corrections while busy controls stay disabled and Stop stays available', async () => {
     const onInterrupt = vi.fn();
     const read = vi.spyOn(File.prototype, 'text');
     const rendered = await renderTool({
-      kind: 'proofreader',
-      value: 'teh',
+      ...busyProofreaderOptions(),
       result: 'the',
-      processing: 'proofread',
-      downloadProgress: 42.4,
-      inputUsage: 8,
-      inputQuota: 100,
-      progressState: { phase: 'proofreading', processedChunks: 1, totalChunks: 3 },
-      corrections: [
-        { original: '<b>teh</b>', correction: 'the', types: ['spelling'], explanation: 'Spelling fix' },
-        { original: '', correction: '.', types: [], explanation: '' }
-      ],
       onInterrupt
     });
-    expect(rendered.container.querySelector('.writing-tool__footer')?.textContent).toContain('8 / 100 tokens');
-    expect(rendered.container.querySelector('[role="status"]')?.textContent).toContain('42%');
-    expect(rendered.container.querySelector('[role="status"]')?.textContent).toContain('1/3');
-    expect(rendered.container.querySelector('del')?.textContent).toBe('<b>teh</b>');
-    expect(rendered.container.querySelector('del b')).toBeNull();
-    expect(rendered.container.querySelector('[aria-label="Corrections"]')?.textContent).toContain('Spelling fix');
-    for (const control of rendered.container.querySelectorAll('textarea, input, select'))
-      expect((control as HTMLInputElement).disabled).toBe(true);
+    expectBusyProofreader(rendered.container);
     await changeSetting(rendered, 'Correction types', true);
     await setValue(rendered, rendered.container.querySelector('textarea') as HTMLTextAreaElement, 'Blocked');
     expect(rendered.instance.value()).toBe('teh');
@@ -709,79 +649,8 @@ describe('Angular TextTool', () => {
     expect(writeText).toHaveBeenCalledTimes(5);
   });
 
-  it('appends completed files to the latest input and keeps newer selections authoritative', async () => {
-    const first = deferred<string>();
-    const stale = deferred<string>();
-    vi.spyOn(File.prototype, 'text')
-      .mockReturnValueOnce(first.promise)
-      .mockReturnValueOnce(stale.promise)
-      .mockResolvedValueOnce('Newest');
-    const rendered = await renderTool({ value: 'Seed' });
-    const file = rendered.container.querySelector('input[type="file"]') as HTMLInputElement;
-    await selectFiles(rendered, file, [new File([''], 'first.txt', { type: 'text/plain' })]);
-    await setValue(
-      rendered,
-      rendered.container.querySelector('textarea') as HTMLTextAreaElement,
-      'Edited while reading'
-    );
-    first.resolve('First');
-    await settle(rendered.fixture);
-    expect(rendered.instance.value()).toBe('Edited while reading\n\nFirst');
-    await selectFiles(rendered, file, [new File([''], 'old.txt', { type: 'text/plain' })]);
-    await selectFiles(rendered, file, [new File([''], 'new.txt', { type: 'text/plain' })]);
-    stale.reject(new Error('Old file failed'));
-    await settle(rendered.fixture);
-    expect(rendered.instance.value()).toBe('Edited while reading\n\nFirst\n\nNewest');
-    expect(rendered.instance.fileError()).toBe('');
-    expect(file.value).toBe('');
-  });
-
-  it.each(['disabled', 'processing', 'unmount'] as const)(
-    'ignores pending file success and failure after %s',
-    async (mode) => {
-      for (const outcome of ['resolve', 'reject']) {
-        const pending = deferred<string>();
-        vi.spyOn(File.prototype, 'text').mockReturnValueOnce(pending.promise);
-        const rendered = await renderTool({ value: 'Seed' });
-        const file = rendered.container.querySelector('input[type="file"]') as HTMLInputElement;
-        await selectFiles(rendered, file, [new File([''], 'pending.txt', { type: 'text/plain' })]);
-        if (mode === 'unmount') rendered.cleanup();
-        else await rendered.update(mode === 'disabled' ? { disabled: true } : { processing: 'write' });
-        if (outcome === 'resolve') pending.resolve('Late');
-        else pending.reject(new Error('Late failure'));
-        await Promise.resolve();
-        await Promise.resolve();
-        expect(rendered.instance.value()).toBe('Seed');
-        expect(rendered.instance.fileError()).toBe('');
-        expect(file.value).toBe('');
-        rendered.cleanup();
-      }
-    }
-  );
+  testTextToolFileLifecycle(setupToolControls);
 });
-
-const installTextApi = (name: string, overrides: Record<string, unknown> = {}) => {
-  const native = {
-    inputQuota: 1024,
-    measureInputUsage: vi.fn().mockResolvedValue(5),
-    summarize: vi.fn().mockResolvedValue('Short summary'),
-    summarizeStreaming: vi.fn().mockReturnValue(stream('Short ', 'summary')),
-    write: vi.fn().mockResolvedValue('Draft'),
-    writeStreaming: vi.fn().mockReturnValue(stream('Generated ', 'draft')),
-    rewrite: vi.fn().mockResolvedValue('Rewrite'),
-    rewriteStreaming: vi.fn().mockReturnValue(stream('Clear ', 'rewrite')),
-    translate: vi.fn().mockResolvedValue('Bonjour'),
-    translateStreaming: vi.fn().mockReturnValue(stream('Bon', 'jour')),
-    detect: vi.fn().mockResolvedValue([{ detectedLanguage: 'en', confidence: 0.96 }]),
-    proofread: vi.fn().mockResolvedValue({ correctedInput: 'Correct text.', corrections: [] }),
-    destroy: vi.fn(),
-    ...overrides
-  };
-  const create = vi.fn().mockResolvedValue(native);
-  const availability = vi.fn().mockResolvedValue('available');
-  vi.stubGlobal(name, { availability, create });
-  return { native, create, availability };
-};
 
 type TextComponent =
   | typeof BrowserAiSummarizerComponent

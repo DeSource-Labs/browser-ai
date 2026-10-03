@@ -1,18 +1,9 @@
+import { deferred } from '../../../common/tests/helpers/streams';
+import { render as renderElement } from './helpers/render';
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TextTool, type TextToolProps } from '../src/components/TextTool';
 
-const roots = new Set<Root>();
-const deferred = <T,>() => {
-  let resolve!: (value: T) => void;
-  let reject!: (reason: unknown) => void;
-  const promise = new Promise<T>((accept, decline) => {
-    resolve = accept;
-    reject = decline;
-  });
-  return { promise, resolve, reject };
-};
 const settle = async () => {
   await act(async () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -29,20 +20,12 @@ const render = async (overrides: Partial<TextToolProps> = {}) => {
     onRun: vi.fn().mockResolvedValue(undefined),
     ...overrides
   };
-  const container = document.createElement('div');
-  document.body.append(container);
-  const root = createRoot(container);
-  roots.add(root);
-  await act(() => root.render(<TextTool {...props} />));
+  const rendered = await renderElement(<TextTool {...props} />);
   return {
-    container,
+    ...rendered,
     async update(next: Partial<TextToolProps>) {
       props = { ...props, ...next };
-      await act(() => root.render(<TextTool {...props} />));
-    },
-    async cleanup() {
-      if (roots.delete(root)) await act(() => root.unmount());
-      container.remove();
+      await rendered.update(<TextTool {...props} />);
     }
   };
 };
@@ -82,9 +65,6 @@ beforeEach(() => {
   Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', { value: true, configurable: true });
 });
 afterEach(async () => {
-  for (const root of roots) await act(() => root.unmount());
-  roots.clear();
-  document.body.replaceChildren();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
