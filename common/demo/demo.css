@@ -179,6 +179,10 @@ textarea {
   padding: 0.55rem 0.75rem;
 }
 
+.demo-task-form input::placeholder {
+  color: #94a3b8;
+}
+
 .demo-webmcp button,
 .demo-task-form button {
   cursor: pointer;
