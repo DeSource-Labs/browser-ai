@@ -178,4 +178,4 @@ jobs:
           fail_ci_if_error: true
           disable_search: true
           override_commit: ${{ github.sha }}
-          files: reports/head/packages/core/coverage/lcov.info,reports/head/packages/browser-ai-angular/coverage/lcov.info,reports/head/packages/browser-ai-nuxt/coverage/lcov.info,reports/head/packages/browser-ai-react/coverage/lcov.info,reports/head/packages/browser-ai-svelte/coverage/lcov.info,reports/head/packages/browser-ai-vue/coverage/lcov.info
+          files: reports/head/packages/core/coverage/lcov.info,reports/head/packages/angular/coverage/lcov.info,reports/head/packages/nuxt/coverage/lcov.info,reports/head/packages/react/coverage/lcov.info,reports/head/packages/svelte/coverage/lcov.info,reports/head/packages/vue/coverage/lcov.info

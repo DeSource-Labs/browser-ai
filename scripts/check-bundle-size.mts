@@ -14,9 +14,9 @@ interface PackageManifest {
 }
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const svelteRequire = createRequire(resolve(root, 'packages/browser-ai-svelte/package.json'));
+const svelteRequire = createRequire(resolve(root, 'packages/svelte/package.json'));
 const { compile } = svelteRequire('svelte/compiler');
-const angularRequire = createRequire(resolve(root, 'packages/browser-ai-angular/package.json'));
+const angularRequire = createRequire(resolve(root, 'packages/angular/package.json'));
 const compilerPath = angularRequire.resolve('@angular/compiler-cli');
 const { NodeJSFileSystem, ConsoleLogger, LogLevel } = await import(compilerPath);
 const { createEs2015LinkerPlugin } = await import(angularRequire.resolve('@angular/compiler-cli/linker/babel'));
@@ -31,14 +31,14 @@ const { transform: optimizeAngular } = angularRequire(
 const specifications = [
   ['core', 'createPromptApi', 5000],
   ['core', 'createWebMcp', 5000],
-  ['browser-ai-vue', 'usePromptApi', 10000],
-  ['browser-ai-vue', 'useWebMcp', 5000],
-  ['browser-ai-react', 'usePromptApi', 5000],
-  ['browser-ai-react', 'useWebMcp', 5000],
-  ['browser-ai-svelte', 'createPromptApi', 5000],
-  ['browser-ai-svelte', 'createWebMcp', 5000],
-  ['browser-ai-angular', 'createAngularPromptApi', 5000],
-  ['browser-ai-angular', 'createAngularWebMcp', 5000]
+  ['vue', 'usePromptApi', 10000],
+  ['vue', 'useWebMcp', 5000],
+  ['react', 'usePromptApi', 5000],
+  ['react', 'useWebMcp', 5000],
+  ['svelte', 'createPromptApi', 5000],
+  ['svelte', 'createWebMcp', 5000],
+  ['angular', 'createAngularPromptApi', 5000],
+  ['angular', 'createAngularWebMcp', 5000]
 ] as const;
 
 const resolveExport = (value: PackageExport | undefined): string | undefined => {
@@ -55,13 +55,9 @@ const external = (id: string) => /^(?:vue|react|react-dom|svelte|tslib)(?:\/|$)/
 const bundleChecks = specifications.map(async ([directory, exported, limit]) => {
   const failures: string[] = [];
   const packageDirectory = resolve(root, 'packages', directory);
-  const manifestPath = resolve(
-    packageDirectory,
-    directory === 'browser-ai-angular' ? 'dist/package.json' : 'package.json'
-  );
+  const manifestPath = resolve(packageDirectory, directory === 'angular' ? 'dist/package.json' : 'package.json');
   const manifest: PackageManifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  const target =
-    resolveExport(manifest.exports?.[directory === 'browser-ai-angular' ? './controllers' : '.']) ?? manifest.module;
+  const target = resolveExport(manifest.exports?.[directory === 'angular' ? './controllers' : '.']) ?? manifest.module;
   if (!target) throw new Error(`No ESM entry point found for ${manifest.name}.`);
   const packageEntry = resolve(dirname(manifestPath), target);
   const probeEntry = resolve(root, '__browser_ai_bundle_probe__.js');
@@ -84,7 +80,7 @@ const bundleChecks = specifications.map(async ([directory, exported, limit]) => 
           if (id.endsWith('.svelte')) {
             return compile(code, { filename: id, generate: 'client', css: 'external', dev: false }).js;
           }
-          if (id === packageEntry && directory === 'browser-ai-angular') {
+          if (id === packageEntry && directory === 'angular') {
             const linked = await transformAsync(code, {
               filename: id,
               configFile: false,
@@ -140,7 +136,7 @@ const bundleChecks = specifications.map(async ([directory, exported, limit]) => 
 // accumulating in every framework's published stylesheet.
 const styleChecks = ['vue', 'react', 'svelte', 'angular'].map(async (framework) => {
   const failures: string[] = [];
-  const file = resolve(root, `packages/browser-ai-${framework}/dist/browser-ai-${framework}.css`);
+  const file = resolve(root, `packages/${framework}/dist/browser-ai-${framework}.css`);
   const css = await readFile(file, 'utf8');
   const bytes = gzipSync(css).length;
   const limit = 6000;

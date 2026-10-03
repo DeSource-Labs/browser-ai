@@ -1,0 +1,92 @@
+{
+  "name": "@desource/browser-ai-vue",
+  "version": "0.2.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "description": "Vue components and composables for Chrome built-in AI and WebMCP.",
+  "keywords": [
+    "vue",
+    "chrome",
+    "built-in-ai",
+    "gemini-nano",
+    "prompt-api",
+    "webmcp",
+    "on-device-ai",
+    "local-ai"
+  ],
+  "author": "DeSource Labs <hello@desourcelabs.com>",
+  "license": "MIT",
+  "homepage": "https://ai.desourcelabs.com/docs#vue",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeSource-Labs/browser-ai.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/DeSource-Labs/browser-ai/issues"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./assets/lib.css": "./dist/browser-ai-vue.css"
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "rimraf dist tsconfig.tsbuildinfo test-results coverage",
+    "clean:modules": "rimraf node_modules",
+    "dev": "vite demo --config demo/vite.config.ts",
+    "build": "pnpm clean && pnpm build:internal",
+    "build:internal": "pnpm build:lib && pnpm build:types",
+    "build:demo": "vite build demo --config demo/vite.config.ts",
+    "build:lib": "vite build",
+    "build:types": "vue-tsc -p tsconfig.json",
+    "postbuild": "node scripts/fix-dts.mjs",
+    "typecheck": "vue-tsc -p tsconfig.json --noEmit && vue-tsc -p demo/tsconfig.json --noEmit",
+    "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage.enabled",
+    "test:e2e": "playwright test",
+    "test:e2e:live": "playwright test --project enabled-user-chrome",
+    "publish:check": "publint && attw --pack . --exclude-entrypoints ./assets/lib.css"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.9",
+    "fake-indexeddb": "^6.2.5",
+    "rollup": "^4.63.6",
+    "rollup-plugin-dts": "^6.5.1",
+    "vue": "^3.5.43",
+    "vue-tsc": "^3.3.11"
+  },
+  "dependencies": {
+    "@desource/browser-ai": "workspace:*",
+    "@types/dom-chromium-ai": "^0.0.17",
+    "markdown-it": "^15.0.2",
+    "webmcp-types": "^0.1.10"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.33"
+  }
+}

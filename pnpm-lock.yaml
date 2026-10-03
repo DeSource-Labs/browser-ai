@@ -267,14 +267,14 @@ importers:
     dependencies:
       '@desource/browser-ai-vue':
         specifier: workspace:*
-        version: link:../packages/browser-ai-vue
+        version: link:../packages/vue
       vue:
         specifier: ^3.5.43
         version: 3.5.43(typescript@6.0.3)
     devDependencies:
       '@desource/browser-ai-nuxt':
         specifier: workspace:*
-        version: link:../packages/browser-ai-nuxt
+        version: link:../packages/nuxt
       nuxt:
         specifier: ^4.5.2
         version: 4.5.2(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7(supports-color@10.2.2)))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7(supports-color@10.2.2)))(@oxc-project/types@0.150.0)(@parcel/watcher@2.6.0)(@types/node@26.6.3)(@vue/compiler-sfc@3.5.43)(commander@15.0.0)(db0@0.3.4)(esbuild@0.28.2)(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(ioredis@5.11.1(supports-color@10.2.2))(less@4.9.1(supports-color@10.2.2))(lightningcss@1.33.0)(magicast@0.5.5)(optionator@0.9.4)(oxc-parser@0.150.0)(rolldown@1.2.12)(rollup-plugin-visualizer@7.1.1(rolldown@1.2.12)(rollup@4.63.6))(rollup@4.63.6)(sass-embedded@1.105.1)(sass@1.105.1)(srvx@0.11.22)(supports-color@10.2.2)(terser@5.51.2)(typescript@6.0.3)(vite@8.3.2(@types/node@26.6.3)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1(supports-color@10.2.2))(sass-embedded@1.105.1)(sass@1.105.1)(terser@5.51.2)(yaml@2.9.1))(vue-tsc@3.3.11(typescript@6.0.3))(yaml@2.9.1)
@@ -282,7 +282,7 @@ importers:
         specifier: ^1.105.1
         version: 1.105.1
 
-  packages/browser-ai-angular:
+  packages/angular:
     dependencies:
       '@desource/browser-ai':
         specifier: workspace:*
@@ -332,11 +332,11 @@ importers:
         version: 1.105.1
     publishDirectory: dist
 
-  packages/browser-ai-nuxt:
+  packages/nuxt:
     dependencies:
       '@desource/browser-ai-vue':
         specifier: workspace:*
-        version: link:../browser-ai-vue
+        version: link:../vue
     devDependencies:
       '@nuxt/kit':
         specifier: ^4.5.2
@@ -357,7 +357,7 @@ importers:
         specifier: ^3.5.43
         version: 3.5.43(typescript@5.9.3)
 
-  packages/browser-ai-react:
+  packages/react:
     dependencies:
       '@desource/browser-ai':
         specifier: workspace:*
@@ -388,7 +388,7 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
 
-  packages/browser-ai-svelte:
+  packages/svelte:
     dependencies:
       '@desource/browser-ai':
         specifier: workspace:*
@@ -419,7 +419,7 @@ importers:
         specifier: ^4.7.6
         version: 4.7.6(picomatch@4.0.7)(svelte@5.57.1(@typescript-eslint/types@8.71.0))(typescript@6.0.3)
 
-  packages/browser-ai-vue:
+  packages/vue:
     dependencies:
       '@desource/browser-ai':
         specifier: workspace:*

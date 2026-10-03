@@ -67,28 +67,28 @@ type ReportHeaderParams = {
 const PACKAGE_REPORTS: PackageReport[] = [
   {
     label: '@desource/browser-ai-angular',
-    file: 'packages/browser-ai-angular/coverage/lcov.info',
-    packagePath: 'packages/browser-ai-angular/src'
+    file: 'packages/angular/coverage/lcov.info',
+    packagePath: 'packages/angular/src'
   },
   {
     label: '@desource/browser-ai-nuxt',
-    file: 'packages/browser-ai-nuxt/coverage/lcov.info',
-    packagePath: 'packages/browser-ai-nuxt/src'
+    file: 'packages/nuxt/coverage/lcov.info',
+    packagePath: 'packages/nuxt/src'
   },
   {
     label: '@desource/browser-ai-react',
-    file: 'packages/browser-ai-react/coverage/lcov.info',
-    packagePath: 'packages/browser-ai-react/src'
+    file: 'packages/react/coverage/lcov.info',
+    packagePath: 'packages/react/src'
   },
   {
     label: '@desource/browser-ai-svelte',
-    file: 'packages/browser-ai-svelte/coverage/lcov.info',
-    packagePath: 'packages/browser-ai-svelte/src'
+    file: 'packages/svelte/coverage/lcov.info',
+    packagePath: 'packages/svelte/src'
   },
   {
     label: '@desource/browser-ai-vue',
-    file: 'packages/browser-ai-vue/coverage/lcov.info',
-    packagePath: 'packages/browser-ai-vue/src'
+    file: 'packages/vue/coverage/lcov.info',
+    packagePath: 'packages/vue/src'
   },
   {
     label: '@desource/browser-ai',

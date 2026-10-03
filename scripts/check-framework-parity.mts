@@ -42,37 +42,37 @@ const lowerFirst = (value: string) => value[0].toLowerCase() + value.slice(1);
 const specifications: FrameworkSpecification[] = [
   {
     name: 'Vue',
-    component: (name) => `packages/browser-ai-vue/src/components/${name}.vue`,
-    service: (name) => `packages/browser-ai-vue/src/composables/use${name}.ts`,
-    barrel: 'packages/browser-ai-vue/src/index.ts',
+    component: (name) => `packages/vue/src/components/${name}.vue`,
+    service: (name) => `packages/vue/src/composables/use${name}.ts`,
+    barrel: 'packages/vue/src/index.ts',
     componentExport: (name) => `default as ${name}`,
     serviceExport: (name) => `use${name}`
   },
   {
     name: 'React',
-    component: (name) => `packages/browser-ai-react/src/components/${name}.tsx`,
-    service: (name) => `packages/browser-ai-react/src/hooks/use${name}.ts`,
-    barrel: 'packages/browser-ai-react/src/index.ts',
-    componentBarrel: 'packages/browser-ai-react/src/components.tsx',
-    serviceBarrel: 'packages/browser-ai-react/src/hooks.ts',
+    component: (name) => `packages/react/src/components/${name}.tsx`,
+    service: (name) => `packages/react/src/hooks/use${name}.ts`,
+    barrel: 'packages/react/src/index.ts',
+    componentBarrel: 'packages/react/src/components.tsx',
+    serviceBarrel: 'packages/react/src/hooks.ts',
     componentExport: (name) => `components/${name}.js`,
     serviceExport: (name) => `hooks/use${name}.js`
   },
   {
     name: 'Svelte',
-    component: (name) => `packages/browser-ai-svelte/src/lib/${name}.svelte`,
-    service: (name) => `packages/browser-ai-svelte/src/lib/controllers/create${name}.ts`,
-    barrel: 'packages/browser-ai-svelte/src/lib/index.ts',
-    serviceBarrel: 'packages/browser-ai-svelte/src/lib/controllers.ts',
+    component: (name) => `packages/svelte/src/lib/${name}.svelte`,
+    service: (name) => `packages/svelte/src/lib/controllers/create${name}.ts`,
+    barrel: 'packages/svelte/src/lib/index.ts',
+    serviceBarrel: 'packages/svelte/src/lib/controllers.ts',
     componentExport: (name) => `default as ${name}`,
     serviceExport: (name) => `controllers/create${name}.js`
   },
   {
     name: 'Angular',
-    component: (name) => `packages/browser-ai-angular/src/lib/${kebab(name)}.component.ts`,
-    service: (name) => `packages/browser-ai-angular/src/lib/controllers/create-angular-${kebab(name)}.ts`,
-    barrel: 'packages/browser-ai-angular/src/public-api.ts',
-    serviceBarrel: 'packages/browser-ai-angular/src/lib/controller.ts',
+    component: (name) => `packages/angular/src/lib/${kebab(name)}.component.ts`,
+    service: (name) => `packages/angular/src/lib/controllers/create-angular-${kebab(name)}.ts`,
+    barrel: 'packages/angular/src/public-api.ts',
+    serviceBarrel: 'packages/angular/src/lib/controller.ts',
     componentExport: (name) => `${kebab(name)}.component`,
     serviceExport: (name) => `create-angular-${kebab(name)}`
   }

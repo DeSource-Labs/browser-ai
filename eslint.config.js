@@ -75,7 +75,7 @@ export default [
     rules: { 'no-useless-assignment': 'off' }
   },
   {
-    files: ['packages/browser-ai-react/**/*.{ts,tsx}'],
+    files: ['packages/react/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: { 'react-hooks/rules-of-hooks': 'error', 'react-hooks/exhaustive-deps': 'warn' }
   },
