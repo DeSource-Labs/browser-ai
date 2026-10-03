@@ -13,7 +13,7 @@ export interface RewriterProps {
   onError?(error: unknown): void;
 }
 
-export function Rewriter(props: RewriterProps) {
+export function Rewriter(props: Readonly<RewriterProps>) {
   const api = useRewriterWorkflow();
   const output = api.output;
   return (

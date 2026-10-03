@@ -51,7 +51,7 @@ export function WorkflowTextTool<Progress, RunOptions extends object, Result>({
   onProgress,
   onError,
   ...props
-}: WorkflowTextToolProps<Progress, RunOptions, Result>) {
+}: Readonly<WorkflowTextToolProps<Progress, RunOptions, Result>>) {
   const [error, setError] = useState('');
   const display = output || emptyOutput;
   return (
@@ -88,10 +88,10 @@ export function WorkflowTextTool<Progress, RunOptions extends object, Result>({
           } as RunOptions;
           const result = await run(input, options);
           if (result) onResult?.(result);
-        } catch (caught) {
-          if (isAbortError(caught)) return;
-          setError(errorText(caught));
-          onError?.(caught);
+        } catch (error_) {
+          if (isAbortError(error_)) return;
+          setError(errorText(error_));
+          onError?.(error_);
         }
       }}
     />

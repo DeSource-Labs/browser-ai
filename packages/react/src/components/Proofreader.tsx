@@ -13,7 +13,7 @@ export interface ProofreaderProps {
   onError?(error: unknown): void;
 }
 
-export function Proofreader(props: ProofreaderProps) {
+export function Proofreader(props: Readonly<ProofreaderProps>) {
   const api = useProofreaderWorkflow();
   const output = api.output;
   return (

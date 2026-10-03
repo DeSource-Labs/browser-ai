@@ -115,27 +115,25 @@ export function testTextToolFileLifecycle(setup: TextToolControlsSetup): void {
     expect(file.value).toBe('');
   });
 
-  it.each(['disabled', 'processing', 'unmount'] as const)(
-    'ignores pending file success and failure after %s',
-    async (mode) => {
-      for (const outcome of ['resolve', 'reject']) {
-        const pending = deferred<string>();
-        vi.spyOn(File.prototype, 'text').mockReturnValueOnce(pending.promise);
-        const rendered = await setup({ value: 'Seed' });
-        const file = rendered.container.querySelector('input[type="file"]') as HTMLInputElement;
-        await rendered.selectFiles([new File([''], 'pending.txt', { type: 'text/plain' })]);
-        if (mode === 'unmount') await rendered.cleanup();
-        else await rendered.update(mode === 'disabled' ? { disabled: true } : { processing: 'write' });
-        if (outcome === 'resolve') pending.resolve('Late');
-        else pending.reject(new Error('Late failure'));
-        await rendered.flush();
-        expect(rendered.value()).toBe('Seed');
-        expect(rendered.error()).toBe('');
-        expect(rendered.container.querySelector('[role="alert"]')).toBeNull();
-        if (rendered.onValueChange) expect(rendered.onValueChange).not.toHaveBeenCalled();
-        expect(file.value).toBe('');
-        await rendered.cleanup();
-      }
-    }
+  const pendingFileCases = (['disabled', 'processing', 'unmount'] as const).flatMap((mode) =>
+    (['resolve', 'reject'] as const).map((outcome) => ({ mode, outcome }))
   );
+  it.each(pendingFileCases)('ignores pending file $outcome after $mode', async ({ mode, outcome }) => {
+    const pending = deferred<string>();
+    vi.spyOn(File.prototype, 'text').mockReturnValueOnce(pending.promise);
+    const rendered = await setup({ value: 'Seed' });
+    const file = rendered.container.querySelector('input[type="file"]') as HTMLInputElement;
+    await rendered.selectFiles([new File([''], 'pending.txt', { type: 'text/plain' })]);
+    if (mode === 'unmount') await rendered.cleanup();
+    else await rendered.update(mode === 'disabled' ? { disabled: true } : { processing: 'write' });
+    if (outcome === 'resolve') pending.resolve('Late');
+    else pending.reject(new Error('Late failure'));
+    await rendered.flush();
+    expect(rendered.value()).toBe('Seed');
+    expect(rendered.error()).toBe('');
+    expect(rendered.container.querySelector('[role="alert"]')).toBeNull();
+    if (rendered.onValueChange) expect(rendered.onValueChange).not.toHaveBeenCalled();
+    expect(file.value).toBe('');
+    await rendered.cleanup();
+  });
 }

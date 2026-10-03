@@ -17,7 +17,7 @@ export interface LanguageDetectorProps {
   onError?(error: unknown): void;
 }
 
-export function LanguageDetector(props: LanguageDetectorProps) {
+export function LanguageDetector(props: Readonly<LanguageDetectorProps>) {
   const api = useLanguageDetectorWorkflow();
   const output = api.results
     .map((item) => `${item.name} (${item.detectedLanguage}): ${Math.round(item.confidence * 100)}%`)

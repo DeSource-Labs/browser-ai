@@ -68,7 +68,7 @@ const render = async (element: ReactElement) => {
   return { ...rendered, actions };
 };
 
-afterEach(async () => {
+afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });

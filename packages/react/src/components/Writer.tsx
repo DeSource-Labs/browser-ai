@@ -13,7 +13,7 @@ export interface WriterProps {
   onError?(error: unknown): void;
 }
 
-export function Writer(props: WriterProps) {
+export function Writer(props: Readonly<WriterProps>) {
   const api = useWriterWorkflow();
   const output = api.output;
   return (

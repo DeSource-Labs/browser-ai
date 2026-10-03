@@ -13,7 +13,7 @@ export interface SummarizerProps {
   onError?(error: unknown): void;
 }
 
-export function Summarizer(props: SummarizerProps) {
+export function Summarizer(props: Readonly<SummarizerProps>) {
   const api = useSummarizerWorkflow();
   const output = api.output;
   return (

@@ -23,7 +23,9 @@ export const render = async (element: ReactElement) => {
 };
 
 afterEach(async () => {
-  for (const root of roots) await act(() => root.unmount());
+  await act(() => {
+    for (const root of roots) root.unmount();
+  });
   roots.clear();
   document.body.replaceChildren();
 });
